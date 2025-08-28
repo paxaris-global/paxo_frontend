@@ -5,7 +5,7 @@ import { SignupPage } from './signup-page/signup-page';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SignupPage],
+  imports: [ SignupPage],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })

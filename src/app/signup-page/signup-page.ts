@@ -1,20 +1,20 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
-@Component({
+@Component({  
   selector: 'app-signup-page',
-  standalone: true,                // 👈 ADD THIS
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true, // <-- Your component is standalone
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule], // <-- Add HttpClientModule here
   templateUrl: './signup-page.html',
   styleUrls: ['./signup-page.css']
 })
 export class SignupPage {
+  // Your existing code remains the same
   signupForm: FormGroup;
-  message: string = '';
-  loading: boolean = false;
+  message = '';
+  loading = false;
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.signupForm = this.fb.group({
@@ -30,8 +30,9 @@ export class SignupPage {
   }
 
   onSubmit() {
+    // ... your existing onSubmit method
     if (this.signupForm.invalid) {
-      this.message = 'Please fill all required fields.';
+      this.message = '⚠️ Please fill all required fields.';
       return;
     }
 
@@ -51,7 +52,7 @@ export class SignupPage {
       }
     };
 
-    this.http.post('http://localhost:8080/keycloak/signup', requestPayload, { responseType: 'text' })
+    this.http.post('http://localhost:8082', requestPayload, { responseType: 'text' })
       .subscribe({
         next: (response) => {
           this.message = response;
@@ -59,8 +60,8 @@ export class SignupPage {
           this.signupForm.reset({ publicClient: true });
         },
         error: (err) => {
-          console.error(err);
-          this.message = 'Signup failed. Please check server logs.';
+          // console.error(err);
+          this.message = '❌ Signup failed. Please check server logs.';
           this.loading = false;
         }
       });

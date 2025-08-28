@@ -5,6 +5,8 @@ import { routes } from './app/app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 bootstrapApplication(App, {
-  providers: [provideRouter(routes),provideHttpClient(withFetch())]
-  
+  providers: [
+    provideHttpClient(withFetch()),
+    provideRouter(routes)
+  ]
 });
