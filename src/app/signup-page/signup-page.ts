@@ -15,6 +15,7 @@ export class SignupPage {
   signupForm: FormGroup;
   message = '';
   loading = false;
+  products: any[] = [];
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.signupForm = this.fb.group({
@@ -27,6 +28,14 @@ export class SignupPage {
       lastName: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+ ngOnInit() {
+    // Load products from central backend
+    this.http.get<any[]>('http://localhost:8087/products/data')
+      .subscribe({
+        next: (res) => this.products = res,
+        error: (err) => console.error("❌ Failed to load products", err)
+      });
   }
 
   onSubmit() {

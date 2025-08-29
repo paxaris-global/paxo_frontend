@@ -13,9 +13,15 @@
       </div>
 
       <div class="field">
-        <label for="clientId">Client Id</label>
-        <input id="clientId" type="text" formControlName="clientId" required />
+        <label for="clientId">Select Product (Client)</label>
+        <select id="clientId" formControlName="clientId" required>
+          <option value="">-- Select Product --</option>
+          <option *ngFor="let p of products" [value]="p.productName">
+            {{ p.productName }}
+          </option>
+        </select>
       </div>
+
 
       <div class="field">
         <label>

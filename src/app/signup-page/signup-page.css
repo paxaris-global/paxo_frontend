@@ -94,3 +94,38 @@ button:hover:not(:disabled) {
   font-weight: bold;
   color: green;
 }
+/* Dropdown (Select) */
+select {
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  appearance: none; /* remove default browser arrow */
+
+  /* custom arrow */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+/* Hover effect */
+select:hover {
+  border-color: #1976d2;
+}
+
+/* Focus effect */
+select:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 4px rgba(25,118,210,0.4);
+}
+
+/* Disabled option (placeholder) */
+select option[value=""] {
+  color: #888;
+}
