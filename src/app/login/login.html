@@ -1,0 +1,32 @@
+<div class="login-container">
+  <h2>🔐 Login</h2>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <label>Realm:</label>
+  <select [(ngModel)]="selectedRealm" (change)="onRealmChange()">
+    <option value="">-- Select Realm --</option>
+    <option *ngFor="let realm of realms" [value]="realm">{{ realm }}</option>
+  </select>
+
+  <label>Client ID:</label>
+  <select [(ngModel)]="selectedClientId">
+    <option value="">-- Select Client --</option>
+    <option *ngFor="let client of clientIds" [value]="client">{{ client }}</option>
+  </select>
+
+  <label>Username:</label>
+  <input type="text" [(ngModel)]="username" placeholder="Enter username" />
+
+  <label>Password:</label>
+  <input type="password" [(ngModel)]="password" placeholder="Enter password" />
+
+  <button (click)="onLogin()" [disabled]="loading">
+    {{ loading ? 'Logging in...' : 'Login' }}
+  </button>
+
+  <div *ngIf="token" class="token-box">
+    <p><strong>Access Token:</strong></p>
+    <textarea readonly rows="4">{{ token }}</textarea>
+  </div>
+</div>

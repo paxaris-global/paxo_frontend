@@ -1,59 +1,119 @@
-<div class="user-management-container">
-  <h2>User Management</h2>
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2>Admin Dashboard</h2>
+    <nav>
+      <ul>
+        <li [class.active]="activeSection === 'users'" (click)="setSection('users')">User Management</li>
+        <li [class.active]="activeSection === 'clients'" (click)="setSection('clients')">Create Client</li>
+        <li [class.active]="activeSection === 'settings'" (click)="setSection('settings')">Settings</li>
+      </ul>
+    </nav>
+  </aside>
 
-  <!-- Create User -->
-  <div class="form-section section-user">
-    <h3>Create User</h3>
-    <form [formGroup]="userForm" (ngSubmit)="createUser()">
-      <div class="field">
-        <label>Username</label>
-        <input type="text" formControlName="username" required />
-      </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" formControlName="email" required />
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" formControlName="password" required />
-      </div>
-      <button type="submit">Create User</button>
-    </form>
-  </div>
+  <main class="main-content">
 
-  <!-- Create Role -->
-  <div class="form-section section-role">
-    <h3>Create Role</h3>
-    <form [formGroup]="roleForm" (ngSubmit)="createRole()">
-      <div class="field">
-        <label>Role Name</label>
-        <input type="text" formControlName="roleName" required />
-      </div>
-      <button type="submit">Create Role</button>
-    </form>
-  </div>
+    <!-- User Management -->
+    <section *ngIf="activeSection === 'users'">
+      <h1>User Management</h1>
+      <div class="grid">
 
-  <!-- Assign Role -->
-  <div class="form-section section-assign">
-    <h3>Assign Role to User</h3>
-    <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
-      <div class="field">
-        <label>Select User</label>
-        <select formControlName="userId">
-          <option *ngFor="let u of users" [value]="u.id">
-            {{ u.username }}
-          </option>
-        </select>
+        <!-- Create User -->
+        <div class="form-card section-user">
+          <h3>Create User</h3>
+          <form [formGroup]="userForm" (ngSubmit)="createUser()">
+            <div class="field">
+              <label>Username</label>
+              <input type="text" formControlName="username" required />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" formControlName="email" required />
+            </div>
+            <div class="field">
+              <label>First Name</label>
+              <input type="text" formControlName="firstName" required />
+            </div>
+            <div class="field">
+              <label>Last Name</label>
+              <input type="text" formControlName="lastName" required />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input type="password" formControlName="password" required />
+            </div>
+            <button type="submit">Create User</button>
+          </form>
+        </div>
+
+        <!-- Create Role -->
+        <div class="form-card section-role">
+          <h3>Create Role</h3>
+          <form [formGroup]="roleForm" (ngSubmit)="createRole()">
+            <div class="field">
+              <label>Select Client</label>
+              <select formControlName="client">
+                <option *ngFor="let c of clients" [value]="c.clientId">{{ c.clientId }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Role Name</label>
+              <input type="text" formControlName="roleName" required />
+            </div>
+            <div class="field">
+              <label>Description</label>
+              <input type="text" formControlName="description" />
+            </div>
+            <div class="field">
+              <label>URL</label>
+              <input type="text" formControlName="url" />
+            </div>
+            <div class="field">
+              <label>URI</label>
+              <input type="text" formControlName="uri" />
+            </div>
+            <button type="submit">Create Role</button>
+          </form>
+        </div>
+
+        <!-- Assign Role -->
+        <div class="form-card section-assign">
+          <h3>Assign Role to User</h3>
+          <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
+            <div class="field">
+              <label>Select User</label>
+              <select formControlName="userId">
+                <option *ngFor="let u of users" [value]="u.id">{{ u.username }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Select Client</label>
+              <select formControlName="client">
+                <option *ngFor="let c of clients" [value]="c.clientId">{{ c.clientId }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Select Role</label>
+              <select formControlName="roleName">
+                <option *ngFor="let r of roles" [value]="r.roleName">{{ r.roleName }}</option>
+              </select>
+            </div>
+            <button type="submit">Assign Role</button>
+          </form>
+        </div>
+
       </div>
-      <div class="field">
-        <label>Select Role</label>
-        <select formControlName="roleName">
-          <option *ngFor="let r of roles" [value]="r.roleName">
-            {{ r.roleName }}
-          </option>
-        </select>
-      </div>
-      <button type="submit">Assign Role</button>
-    </form>
-  </div>
+    </section>
+
+    <!-- Create Client -->
+    <section *ngIf="activeSection === 'clients'">
+      <h1>Create Client</h1>
+      <app-create-client></app-create-client>
+    </section>
+
+    <!-- Settings -->
+    <section *ngIf="activeSection === 'settings'">
+      <h1>Settings</h1>
+      <p>Manage dashboard settings here.</p>
+    </section>
+  </main>
 </div>

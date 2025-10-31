@@ -64,4 +64,4 @@ For more information on using the Angular CLI, including detailed command refere
 
 
 
-echo "# keycloak_signup" >> README.md
+echo "# paxo_frontend" >> README.md

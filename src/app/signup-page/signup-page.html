@@ -2,7 +2,7 @@
   <h2>Signup Form</h2>
 
   <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-
+    
     <!-- Realm & Client Section -->
     <div class="form-section section-realm">
       <h3>Realm & Client</h3>
@@ -13,21 +13,56 @@
       </div>
 
       <div class="field">
-        <label for="clientId">Select Product (Client)</label>
-        <select id="clientId" formControlName="clientId" required>
-          <option value="">-- Select Product --</option>
-          <option *ngFor="let p of products" [value]="p.productName">
-            {{ p.productName }}
-          </option>
-        </select>
+        <label for="clientId">Product / Client Name</label>
+        <input
+          id="clientId"
+          type="text"
+          placeholder="Enter client or product name"
+          formControlName="clientId"
+          required
+        />
       </div>
 
-
-      <div class="field">
+      <div class="field checkbox">
         <label>
           <input type="checkbox" formControlName="publicClient" />
           Public Client
         </label>
+      </div>
+    </div>
+
+    <!-- Docker Upload Section -->
+    <div class="form-section section-docker">
+      <h3>Docker Image Upload</h3>
+
+      <div class="field">
+        <label for="dockerFile">Upload Docker Image (.tar)</label>
+        <input
+          type="file"
+          id="dockerFile"
+          (change)="onDockerFileSelected($event)"
+          accept=".tar"
+        />
+      </div>
+
+      <div class="field">
+        <label for="dockerFolder">Or Upload Folder (Optional)</label>
+        <input
+          type="file"
+          id="dockerFolder"
+          (change)="onDockerFolderSelected($event)"
+          webkitdirectory
+          directory
+          multiple
+        />
+      </div>
+
+      <div *ngIf="dockerFileName" class="upload-info">
+        <p><strong>Selected File:</strong> {{ dockerFileName }}</p>
+      </div>
+
+      <div *ngIf="dockerFolderFiles.length" class="upload-info">
+        <p><strong>Folder Selected:</strong> {{ dockerFolderFiles.length }} files</p>
       </div>
     </div>
 
@@ -61,10 +96,10 @@
       </div>
     </div>
 
-    <button type="submit" [disabled]="signupForm.invalid">Sign Up</button>
+    <button type="submit" [disabled]="signupForm.invalid || loading">
+      {{ loading ? 'Please wait...' : 'Sign Up' }}
+    </button>
   </form>
 
-  <div *ngIf="message" class="message">
-    {{ message }}
-  </div>
+  <div *ngIf="message" class="message">{{ message }}</div>
 </div>

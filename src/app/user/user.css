@@ -1,28 +1,95 @@
-.user-management-container {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #f9fafc;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* === Layout === */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.user-management-container h2 {
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: #1976d2;
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 {
+  margin-bottom: 2rem;
+  font-size: 1.4rem;
   text-align: center;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar nav ul li {
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.sidebar nav ul li:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar nav ul li.active {
+  background: rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+.main-content h1 {
+  font-size: 1.8rem;
   margin-bottom: 2rem;
   color: #333;
 }
 
-.form-section {
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border-radius: 12px;
+/* === Cards Grid === */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 1.5rem;
 }
 
-.section-user { background: #e8f5e9; border-left: 6px solid #2e7d32; }
-.section-role { background: #fff8e1; border-left: 6px solid #f9a825; }
-.section-assign { background: #e3f2fd; border-left: 6px solid #1976d2; }
+/* === Form Card === */
+.form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
+.form-card h3 {
+  margin-bottom: 1rem;
+  color: #222;
+}
+
+/* Section colors */
+.section-user {
+  border-left: 6px solid #2e7d32;
+}
+
+.section-role {
+  border-left: 6px solid #f9a825;
+}
+
+.section-assign {
+  border-left: 6px solid #1976d2;
+}
+
+/* === Fields === */
 .field {
   display: flex;
   flex-direction: column;
@@ -35,24 +102,36 @@ label {
   color: #444;
 }
 
-input, select {
+input,
+select {
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 0.95rem;
+  background: #fff;
 }
 
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 4px rgba(25, 118, 210, 0.4);
+}
+
+/* Button */
 button {
-  padding: 0.9rem;
   width: 100%;
-  border: none;
-  border-radius: 8px;
+  padding: 0.8rem;
   background-color: #1976d2;
   color: white;
+  border: none;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background 0.3s ease;
 }
 
-button:hover { background-color: #125ea8; }
+button:hover {
+  background-color: #125ea8;
+}

@@ -1,26 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
 
-@Component({  
+@Component({
   selector: 'app-signup-page',
-  standalone: true, // <-- Your component is standalone
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule], // <-- Add HttpClientModule here
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './signup-page.html',
   styleUrls: ['./signup-page.css']
 })
-export class SignupPage {
-  // Your existing code remains the same
+export class SignupPage implements OnInit {
   signupForm: FormGroup;
   message = '';
   loading = false;
-  products: any[] = [];
+  dockerFile: File | null = null;
+  dockerFolderFiles: File[] = [];
+  dockerFileName = '';
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  private apiBase = 'http://localhost:8085/identity-service';
+
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private router: Router
+  ) {
     this.signupForm = this.fb.group({
       realmName: ['', Validators.required],
-      clientId: ['', Validators.required],
+      clientId: ['', Validators.required], // changed to required text input
       publicClient: [true],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -29,17 +37,23 @@ export class SignupPage {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
- ngOnInit() {
-    // Load products from central backend
-    this.http.get<any[]>('http://localhost:8087/products/data')
-      .subscribe({
-        next: (res) => this.products = res,
-        error: (err) => console.error("❌ Failed to load products", err)
-      });
+
+  ngOnInit() {}
+
+  onDockerFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.dockerFile = file;
+      this.dockerFileName = file.name;
+    }
+  }
+
+  onDockerFolderSelected(event: any) {
+    const files = Array.from(event.target.files);
+    this.dockerFolderFiles = files as File[];
   }
 
   onSubmit() {
-    // ... your existing onSubmit method
     if (this.signupForm.invalid) {
       this.message = '⚠️ Please fill all required fields.';
       return;
@@ -47,32 +61,51 @@ export class SignupPage {
 
     this.loading = true;
     const formValue = this.signupForm.value;
+    const formData = new FormData();
 
-    const requestPayload = {
-      realmName: formValue.realmName,
-      clientId: formValue.clientId,
-      publicClient: formValue.publicClient,
-      adminUser: {
-        username: formValue.username,
-        email: formValue.email,
-        firstName: formValue.firstName,
-        lastName: formValue.lastName,
-        password: formValue.password
-      }
-    };
+    formData.append('realmName', formValue.realmName);
+    formData.append('clientId', formValue.clientId);
+    formData.append('publicClient', formValue.publicClient);
+    formData.append('username', formValue.username);
+    formData.append('email', formValue.email);
+    formData.append('firstName', formValue.firstName);
+    formData.append('lastName', formValue.lastName);
+    formData.append('password', formValue.password);
 
-    this.http.post('http://localhost:8082', requestPayload, { responseType: 'text' })
-      .subscribe({
-        next: (response) => {
-          this.message = response;
-          this.loading = false;
-          this.signupForm.reset({ publicClient: true });
-        },
-        error: (err) => {
-          // console.error(err);
-          this.message = '❌ Signup failed. Please check server logs.';
-          this.loading = false;
-        }
+    if (this.dockerFile) {
+      formData.append('dockerImage', this.dockerFile);
+    }
+
+    if (this.dockerFolderFiles.length > 0) {
+      this.dockerFolderFiles.forEach((file) => {
+        formData.append('dockerFolder', file, file.webkitRelativePath);
       });
+    }
+
+    this.http.post(`${this.apiBase}/signup`, formData).subscribe({
+      next: (response: any) => {
+        this.loading = false;
+        const token = response?.access_token || response?.token;
+
+        if (token) {
+          localStorage.setItem('access_token', token);
+          this.message = '✅ Signup successful. Redirecting...';
+
+          setTimeout(() => this.router.navigate(['/dashboard']), 1000);
+        } else {
+          this.message = '⚠️ Signup success, but no token received.';
+        }
+
+        this.signupForm.reset({ publicClient: true });
+        this.dockerFile = null;
+        this.dockerFileName = '';
+        this.dockerFolderFiles = [];
+      },
+      error: (err) => {
+        console.error(err);
+        this.message = '❌ Signup failed. Check server logs.';
+        this.loading = false;
+      }
+    });
   }
 }

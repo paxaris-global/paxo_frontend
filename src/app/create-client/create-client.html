@@ -1,0 +1,43 @@
+<div class="form-card section-client">
+  <h3><i class="fa-solid fa-gears"></i> Create New Client</h3>
+
+  <form [formGroup]="clientForm" (ngSubmit)="createClient()" enctype="multipart/form-data">
+    <!-- Client ID -->
+    <div class="field">
+      <label for="clientId"><i class="fa-solid fa-id-badge"></i> Client ID</label>
+      <input
+        id="clientId"
+        type="text"
+        formControlName="clientId"
+        placeholder="Enter unique client ID"
+        required
+      />
+    </div>
+
+    <!-- Hidden default fields -->
+    <input type="hidden" formControlName="publicClient" />
+    <input type="hidden" formControlName="enabled" />
+    <input type="hidden" formControlName="protocol" />
+
+    <!-- Docker Image Upload -->
+    <div class="field">
+      <label for="dockerFile"><i class="fa-solid fa-file-archive"></i> Upload Docker Image</label>
+      <input
+        id="dockerFile"
+        type="file"
+        (change)="onFileSelected($event)"
+        accept=".tar,.gz,.zip"
+        required
+      />
+      <small *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</small>
+    </div>
+
+    <button type="submit" [disabled]="clientForm.invalid || !selectedFile">
+      <i class="fa-solid fa-plus-circle"></i> Create Client
+    </button>
+  </form>
+
+  <div *ngIf="responseMessage" class="response-message">
+    {{ responseMessage }}
+  </div>
+</div>

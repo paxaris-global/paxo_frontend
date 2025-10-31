@@ -1,11 +1,10 @@
-/* Outer container */
 .signup-container {
   max-width: 600px;
   margin: 2rem auto;
   padding: 2rem;
   border-radius: 16px;
   background: #f9fafc;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .signup-container h2 {
@@ -22,12 +21,17 @@
 }
 
 .section-realm {
-  background: #e3f2fd; /* Light Blue */
+  background: #e3f2fd;
   border-left: 6px solid #1976d2;
 }
 
+.section-docker {
+  background: #fff8e1; /* light yellow */
+  border-left: 6px solid #f9a825;
+}
+
 .section-user {
-  background: #e8f5e9; /* Light Green */
+  background: #e8f5e9;
   border-left: 6px solid #2e7d32;
 }
 
@@ -51,17 +55,44 @@ label {
 
 input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="file"],
+select {
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 0.95rem;
+  background-color: #fff;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #1976d2;
   outline: none;
-  box-shadow: 0 0 4px rgba(25,118,210,0.4);
+  box-shadow: 0 0 4px rgba(25, 118, 210, 0.4);
+}
+
+/* Docker Upload Styling */
+.section-docker input[type="file"] {
+  border: 2px dashed #f9a825;
+  background: #fffde7;
+  cursor: pointer;
+  padding: 0.8rem;
+  transition: background 0.3s ease;
+}
+
+.section-docker input[type="file"]:hover {
+  background: #fff59d;
+}
+
+.upload-info {
+  background: #f1f8e9;
+  border: 1px solid #c5e1a5;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  color: #33691e;
+  font-size: 0.9rem;
 }
 
 /* Button */
@@ -94,38 +125,17 @@ button:hover:not(:disabled) {
   font-weight: bold;
   color: green;
 }
-/* Dropdown (Select) */
-select {
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background-color: #fff;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  outline: none;
-  appearance: none; /* remove default browser arrow */
 
-  /* custom arrow */
+/* Dropdown */
+select {
+  appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
+  cursor: pointer;
 }
 
-/* Hover effect */
 select:hover {
   border-color: #1976d2;
-}
-
-/* Focus effect */
-select:focus {
-  border-color: #1976d2;
-  box-shadow: 0 0 4px rgba(25,118,210,0.4);
-}
-
-/* Disabled option (placeholder) */
-select option[value=""] {
-  color: #888;
 }
