@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { KeycloakService } from '../services/keycloak';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
@@ -54,29 +55,29 @@ export class LoginPage implements OnInit {
           const token = res.access_token;
           const baseUrl = res.base_url;
 
-          if (token && baseUrl) {
-            this.token = token; // 🔹 store for UI display
-            this.baseUrl = baseUrl; // 🔹 store for UI display
-
-            console.log('🔐 Token received:', token);
-            console.log('🌐 Base URL received:', baseUrl);
+          if (token) {
+            this.token = token;
+            this.baseUrl = baseUrl || '';
 
             // Store token for future API calls
             localStorage.setItem('access_token', token);
+            localStorage.setItem('token', token);
+            
+            if (baseUrl) {
+              localStorage.setItem('base_url', baseUrl);
+            }
 
-            // Optional: store base_url for future API calls
-            localStorage.setItem('base_url', baseUrl);
-
-            // Optional: redirect automatically to base_url
-            // window.location.href = baseUrl;
+            // Redirect to dashboard
+            window.location.href = `/dashboard?realm=${this.selectedRealm}`;
           } else {
-            this.errorMessage = '⚠️ Login successful but no base URL provided';
+            this.errorMessage = 'Login successful but no token received';
           }
         },
         error: (err: any) => {
           this.loading = false;
-          this.errorMessage = '❌ Login failed';
-          console.error(err);
+          const errorMsg = err.error?.message || err.error?.error || err.message || 'Login failed. Please check your credentials.';
+          this.errorMessage = errorMsg;
+          console.error('Login error:', err);
         },
       });
   }

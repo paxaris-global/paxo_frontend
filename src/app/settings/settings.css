@@ -1,0 +1,23 @@
+/* Settings Component - Professional Design */
+.settings-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  background: var(--bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--primary);
+}
+
+.settings-section h3 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
