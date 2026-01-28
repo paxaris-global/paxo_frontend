@@ -1,23 +1,27 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { Routes } from '@angular/router';
+import { LoginPage } from './login/login';
+import { SignupPage } from './signup-page/signup-page';
+import { DashboardComponent } from './dashboard/dashboard';
+import { CreateClientComponent } from './create-client/create-client';
+import { User } from './user/user';
+import { Settings } from './settings/settings';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
-  });
+export const routes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  { path: 'login', component: LoginPage },
+  { path: 'signup', component: SignupPage },
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, keycloak_client_frontend');
-  });
-});
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    children: [
+      { path: 'clients', component: CreateClientComponent },
+      { path: 'users', component: User },
+      { path: 'settings', component: Settings },
+      { path: '', redirectTo: 'clients', pathMatch: 'full' }
+    ]
+  },
+
+  { path: '**', redirectTo: 'login' }
+];

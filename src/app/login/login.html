@@ -1,32 +1,36 @@
 <div class="login-container">
-  <h2>🔐 Login</h2>
+  <h2>🔐 Keycloak Login</h2>
 
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
-  <label>Realm:</label>
-  <select [(ngModel)]="selectedRealm" (change)="onRealmChange()">
-    <option value="">-- Select Realm --</option>
-    <option *ngFor="let realm of realms" [value]="realm">{{ realm }}</option>
-  </select>
+  <label for="realm">Realm:</label>
+  <input
+    id="realm"
+    type="text"
+    [(ngModel)]="selectedRealm"
+    placeholder="Enter Realm"
+    list="realms-list"
+  />
+  <datalist id="realms-list">
+    <option *ngFor="let realm of realms" [value]="realm"></option>
+  </datalist>
 
-  <label>Client ID:</label>
-  <select [(ngModel)]="selectedClientId">
-    <option value="">-- Select Client --</option>
-    <option *ngFor="let client of clientIds" [value]="client">{{ client }}</option>
-  </select>
+  <label for="client">Client ID:</label>
+  <input id="client" type="text" [(ngModel)]="selectedClientId" placeholder="Enter Client ID" />
 
-  <label>Username:</label>
-  <input type="text" [(ngModel)]="username" placeholder="Enter username" />
+  <label for="username">Username:</label>
+  <input id="username" type="text" [(ngModel)]="username" placeholder="Enter username" />
 
-  <label>Password:</label>
-  <input type="password" [(ngModel)]="password" placeholder="Enter password" />
+  <label for="password">Password:</label>
+  <input id="password" type="password" [(ngModel)]="password" placeholder="Enter password" />
 
-  <button (click)="onLogin()" [disabled]="loading">
+  <button (click)="login()" [disabled]="loading">
     {{ loading ? 'Logging in...' : 'Login' }}
   </button>
 
-  <div *ngIf="token" class="token-box">
-    <p><strong>Access Token:</strong></p>
-    <textarea readonly rows="4">{{ token }}</textarea>
+  <!-- 🔹 Display token and base URL on page -->
+  <div *ngIf="token && baseUrl" class="login-info">
+    <p>🔐 Token: {{ token }}</p>
+    <p>🌐 Base URL: {{ baseUrl }}</p>
   </div>
 </div>

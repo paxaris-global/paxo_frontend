@@ -1,105 +1,62 @@
-<div class="signup-container">
-  <h2>Signup Form</h2>
+<div class="signup-wrapper">
+  <div class="signup-card">
+    <h2>🧩 Create New Realm, Admin & Docker Image</h2>
+    <p class="subtitle">Setup Keycloak + Upload Docker Image automatically</p>
 
-  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-    
-    <!-- Realm & Client Section -->
-    <div class="form-section section-realm">
-      <h3>Realm & Client</h3>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
 
-      <div class="field">
-        <label for="realmName">Realm Name</label>
-        <input id="realmName" type="text" formControlName="realmName" required />
+      <!-- Realm Section -->
+      <div class="section">
+        <h3>🌐 Realm & Client</h3>
+
+        <div class="field">
+          <label>Realm Name</label>
+          <input type="text" formControlName="realmName" placeholder="e.g. myRealmVip" />
+        </div>
+
+        <div class="field">
+          <label>Client / Product Name</label>
+          <input type="text" formControlName="clientId" placeholder="e.g. myClientApp" />
+        </div>
+
+        <div class="field">
+          <label>Base URL</label>
+          <input type="text" formControlName="url" placeholder="https://example.com" />
+        </div>
+
+        <div class="field">
+          <label>Redirect URI</label>
+          <input type="text" formControlName="uri" placeholder="https://example.com/callback" />
+        </div>
       </div>
 
-      <div class="field">
-        <label for="clientId">Product / Client Name</label>
-        <input
-          id="clientId"
-          type="text"
-          placeholder="Enter client or product name"
-          formControlName="clientId"
-          required
-        />
+      <!-- Admin User Section -->
+      <div class="section">
+        <h3>👤 Admin User</h3>
+
+        <div class="field"><label>Username</label><input type="text" formControlName="username" /></div>
+        <div class="field"><label>Email</label><input type="email" formControlName="email" /></div>
+        <div class="field"><label>First Name</label><input type="text" formControlName="firstName" /></div>
+        <div class="field"><label>Last Name</label><input type="text" formControlName="lastName" /></div>
+        <div class="field"><label>Password</label><input type="password" formControlName="password" /></div>
       </div>
 
-      <div class="field checkbox">
-        <label>
-          <input type="checkbox" formControlName="publicClient" />
-          Public Client
-        </label>
+      <!-- Docker Upload Section -->
+      <div class="section">
+        <h3>project Upload</h3>
+
+        <div class="field">
+          <label>Select project</label>
+          <input type="file" accept=".zip" (change)="onDockerFileSelected($event)" />
+        </div>
       </div>
-    </div>
+      
 
-    <!-- Docker Upload Section -->
-    <div class="form-section section-docker">
-      <h3>Docker Image Upload</h3>
+      <button type="submit" [disabled]="signupForm.invalid || loading">
+        {{ loading ? 'Processing...' : 'Sign Up' }}
+      </button>
+    </form>
 
-      <div class="field">
-        <label for="dockerFile">Upload Docker Image (.tar)</label>
-        <input
-          type="file"
-          id="dockerFile"
-          (change)="onDockerFileSelected($event)"
-          accept=".tar"
-        />
-      </div>
-
-      <div class="field">
-        <label for="dockerFolder">Or Upload Folder (Optional)</label>
-        <input
-          type="file"
-          id="dockerFolder"
-          (change)="onDockerFolderSelected($event)"
-          webkitdirectory
-          directory
-          multiple
-        />
-      </div>
-
-      <div *ngIf="dockerFileName" class="upload-info">
-        <p><strong>Selected File:</strong> {{ dockerFileName }}</p>
-      </div>
-
-      <div *ngIf="dockerFolderFiles.length" class="upload-info">
-        <p><strong>Folder Selected:</strong> {{ dockerFolderFiles.length }} files</p>
-      </div>
-    </div>
-
-    <!-- Admin User Section -->
-    <div class="form-section section-user">
-      <h3>Admin User</h3>
-
-      <div class="field">
-        <label for="username">Username</label>
-        <input id="username" type="text" formControlName="username" required />
-      </div>
-
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" formControlName="email" required />
-      </div>
-
-      <div class="field">
-        <label for="firstName">First Name</label>
-        <input id="firstName" type="text" formControlName="firstName" required />
-      </div>
-
-      <div class="field">
-        <label for="lastName">Last Name</label>
-        <input id="lastName" type="text" formControlName="lastName" required />
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="password" formControlName="password" required />
-      </div>
-    </div>
-
-    <button type="submit" [disabled]="signupForm.invalid || loading">
-      {{ loading ? 'Please wait...' : 'Sign Up' }}
-    </button>
-  </form>
-
-  <div *ngIf="message" class="message">{{ message }}</div>
+    <div *ngIf="message" class="message">{{ message }}</div>
+  </div>
 </div>

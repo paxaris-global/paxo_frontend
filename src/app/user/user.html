@@ -1,119 +1,104 @@
-<div class="dashboard-container">
-  <aside class="sidebar">
-    <h2>Admin Dashboard</h2>
-    <nav>
-      <ul>
-        <li [class.active]="activeSection === 'users'" (click)="setSection('users')">User Management</li>
-        <li [class.active]="activeSection === 'clients'" (click)="setSection('clients')">Create Client</li>
-        <li [class.active]="activeSection === 'settings'" (click)="setSection('settings')">Settings</li>
-      </ul>
-    </nav>
-  </aside>
+<div class="user-page">
 
-  <main class="main-content">
+  <!-- Section Tabs -->
+  <div class="tabs">
+    <button [class.active]="activeSection === 'users'" (click)="setSection('users')">Users</button>
+    <button [class.active]="activeSection === 'roles'" (click)="setSection('roles')">Roles</button>
+    <button [class.active]="activeSection === 'assign'" (click)="setSection('assign')">Assign Roles</button>
+  </div>
 
-    <!-- User Management -->
-    <section *ngIf="activeSection === 'users'">
-      <h1>User Management</h1>
-      <div class="grid">
+  <!-- ---------------- Users Section ---------------- -->
+  <div *ngIf="activeSection === 'users'" class="section section-users">
+    <h3><i class="fa-solid fa-users"></i> Create User</h3>
+    <form [formGroup]="userForm" (ngSubmit)="createUser()">
+      <div class="field"><label>Username:</label><input formControlName="username" type="text" /></div>
+      <div class="field"><label>Email:</label><input formControlName="email" type="email" /></div>
+      <div class="field"><label>First Name:</label><input formControlName="firstName" type="text" /></div>
+      <div class="field"><label>Last Name:</label><input formControlName="lastName" type="text" /></div>
+      <div class="field"><label>Password:</label><input formControlName="password" type="password" /></div>
+      <button type="submit" [disabled]="userForm.invalid"><i class="fa-solid fa-plus-circle"></i> Create User</button>
+    </form>
 
-        <!-- Create User -->
-        <div class="form-card section-user">
-          <h3>Create User</h3>
-          <form [formGroup]="userForm" (ngSubmit)="createUser()">
-            <div class="field">
-              <label>Username</label>
-              <input type="text" formControlName="username" required />
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input type="email" formControlName="email" required />
-            </div>
-            <div class="field">
-              <label>First Name</label>
-              <input type="text" formControlName="firstName" required />
-            </div>
-            <div class="field">
-              <label>Last Name</label>
-              <input type="text" formControlName="lastName" required />
-            </div>
-            <div class="field">
-              <label>Password</label>
-              <input type="password" formControlName="password" required />
-            </div>
-            <button type="submit">Create User</button>
-          </form>
-        </div>
+    <h4>Existing Users</h4>
+    <table>
+      <thead>
+        <tr><th>Username</th><th>Email</th><th>First Name</th><th>Last Name</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-        <!-- Create Role -->
-        <div class="form-card section-role">
-          <h3>Create Role</h3>
-          <form [formGroup]="roleForm" (ngSubmit)="createRole()">
-            <div class="field">
-              <label>Select Client</label>
-              <select formControlName="client">
-                <option *ngFor="let c of clients" [value]="c.clientId">{{ c.clientId }}</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Role Name</label>
-              <input type="text" formControlName="roleName" required />
-            </div>
-            <div class="field">
-              <label>Description</label>
-              <input type="text" formControlName="description" />
-            </div>
-            <div class="field">
-              <label>URL</label>
-              <input type="text" formControlName="url" />
-            </div>
-            <div class="field">
-              <label>URI</label>
-              <input type="text" formControlName="uri" />
-            </div>
-            <button type="submit">Create Role</button>
-          </form>
-        </div>
-
-        <!-- Assign Role -->
-        <div class="form-card section-assign">
-          <h3>Assign Role to User</h3>
-          <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
-            <div class="field">
-              <label>Select User</label>
-              <select formControlName="userId">
-                <option *ngFor="let u of users" [value]="u.id">{{ u.username }}</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Select Client</label>
-              <select formControlName="client">
-                <option *ngFor="let c of clients" [value]="c.clientId">{{ c.clientId }}</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Select Role</label>
-              <select formControlName="roleName">
-                <option *ngFor="let r of roles" [value]="r.roleName">{{ r.roleName }}</option>
-              </select>
-            </div>
-            <button type="submit">Assign Role</button>
-          </form>
-        </div>
-
+  <!-- ---------------- Roles Section ---------------- -->
+  <div *ngIf="activeSection === 'roles'" class="section section-roles">
+    <h3><i class="fa-solid fa-user-shield"></i> Create Role</h3>
+    <form [formGroup]="roleForm" (ngSubmit)="createRole()">
+      <div class="field">
+        <label>Select Client:</label>
+        <select formControlName="client">
+          <option value="">--Select Client--</option>
+          <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
+        </select>
       </div>
-    </section>
+      <div class="field"><label>Role Name:</label><input formControlName="roleName" type="text" /></div>
+      <div class="field"><label>Description:</label><input formControlName="description" type="text" /></div>
+      <div class="field"><label>URL:</label><input formControlName="url" type="text" /></div>
+      <div class="field"><label>URI:</label><input formControlName="uri" type="text" /></div>
+      <button type="submit" [disabled]="roleForm.invalid"><i class="fa-solid fa-plus-circle"></i> Create Role</button>
+    </form>
 
-    <!-- Create Client -->
-    <section *ngIf="activeSection === 'clients'">
-      <h1>Create Client</h1>
-      <app-create-client></app-create-client>
-    </section>
+    <h4>Existing Roles</h4>
+    <table>
+      <thead>
+        <tr><th>Client</th><th>Role Name</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles">
+          <td>{{ role.client }}</td>
+          <td>{{ role.name }}</td>
+          <td>{{ role.description }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <!-- Settings -->
-    <section *ngIf="activeSection === 'settings'">
-      <h1>Settings</h1>
-      <p>Manage dashboard settings here.</p>
-    </section>
-  </main>
+  <!-- ---------------- Assign Role Section ---------------- -->
+  <div *ngIf="activeSection === 'assign'" class="section section-assign">
+    <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
+    <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
+      <div class="field">
+        <label>Select User:</label>
+        <select formControlName="userId">
+          <option value="">--Select User--</option>
+          <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Select Client:</label>
+        <select formControlName="client">
+          <option value="">--Select Client--</option>
+          <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Select Role:</label>
+        <select formControlName="roleName">
+          <option value="">--Select Role--</option>
+          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
+        </select>
+      </div>
+      <button type="submit" [disabled]="assignForm.invalid"><i class="fa-solid fa-check-circle"></i> Assign Role</button>
+    </form>
+  </div>
+
+  <!-- Logout -->
+  <div class="logout">
+    <button (click)="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+  </div>
 </div>

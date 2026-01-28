@@ -1,15 +1,20 @@
 import { Component } from '@angular/core';
-import { SignupPage } from './signup-page/signup-page';
-import { User } from './user/user';
-import { LoginPage } from './login/login';
+import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './navbar/navbar'; // adjust path if needed
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [SignupPage, User,LoginPage],
-  templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  imports: [CommonModule, NavbarComponent, RouterOutlet],
+  template: `
+    <app-navbar></app-navbar>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    
+  `]
 })
-export class App {
-  title = 'Identity Management Portal';
-}
+export class App {}

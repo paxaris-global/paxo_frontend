@@ -1,110 +1,86 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { KeycloakService } from '../services/keycloak';
 
 @Component({
   selector: 'app-signup-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './signup-page.html',
-  styleUrls: ['./signup-page.css']
+  styleUrls: ['./signup-page.css'],
 })
 export class SignupPage implements OnInit {
-  signupForm: FormGroup;
+  signupForm!: FormGroup;
   message = '';
   loading = false;
-  dockerFile: File | null = null;
-  dockerFolderFiles: File[] = [];
-  dockerFileName = '';
-
-  private apiBase = 'http://localhost:8085/identity-service';
+  dockerFile?: File;
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private keycloakService: KeycloakService,
     private router: Router
-  ) {
+  ) {}
+
+  ngOnInit() {
     this.signupForm = this.fb.group({
       realmName: ['', Validators.required],
-      clientId: ['', Validators.required], // changed to required text input
-      publicClient: [true],
+      clientId: ['', Validators.required],
+      url: ['', Validators.required],
+      uri: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(4)]],
     });
   }
 
-  ngOnInit() {}
-
-  onDockerFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.dockerFile = file;
-      this.dockerFileName = file.name;
-    }
-  }
-
-  onDockerFolderSelected(event: any) {
-    const files = Array.from(event.target.files);
-    this.dockerFolderFiles = files as File[];
+  onDockerFileSelected(ev: any) {
+    this.dockerFile = ev.target.files?.[0];
   }
 
   onSubmit() {
-    if (this.signupForm.invalid) {
-      this.message = '⚠️ Please fill all required fields.';
+    if (this.signupForm.invalid || !this.dockerFile) {
+      this.message = '⚠️ Please fill all fields and upload ZIP file.';
       return;
     }
 
     this.loading = true;
-    const formValue = this.signupForm.value;
+
+    const payload = {
+      realmName: this.signupForm.value.realmName,
+      clientId: this.signupForm.value.clientId,
+      url: this.signupForm.value.url,
+      uri: this.signupForm.value.uri,
+      publicClient: false,
+      adminUser: {
+        username: this.signupForm.value.username,
+        email: this.signupForm.value.email,
+        firstName: this.signupForm.value.firstName,
+        lastName: this.signupForm.value.lastName,
+        password: this.signupForm.value.password
+      }
+    };
+
     const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    formData.append('sourceZip', this.dockerFile);
 
-    formData.append('realmName', formValue.realmName);
-    formData.append('clientId', formValue.clientId);
-    formData.append('publicClient', formValue.publicClient);
-    formData.append('username', formValue.username);
-    formData.append('email', formValue.email);
-    formData.append('firstName', formValue.firstName);
-    formData.append('lastName', formValue.lastName);
-    formData.append('password', formValue.password);
-
-    if (this.dockerFile) {
-      formData.append('dockerImage', this.dockerFile);
-    }
-
-    if (this.dockerFolderFiles.length > 0) {
-      this.dockerFolderFiles.forEach((file) => {
-        formData.append('dockerFolder', file, file.webkitRelativePath);
-      });
-    }
-
-    this.http.post(`${this.apiBase}/signup`, formData).subscribe({
-      next: (response: any) => {
+    this.keycloakService.signup(formData).subscribe({
+     next: () => {
         this.loading = false;
-        const token = response?.access_token || response?.token;
+        this.message = '✅ Signup completed successfully!';
 
-        if (token) {
-          localStorage.setItem('access_token', token);
-          this.message = '✅ Signup successful. Redirecting...';
-
-          setTimeout(() => this.router.navigate(['/dashboard']), 1000);
-        } else {
-          this.message = '⚠️ Signup success, but no token received.';
-        }
-
-        this.signupForm.reset({ publicClient: true });
-        this.dockerFile = null;
-        this.dockerFileName = '';
-        this.dockerFolderFiles = [];
+        this.router.navigate(['/dashboard'], {
+          queryParams: { realm: payload.realmName }
+        });
       },
-      error: (err) => {
-        console.error(err);
-        this.message = '❌ Signup failed. Check server logs.';
+
+      error: err => {
         this.loading = false;
+        this.message = '❌ ' + (err.error?.message || err.message);
       }
     });
   }

@@ -1,0 +1,22 @@
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+  <h2>⚙️ Admin</h2>
+
+  <a [routerLink]="['clients']" [queryParams]="{ realm: realmName }" routerLinkActive="active">📦 Clients</a>
+  <a [routerLink]="['users']" [queryParams]="{ realm: realmName }" routerLinkActive="active">👥 Users & Roles</a>
+  <a [routerLink]="['settings']" [queryParams]="{ realm: realmName }" routerLinkActive="active">⚙️ Settings</a>
+</aside>
+
+  <!-- Content -->
+  <main class="content">
+    <header>
+      <h1>Realm: <span>{{ realmName }}</span></h1>
+    </header>
+
+    <!-- SPA content loads here -->
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

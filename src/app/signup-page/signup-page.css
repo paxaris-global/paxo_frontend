@@ -1,141 +1,138 @@
-.signup-container {
+body {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+.signup-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.signup-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 2.5rem;
   max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 16px;
-  background: #f9fafc;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
-.signup-container h2 {
+h2 {
   text-align: center;
-  margin-bottom: 2rem;
-  color: #333;
+  margin-bottom: 0.5rem;
+  color: #0d47a1;
 }
 
-/* Section boxes */
-.form-section {
+.subtitle {
+  text-align: center;
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+.section {
+  background: #f1f8ff;
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-}
-
-.section-realm {
-  background: #e3f2fd;
   border-left: 6px solid #1976d2;
+  transition: all 0.3s ease;
 }
 
-.section-docker {
-  background: #fff8e1; /* light yellow */
-  border-left: 6px solid #f9a825;
+.section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(25, 118, 210, 0.1);
 }
 
-.section-user {
-  background: #e8f5e9;
-  border-left: 6px solid #2e7d32;
-}
-
-.form-section h3 {
+.section h3 {
+  color: #1976d2;
   margin-bottom: 1rem;
-  color: #222;
 }
 
-/* Fields */
 .field {
-  display: flex;
-  flex-direction: column;
   margin-bottom: 1rem;
 }
 
 label {
   font-weight: 600;
+  display: block;
+  color: #333;
   margin-bottom: 0.3rem;
-  color: #444;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="file"],
-select {
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background-color: #fff;
-}
-
-input:focus,
-select:focus {
-  border-color: #1976d2;
-  outline: none;
-  box-shadow: 0 0 4px rgba(25, 118, 210, 0.4);
-}
-
-/* Docker Upload Styling */
-.section-docker input[type="file"] {
-  border: 2px dashed #f9a825;
-  background: #fffde7;
-  cursor: pointer;
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+  width: 100%;
   padding: 0.8rem;
-  transition: background 0.3s ease;
-}
-
-.section-docker input[type="file"]:hover {
-  background: #fff59d;
-}
-
-.upload-info {
-  background: #f1f8e9;
-  border: 1px solid #c5e1a5;
-  padding: 0.5rem 1rem;
   border-radius: 8px;
-  margin-top: 0.5rem;
-  color: #33691e;
-  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 0.95rem;
+  transition: 0.2s;
 }
 
-/* Button */
+input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 4px rgba(25, 118, 210, 0.3);
+  outline: none;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
 button {
   width: 100%;
+  margin-top: 1.5rem;
   padding: 0.9rem;
-  background-color: #1976d2;
+  background: linear-gradient(90deg, #1976d2, #1565c0);
   border: none;
-  color: white;
+  color: #fff;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background: linear-gradient(90deg, #1565c0, #0d47a1);
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  background-color: #aaa;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
-  background-color: #125ea8;
-}
-
-/* Message */
 .message {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   text-align: center;
-  font-weight: bold;
-  color: green;
+  font-weight: 600;
+  color: #2e7d32;
 }
 
-/* Dropdown */
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  cursor: pointer;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-select:hover {
-  border-color: #1976d2;
+@media (max-width: 600px) {
+  .signup-card {
+    padding: 1.5rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+  }
 }

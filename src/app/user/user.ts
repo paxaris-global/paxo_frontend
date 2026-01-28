@@ -1,191 +1,117 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PLATFORM_ID } from '@angular/core';
-import { CreateClientComponent } from '../create-client/create-client';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { KeycloakService } from '../services/keycloak';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CreateClientComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './user.html',
-  styleUrls: ['./user.css']
+  styleUrls: ['./user.css'],
 })
-export class User implements OnInit {
-  userForm!: FormGroup;
-  roleForm!: FormGroup;
-  assignForm!: FormGroup;
-
+export class User {
   users: any[] = [];
   roles: any[] = [];
   clients: any[] = [];
 
-  activeSection: string = 'users'; // Default section
-  private apiBase = 'http://localhost:8085/keycloak/myrealmVipTest';
+  activeSection: 'users' | 'roles' | 'assign' = 'users';
+  userForm: FormGroup;
+  roleForm: FormGroup;
+  assignForm: FormGroup;
 
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
-
-  ngOnInit() {
+  constructor(private keycloakService: KeycloakService, private fb: FormBuilder) {
     this.userForm = this.fb.group({
-      username: [''],
-      email: [''],
-      firstName: [''],
-      lastName: [''],
-      password: ['']
+      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      password: ['', Validators.required],
     });
 
     this.roleForm = this.fb.group({
-      client: [''],
-      roleName: [''],
+      client: ['', Validators.required],
+      roleName: ['', Validators.required],
       description: [''],
       url: [''],
-      uri: ['']
+      uri: [''],
     });
 
     this.assignForm = this.fb.group({
-      userId: [''],
-      client: [''],
-      roleName: ['']
+      userId: ['', Validators.required],
+      client: ['', Validators.required],
+      roleName: ['', Validators.required],
     });
 
-    this.loadClients();
     this.loadUsers();
+    this.loadClients();
     this.loadRoles();
   }
 
-  // Sidebar switch
-  setSection(section: string) {
+  setSection(section: 'users' | 'roles' | 'assign') {
     this.activeSection = section;
   }
 
-  // Get auth headers
-  getAuthHeaders() {
-    if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        return {
-          headers: new HttpHeaders({
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          })
-        };
-      }
+  loadUsers(): void {
+    this.keycloakService.getUsers().subscribe({
+      next: (data: any[]) => (this.users = data || []),
+      error: (err: any) => console.error('Error loading users:', err),
+    });
+  }
+
+  loadRoles(): void {
+    this.keycloakService.getRoles().subscribe({
+      next: (data: any[]) => (this.roles = data || []),
+      error: (err: any) => console.error('Error loading roles:', err),
+    });
+  }
+
+  loadClients(): void {
+    this.keycloakService.getClients().subscribe({
+      next: (data: any[]) => (this.clients = data || []),
+      error: (err: any) => console.error('Error loading clients:', err),
+    });
+  }
+
+  createUser(): void {
+    if (this.userForm.valid) {
+      this.keycloakService.createUser(this.userForm.value).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.userForm.reset();
+        },
+        error: (err: any) => console.error('❌ Failed to create user', err),
+      });
     }
-    return {};
   }
 
-  // ✅ Create User (using real Keycloak API)
-  createUser() {
-    const payload = {
-      username: this.userForm.value.username,
-      email: this.userForm.value.email,
-      firstName: this.userForm.value.firstName,
-      lastName: this.userForm.value.lastName,
-      enabled: true,
-      emailVerified: true,
-      credentials: [
-        {
-          type: 'password',
-          value: this.userForm.value.password,
-          temporary: false
-        }
-      ]
-    };
-
-    this.http.post(`${this.apiBase}/users`, payload, this.getAuthHeaders()).subscribe({
-      next: () => {
-        alert('✅ User created successfully!');
-        this.loadUsers();
-        this.userForm.reset();
-      },
-      error: (err) => {
-        console.error('❌ Failed to create user', err);
-        alert('❌ Failed to create user — check console.');
-      }
-    });
-  }
-
-  // ✅ Create Role (with client selection)
-  createRole() {
-    const payload = [
-      {
-        name: this.roleForm.value.roleName,
-        description: this.roleForm.value.description,
-        url: this.roleForm.value.url,
-        uri: this.roleForm.value.uri
-      }
-    ];
-
-    const client = this.roleForm.value.client;
-    if (!client) {
-      alert('⚠️ Please select a client before creating a role.');
-      return;
+  createRole(): void {
+    if (this.roleForm.valid) {
+      const { client, ...payload } = this.roleForm.value;
+      this.keycloakService.createRole(client, payload).subscribe({
+        next: () => {
+          this.loadRoles();
+          this.roleForm.reset();
+        },
+        error: (err: any) => console.error('❌ Failed to create role', err),
+      });
     }
-
-    this.http.post(`${this.apiBase}/clients/${client}/roles`, payload, this.getAuthHeaders()).subscribe({
-      next: () => {
-        alert(`✅ Role created successfully for client "${client}"`);
-        this.loadRoles();
-        this.roleForm.reset();
-      },
-      error: (err) => {
-        console.error('❌ Failed to create role', err);
-        alert('❌ Failed to create role — check console.');
-      }
-    });
   }
 
-  // ✅ Assign Role to User
-  assignRole() {
-    const { userId, client, roleName } = this.assignForm.value;
-    if (!userId || !client || !roleName) {
-      alert('⚠️ Please select user, client, and role.');
-      return;
+  assignRole(): void {
+    if (this.assignForm.valid) {
+      const { userId, client, roleName } = this.assignForm.value;
+      this.keycloakService.assignRole(userId, client, roleName).subscribe({
+        next: () => {
+          console.log('✅ Role assigned');
+          this.assignForm.reset();
+        },
+        error: (err: any) => console.error(err),
+      });
     }
-
-    this.http.post(
-      `${this.apiBase}/users/${userId}/clients/${client}/roles?roleName=${roleName}`,
-      {},
-      this.getAuthHeaders()
-    ).subscribe({
-      next: () => alert('✅ Role assigned successfully'),
-      error: (err) => console.error('❌ Failed to assign role', err)
-    });
   }
 
-  // ✅ Load all clients
-  loadClients() {
-    this.http.get<any[]>(`${this.apiBase}/clients`, this.getAuthHeaders()).subscribe({
-      next: (data) => this.clients = data,
-      error: (err) => console.error('❌ Failed to load clients', err)
-    });
-  }
-
-  // ✅ Load all users
-  loadUsers() {
-    this.http.get<any[]>(`${this.apiBase}/users`, this.getAuthHeaders()).subscribe({
-      next: (data) => this.users = data,
-      error: (err) => console.error('❌ Failed to load users', err)
-    });
-  }
-
-  // ✅ Load all roles (for all clients)
-  loadRoles() {
-    this.http.get<any[]>(`${this.apiBase}/clients`, this.getAuthHeaders()).subscribe({
-      next: (data) => this.roles = data,
-      error: (err) => console.error('❌ Failed to load roles', err)
-    });
-  }
-
-  logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('access_token');
-      window.location.href = '/login';
-    }
+  logout(): void {
+    this.keycloakService.logout();
   }
 }

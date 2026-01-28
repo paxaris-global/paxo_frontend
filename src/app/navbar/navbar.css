@@ -1,0 +1,42 @@
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: linear-gradient(90deg, #020617, #0f172a);
+  color: white;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.ghost {
+  color: #e5e7eb;
+  border: 1px solid #334155;
+}
+
+.primary {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.btn.active {
+  box-shadow: 0 0 0 2px #38bdf8;
+}
