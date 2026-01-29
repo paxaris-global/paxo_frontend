@@ -1,360 +1,55 @@
 <div class="user-page">
 
-  <!-- Section Tabs -->
-  <div class="tabs">
-    <button [class.active]="activeSection === 'users'" (click)="setSection('users')">Users</button>
-    <button [class.active]="activeSection === 'roles'" (click)="setSection('roles')">Roles</button>
-    <button [class.active]="activeSection === 'assign'" (click)="setSection('assign')">Assign Roles</button>
-    <button [class.active]="activeSection === 'test'" (click)="setSection('test')">Test Access</button>
-  </div>
-
-  <!-- ---------------- Users Section ---------------- -->
-  <div *ngIf="activeSection === 'users'" class="section section-users">
-    <h3><i class="fa-solid fa-users"></i> Create User</h3>
-    <div class="field">
-      <label>Select Realm: <span class="required">*</span></label>
-      <select [(ngModel)]="currentRealm" (change)="loadUsers()" [ngModelOptions]="{standalone: true}">
-        <option value="">--Select Realm--</option>
-        <option *ngFor="let realm of realms" [value]="realm">{{ realm }}</option>
-      </select>
+  <!-- Section Tabs (hidden when navigating via Client sidebar URLs) -->
+  @if (showTabs) {
+    <div class="tabs">
+      <button [class.active]="activeSection === 'users'" (click)="setSection('users')">Users</button>
+      <button [class.active]="activeSection === 'roles'" (click)="setSection('roles')">Roles</button>
+      <button [class.active]="activeSection === 'assign'" (click)="setSection('assign')">Assign Roles</button>
     </div>
-    <form [formGroup]="userForm" (ngSubmit)="createUser()">
-      <div class="field"><label>Username:</label><input formControlName="username" type="text" /></div>
-      <div class="field"><label>Email:</label><input formControlName="email" type="email" /></div>
-      <div class="field"><label>First Name:</label><input formControlName="firstName" type="text" /></div>
-      <div class="field"><label>Last Name:</label><input formControlName="lastName" type="text" /></div>
-      <div class="field"><label>Password:</label><input formControlName="password" type="password" /></div>
-      <button type="submit" [disabled]="userForm.invalid || !currentRealm"><i class="fa-solid fa-plus-circle"></i> Create User</button>
-    </form>
+  }
 
-    <h4>Existing Users</h4>
-    <table>
-      <thead>
-        <tr><th>Username</th><th>Email</th><th>First Name</th><th>Last Name</th></tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.firstName }}</td>
-          <td>{{ user.lastName }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- Users Tab -->
+  @if (activeSection === 'users') {
+    <app-users-tab
+      [currentRealm]="currentRealm"
+      [users]="users"
+      [userForm]="userForm"
+      (createUser)="createUser()"
+    />
+  }
 
-  <!-- ---------------- Roles Section ---------------- -->
-  <div *ngIf="activeSection === 'roles'" class="section section-roles">
-    <h3><i class="fa-solid fa-user-shield"></i> Create Role</h3>
-    <form [formGroup]="roleForm" (ngSubmit)="createRole()">
-      <div class="field">
-        <label>Realm Name: <span class="required">*</span></label>
-        <select formControlName="realm">
-          <option value="">--Select Realm--</option>
-          <option *ngFor="let realm of realms" [value]="realm">{{ realm }}</option>
-        </select>
-        <small *ngIf="roleForm.get('realm')?.invalid && roleForm.get('realm')?.touched" class="error-text">
-          Realm is required
-        </small>
-      </div>
-      
-      <div class="field">
-        <label>Select Client: <span class="required">*</span></label>
-        <select formControlName="client">
-          <option value="">--Select Client--</option>
-          <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
-        </select>
-        <small *ngIf="roleForm.get('client')?.invalid && roleForm.get('client')?.touched" class="error-text">
-          Client is required
-        </small>
-      </div>
-      
-      <div class="field">
-        <label>Role Name: <span class="required">*</span></label>
-        <input formControlName="roleName" type="text" placeholder="e.g., doctor, admin, user" />
-        <small *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched" class="error-text">
-          Role name is required
-        </small>
-      </div>
-      
-      <div class="field">
-        <label>Description:</label>
-        <input formControlName="description" type="text" placeholder="Role description (optional)" />
-      </div>
+  <!-- Roles Tab -->
+  @if (activeSection === 'roles') {
+    <app-roles-tab
+      [roleForm]="roleForm"
+      [clients]="clients"
+      [roles]="roles"
+      [openApiEndpoints]="openApiEndpoints"
+      (createRole)="createRole()"
+      (loadRoles)="loadRoles()"
+      (addUrlUriPair)="addUrlUriPair()"
+      (removeUrlUriPair)="removeUrlUriPair($event)"
+      (openApiFileSelected)="onOpenApiFileSelected($event)"
+      (toggleEndpointSelection)="toggleEndpointSelection($event)"
+      (selectAllEndpoints)="selectAllEndpoints()"
+      (deselectAllEndpoints)="deselectAllEndpoints()"
+      (loadSelectedEndpointsToForm)="loadSelectedEndpointsToForm()"
+      (clearOpenApiData)="clearOpenApiData()"
+    />
+  }
 
-      <!-- OpenAPI Spec Upload -->
-      <div class="openapi-section">
-        <div class="section-header">
-          <h4><i class="fa-solid fa-file-code"></i> Load from OpenAPI Spec</h4>
-        </div>
-        <div class="field">
-          <label>Upload OpenAPI Spec (JSON/YAML):</label>
-          <input 
-            type="file" 
-            accept=".json,.yaml,.yml" 
-            (change)="onOpenApiFileSelected($event)"
-            class="file-input" />
-          <small class="help-text-small">
-            Upload an OpenAPI 3.0 spec file to automatically extract endpoints and create URL/URI mappings
-          </small>
-        </div>
-        <div *ngIf="openApiEndpoints.length > 0" class="openapi-preview">
-          <h5>Extracted Endpoints ({{ openApiEndpoints.length }}):</h5>
-          <div class="endpoints-list">
-            <div *ngFor="let endpoint of openApiEndpoints; let i = index" class="endpoint-item">
-              <label>
-                <input 
-                  type="checkbox" 
-                  [checked]="endpoint.selected"
-                  (change)="toggleEndpointSelection(i)" />
-                <code>{{ endpoint.method }} {{ endpoint.path }}</code>
-                <span class="endpoint-description" *ngIf="endpoint.summary">{{ endpoint.summary }}</span>
-              </label>
-            </div>
-          </div>
-          <div class="endpoint-actions">
-            <button type="button" (click)="selectAllEndpoints()" class="btn-select-all">
-              <i class="fa-solid fa-check-double"></i> Select All
-            </button>
-            <button type="button" (click)="deselectAllEndpoints()" class="btn-deselect-all">
-              <i class="fa-solid fa-square"></i> Deselect All
-            </button>
-            <button type="button" (click)="loadSelectedEndpointsToForm()" class="btn-load-endpoints">
-              <i class="fa-solid fa-arrow-down"></i> Load Selected to Form
-            </button>
-            <button type="button" (click)="clearOpenApiData()" class="btn-clear-openapi">
-              <i class="fa-solid fa-times"></i> Clear
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Multiple URL/URI Pairs -->
-      <div class="url-uri-section">
-        <div class="section-header">
-          <h4><i class="fa-solid fa-link"></i> URL/URI Mappings</h4>
-          <button type="button" (click)="addUrlUriPair()" class="btn-add">
-            <i class="fa-solid fa-plus"></i> Add URL/URI Pair
-          </button>
-        </div>
-        
-        <div formArrayName="urlUriPairs" class="url-uri-pairs">
-          <div *ngFor="let pair of urlUriPairs.controls; let i = index" [formGroupName]="i" class="url-uri-pair">
-            <div class="pair-header">
-              <span class="pair-number">Pair {{ i + 1 }}</span>
-              <button type="button" (click)="removeUrlUriPair(i)" 
-                      [disabled]="urlUriPairs.length === 1" 
-                      class="btn-remove">
-                <i class="fa-solid fa-trash"></i> Remove
-              </button>
-            </div>
-            
-            <div class="pair-fields">
-              <div class="field">
-                <label>Target URL: <span class="required">*</span></label>
-                <input formControlName="url" type="text" 
-                       placeholder="http://service-url:port" 
-                       class="url-input" />
-                <small *ngIf="pair.get('url')?.invalid && pair.get('url')?.touched" class="error-text">
-                  URL is required
-                </small>
-              </div>
-              
-              <div class="field">
-                <label>URI Pattern: <span class="required">*</span></label>
-                <input formControlName="uri" type="text" 
-                       placeholder="/path/to/resource" 
-                       class="uri-input" />
-                <small *ngIf="pair.get('uri')?.invalid && pair.get('uri')?.touched" class="error-text">
-                  URI is required
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="help-text">
-          <i class="fa-solid fa-info-circle"></i>
-          <span>Add multiple URL/URI pairs to allow this role to access different services and endpoints.</span>
-        </div>
-      </div>
-
-      <button type="submit" [disabled]="roleForm.invalid" class="btn-submit">
-        <i class="fa-solid fa-plus-circle"></i> Create Role
-      </button>
-    </form>
-
-    <h4>Existing Roles</h4>
-    <table>
-      <thead>
-        <tr><th>Client</th><th>Role Name</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let role of roles">
-          <td>{{ role.client }}</td>
-          <td>{{ role.name }}</td>
-          <td>{{ role.description }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ---------------- Assign Role Section ---------------- -->
-  <div *ngIf="activeSection === 'assign'" class="section section-assign">
-    <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
-    <div class="field">
-      <label>Select Realm: <span class="required">*</span></label>
-      <select [(ngModel)]="currentRealm" (change)="loadUsers(); loadClients(); loadRoles();" [ngModelOptions]="{standalone: true}">
-        <option value="">--Select Realm--</option>
-        <option *ngFor="let realm of realms" [value]="realm">{{ realm }}</option>
-      </select>
-    </div>
-    <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
-      <div class="field">
-        <label>Select User: <span class="required">*</span></label>
-        <select formControlName="userId">
-          <option value="">--Select User--</option>
-          <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Select Client: <span class="required">*</span></label>
-        <select formControlName="client">
-          <option value="">--Select Client--</option>
-          <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Select Role: <span class="required">*</span></label>
-        <select formControlName="roleName">
-          <option value="">--Select Role--</option>
-          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
-        </select>
-      </div>
-      <button type="submit" [disabled]="assignForm.invalid || !currentRealm"><i class="fa-solid fa-check-circle"></i> Assign Role</button>
-    </form>
-  </div>
-
-  <!-- ---------------- Test Access Section ---------------- -->
-  <div *ngIf="activeSection === 'test'" class="section section-test">
-    <h3><i class="fa-solid fa-shield-check"></i> Test URL/URI Access</h3>
-    <p class="help-text">
-      <i class="fa-solid fa-info-circle"></i>
-      Test if your current token has access to a specific URL or URI pattern.
-    </p>
-
-    <form [formGroup]="testAccessForm" (ngSubmit)="testAccess()">
-      <div class="field">
-        <label>URL/URI to Test: <span class="required">*</span></label>
-        <input 
-          formControlName="testUrl" 
-          type="text" 
-          placeholder="e.g., /doctors, /clients, http://localhost:8083/patients" 
-          class="url-input-full" />
-        <small class="help-text-small">
-          Enter a URL (full URL) or URI path (e.g., /doctors, /clients/123)
-        </small>
-      </div>
-
-      <div class="field">
-        <label>HTTP Method:</label>
-        <select formControlName="httpMethod">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>
-          <input type="checkbox" formControlName="makeActualRequest" />
-          Make Actual HTTP Request (test through gateway)
-        </label>
-        <small class="help-text-small">
-          If checked, will make an actual HTTP request through the gateway to test access. Otherwise, only validates access.
-        </small>
-      </div>
-
-      <div class="button-group">
-        <button type="submit" [disabled]="testAccessForm.invalid || testingAccess" class="btn-test">
-          <i class="fa-solid fa-search"></i> 
-          <span *ngIf="!testingAccess">Test Access</span>
-          <span *ngIf="testingAccess">Testing...</span>
-        </button>
-        <button type="button" (click)="clearTestResult()" class="btn-clear" *ngIf="testResult">
-          <i class="fa-solid fa-times"></i> Clear Results
-        </button>
-      </div>
-    </form>
-
-    <!-- Test Results -->
-    <div *ngIf="testResult" class="test-result" [class.allowed]="testResult.allowed" [class.denied]="!testResult.allowed">
-      <div class="result-header">
-        <i [class]="testResult.allowed ? 'fa-solid fa-check-circle success-icon' : 'fa-solid fa-times-circle error-icon'"></i>
-        <h4>{{ testResult.allowed ? '✅ Access Granted' : '❌ Access Denied' }}</h4>
-      </div>
-      
-      <div class="result-details">
-        <div class="detail-row">
-          <strong>Tested URL/URI:</strong>
-          <code>{{ testResult.testedUrl }}</code>
-        </div>
-        <div class="detail-row">
-          <strong>HTTP Method:</strong>
-          <span>{{ testResult.method }}</span>
-        </div>
-        <div class="detail-row" *ngIf="testResult.userRoles && testResult.userRoles.length > 0">
-          <strong>Your Roles:</strong>
-          <div class="roles-list">
-            <span *ngFor="let role of testResult.userRoles" class="role-badge">{{ role }}</span>
-          </div>
-        </div>
-        <div class="detail-row" *ngIf="testResult.matchedRole">
-          <strong>Matched Role:</strong>
-          <span class="matched-role">{{ testResult.matchedRole }}</span>
-        </div>
-        <div class="detail-row" *ngIf="testResult.allowedUrls && testResult.allowedUrls.length > 0">
-          <strong>Allowed URLs for Your Roles:</strong>
-          <ul class="allowed-urls-list">
-            <li *ngFor="let url of testResult.allowedUrls">
-              <code>{{ url }}</code>
-            </li>
-          </ul>
-        </div>
-        <div class="detail-row" *ngIf="testResult.message">
-          <strong>Message:</strong>
-          <span>{{ testResult.message }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Token Info -->
-    <div class="token-info" *ngIf="currentToken">
-      <h4><i class="fa-solid fa-key"></i> Current Token Info</h4>
-      <div class="token-details">
-        <div class="detail-row">
-          <strong>Token Status:</strong>
-          <span class="token-status">✅ Active</span>
-        </div>
-        <div class="detail-row" *ngIf="tokenInfo">
-          <strong>Realm:</strong>
-          <span>{{ tokenInfo.realm || 'N/A' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="tokenInfo">
-          <strong>Product/Client:</strong>
-          <span>{{ tokenInfo.product || 'N/A' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="tokenInfo && tokenInfo.roles">
-          <strong>Roles in Token:</strong>
-          <div class="roles-list">
-            <span *ngFor="let role of tokenInfo.roles" class="role-badge">{{ role }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Assign Role Tab -->
+  @if (activeSection === 'assign') {
+    <app-assign-role-tab
+      [currentRealm]="currentRealm"
+      [users]="users"
+      [clients]="clients"
+      [roles]="roles"
+      [assignForm]="assignForm"
+      (assignRole)="assignRole()"
+    />
+  }
 
   <!-- Logout -->
   <div class="logout">

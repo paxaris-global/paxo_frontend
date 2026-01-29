@@ -19,7 +19,6 @@
         placeholder="Enter realm name"
         list="realms-list"
         required
-        [disabled]="loading"
       />
       <datalist id="realms-list">
         <option *ngFor="let realm of realms" [value]="realm"></option>

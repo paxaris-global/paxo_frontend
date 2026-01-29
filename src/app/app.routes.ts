@@ -2,24 +2,37 @@ import { Routes } from '@angular/router';
 import { LoginPage } from './login/login';
 import { SignupPage } from './signup-page/signup-page';
 import { DashboardComponent } from './dashboard/dashboard';
+import { ClientComponent } from './client/client.component';
 import { CreateClientComponent } from './create-client/create-client';
 import { User } from './user/user';
 import { Settings } from './settings/settings';
+import { authGuard } from './guards/auth.guard';
+import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
-  { path: 'login', component: LoginPage },
-  { path: 'signup', component: SignupPage },
+  { path: 'login', component: LoginPage, canActivate: [guestGuard] },
+  { path: 'signup', component: SignupPage, canActivate: [guestGuard] },
 
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [authGuard],
     children: [
-      { path: 'clients', component: CreateClientComponent },
-      { path: 'users', component: User },
+      {
+        path: 'client',
+        component: ClientComponent,
+        children: [
+          { path: 'products', component: CreateClientComponent },
+          { path: 'users', component: User, data: { section: 'users' } },
+          { path: 'roles', component: User, data: { section: 'roles' } },
+          { path: 'assign-roles', component: User, data: { section: 'assign' } },
+          { path: '', redirectTo: 'products', pathMatch: 'full' }
+        ]
+      },
       { path: 'settings', component: Settings },
-      { path: '', redirectTo: 'clients', pathMatch: 'full' }
+      { path: '', redirectTo: 'client/products', pathMatch: 'full' }
     ]
   },
 

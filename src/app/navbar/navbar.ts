@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { isLoggedIn, clearStoredToken, clearStoredRealm } from '../auth-storage';
 
 @Component({
   selector: 'app-navbar',
@@ -9,4 +10,17 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css'],
 })
-export class NavbarComponent {}
+export class NavbarComponent {
+  constructor(private router: Router) {}
+
+  get loggedIn(): boolean {
+    return isLoggedIn();
+  }
+
+  logout($event: Event): void {
+    $event.preventDefault();
+    clearStoredToken();
+    clearStoredRealm();
+    this.router.navigate(['/login']);
+  }
+}

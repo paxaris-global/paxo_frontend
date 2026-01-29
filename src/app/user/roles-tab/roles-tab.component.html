@@ -1,0 +1,145 @@
+<div class="section section-roles">
+  <h3><i class="fa-solid fa-user-shield"></i> Create Role</h3>
+  <form [formGroup]="roleForm" (ngSubmit)="createRole.emit()">
+    <div class="field">
+      <label>Realm: <span class="required">*</span></label>
+      <input type="text" formControlName="realm" readonly placeholder="Realm name" />
+    </div>
+
+    <div class="field">
+      <label>Select Client: <span class="required">*</span></label>
+      <select formControlName="client" (change)="loadRoles.emit()">
+        <option value="">--Select Client--</option>
+        <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
+      </select>
+      <small *ngIf="roleForm.get('client')?.invalid && roleForm.get('client')?.touched" class="error-text">
+        Client is required
+      </small>
+    </div>
+
+    <div class="field">
+      <label>Role Name: <span class="required">*</span></label>
+      <input formControlName="roleName" type="text" placeholder="e.g., doctor, admin, user" />
+      <small *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched" class="error-text">
+        Role name is required
+      </small>
+    </div>
+
+    <div class="field">
+      <label>Description:</label>
+      <input formControlName="description" type="text" placeholder="Role description (optional)" />
+    </div>
+
+    <!-- OpenAPI Spec Upload -->
+    <div class="openapi-section">
+      <div class="section-header">
+        <h4><i class="fa-solid fa-file-code"></i> Load from OpenAPI Spec</h4>
+      </div>
+      <div class="field">
+        <label>Upload OpenAPI Spec (JSON/YAML):</label>
+        <input
+          type="file"
+          accept=".json,.yaml,.yml"
+          (change)="openApiFileSelected.emit($event)"
+          class="file-input" />
+        <small class="help-text-small">
+          Upload an OpenAPI 3.0 spec file to automatically extract endpoints and create URL/URI mappings
+        </small>
+      </div>
+      <div *ngIf="openApiEndpoints.length > 0" class="openapi-preview">
+        <h5>Extracted Endpoints ({{ openApiEndpoints.length }}):</h5>
+        <div class="endpoints-list">
+          <div *ngFor="let endpoint of openApiEndpoints; let i = index" class="endpoint-item">
+            <label>
+              <input
+                type="checkbox"
+                [checked]="endpoint.selected"
+                (change)="toggleEndpointSelection.emit(i)" />
+              <code>{{ endpoint.method }} {{ endpoint.path }}</code>
+              <span class="endpoint-description" *ngIf="endpoint.summary">{{ endpoint.summary }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="endpoint-actions">
+          <button type="button" (click)="selectAllEndpoints.emit()" class="btn-select-all">
+            <i class="fa-solid fa-check-double"></i> Select All
+          </button>
+          <button type="button" (click)="deselectAllEndpoints.emit()" class="btn-deselect-all">
+            <i class="fa-solid fa-square"></i> Deselect All
+          </button>
+          <button type="button" (click)="loadSelectedEndpointsToForm.emit()" class="btn-load-endpoints">
+            <i class="fa-solid fa-arrow-down"></i> Load Selected to Form
+          </button>
+          <button type="button" (click)="clearOpenApiData.emit()" class="btn-clear-openapi">
+            <i class="fa-solid fa-times"></i> Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multiple URL/URI Pairs -->
+    <div class="url-uri-section">
+      <div class="section-header">
+        <h4><i class="fa-solid fa-link"></i> URL/URI Mappings</h4>
+        <button type="button" (click)="addUrlUriPair.emit()" class="btn-add">
+          <i class="fa-solid fa-plus"></i> Add URL/URI Pair
+        </button>
+      </div>
+
+      <div formArrayName="urlUriPairs" class="url-uri-pairs">
+        <div *ngFor="let pair of urlUriPairs.controls; let i = index" [formGroupName]="i" class="url-uri-pair">
+          <div class="pair-header">
+            <span class="pair-number">Pair {{ i + 1 }}</span>
+            <button type="button" (click)="removeUrlUriPair.emit(i)"
+                    [disabled]="urlUriPairs.length === 1"
+                    class="btn-remove">
+              <i class="fa-solid fa-trash"></i> Remove
+            </button>
+          </div>
+          <div class="pair-fields">
+            <div class="field">
+              <label>Target URL: <span class="required">*</span></label>
+              <input formControlName="url" type="text"
+                     placeholder="http://service-url:port"
+                     class="url-input" />
+              <small *ngIf="pair.get('url')?.invalid && pair.get('url')?.touched" class="error-text">
+                URL is required
+              </small>
+            </div>
+            <div class="field">
+              <label>URI Pattern: <span class="required">*</span></label>
+              <input formControlName="uri" type="text"
+                     placeholder="/path/to/resource"
+                     class="uri-input" />
+              <small *ngIf="pair.get('uri')?.invalid && pair.get('uri')?.touched" class="error-text">
+                URI is required
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="help-text">
+        <i class="fa-solid fa-info-circle"></i>
+        <span>Add multiple URL/URI pairs to allow this role to access different services and endpoints.</span>
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="roleForm.invalid" class="btn-submit">
+      <i class="fa-solid fa-plus-circle"></i> Create Role
+    </button>
+  </form>
+
+  <h4>Existing Roles</h4>
+  <table>
+    <thead>
+      <tr><th>Client</th><th>Role Name</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of roles">
+        <td>{{ role.client }}</td>
+        <td>{{ role.name }}</td>
+        <td>{{ role.description }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

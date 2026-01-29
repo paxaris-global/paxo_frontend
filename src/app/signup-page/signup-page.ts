@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { KeycloakService } from '../services/keycloak';
+import { ApiGatewayService } from '../services/api-gateway.service';
+import { SignupRequest } from '../models';
+import { getStoredRealm } from '../auth-storage';
 
 @Component({
   selector: 'app-signup-page',
@@ -19,13 +21,13 @@ export class SignupPage implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private keycloakService: KeycloakService,
+    private apiGateway: ApiGatewayService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.signupForm = this.fb.group({
-      realmName: ['', Validators.required],
+      realmName: [{ value: getStoredRealm() || '', disabled: true }, Validators.required],
       clientId: ['', Validators.required],
       url: ['', Validators.required],
       uri: ['', Validators.required],
@@ -48,40 +50,38 @@ export class SignupPage implements OnInit {
     }
 
     this.loading = true;
-
-    const payload = {
-      realmName: this.signupForm.value.realmName,
-      clientId: this.signupForm.value.clientId,
-      url: this.signupForm.value.url,
-      uri: this.signupForm.value.uri,
+    const v = this.signupForm.getRawValue();
+    const payload: SignupRequest = {
+      realmName: v.realmName,
+      clientId: v.clientId,
+      url: v.url,
+      uri: v.uri,
       publicClient: false,
       adminUser: {
-        username: this.signupForm.value.username,
-        email: this.signupForm.value.email,
-        firstName: this.signupForm.value.firstName,
-        lastName: this.signupForm.value.lastName,
-        password: this.signupForm.value.password
-      }
+        username: v.username,
+        email: v.email,
+        firstName: v.firstName,
+        lastName: v.lastName,
+        password: v.password,
+      },
     };
 
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
     formData.append('sourceZip', this.dockerFile);
 
-    this.keycloakService.signup(formData).subscribe({
-     next: () => {
+    this.apiGateway.signupWithFile(formData).subscribe({
+      next: () => {
         this.loading = false;
         this.message = '✅ Signup completed successfully!';
-
         this.router.navigate(['/dashboard'], {
-          queryParams: { realm: payload.realmName }
+          queryParams: { realm: payload.realmName },
         });
       },
-
-      error: err => {
+      error: (err) => {
         this.loading = false;
         this.message = '❌ ' + (err.error?.message || err.message);
-      }
+      },
     });
   }
 }

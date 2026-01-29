@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
+import { getStoredToken, setStoredToken } from '../auth-storage';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,7 @@ export class KeycloakService {
 
   // ---------- CLIENTS ----------
   getClients(realm?: string): Observable<string[]> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -42,8 +43,7 @@ export class KeycloakService {
       map((response: any) => {
         // Store token consistently as both 'token' and 'access_token'
         if (response.access_token) {
-          localStorage.setItem('token', response.access_token);
-          localStorage.setItem('access_token', response.access_token);
+          setStoredToken(response.access_token);
         }
         return response;
       })
@@ -61,7 +61,7 @@ export class KeycloakService {
 
   // ---------- USERS ----------
   getUsers(realm: string): Observable<any[]> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -70,7 +70,7 @@ export class KeycloakService {
   }
 
   createUser(realm: string, payload: any): Observable<any> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -84,7 +84,7 @@ export class KeycloakService {
 
   // ---------- ROLES ----------
   getRoles(realm: string, clientName: string): Observable<any[]> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -97,7 +97,7 @@ export class KeycloakService {
   }
 
   createRole(realm: string, clientId: string, payload: any): Observable<any> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -120,7 +120,7 @@ export class KeycloakService {
     description: string,
     urlUriPairs: Array<{ url: string; uri: string }>
   ): Observable<any> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -171,7 +171,7 @@ export class KeycloakService {
   }
 
   assignRole(realm: string, username: string, clientName: string, roleName: string): Observable<any> {
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }

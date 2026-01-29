@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { KeycloakService } from '../services/keycloak';
+import { ApiGatewayService } from '../services/api-gateway.service';
+import { LoginRequest, LoginResponse } from '../models';
+import { getStoredRealm } from '../auth-storage';
 
 @Component({
   selector: 'app-login',
@@ -20,23 +22,15 @@ export class LoginPage implements OnInit {
   errorMessage: string = '';
   loading: boolean = false;
 
-  // 🔹 Store token and base_url to display on page
   token: string = '';
   baseUrl: string = '';
 
-  constructor(private keycloakService: KeycloakService) {}
+  constructor(private apiGateway: ApiGatewayService) {}
 
   ngOnInit(): void {
-    // Optional: fetch realms for auto-suggestion
-    this.keycloakService.getRealms().subscribe({
-      next: (data: string[]) => {
-        this.realms = data || [];
-      },
-      error: () => console.warn('❌ Failed to fetch realms for suggestion'),
-    });
+    this.selectedRealm = getStoredRealm() || '';
   }
 
-  /** Perform login */
   login(): void {
     if (!this.selectedRealm || !this.username || !this.password || !this.selectedClientId) {
       this.errorMessage = '❌ All fields are required';
@@ -44,41 +38,35 @@ export class LoginPage implements OnInit {
     }
 
     this.loading = true;
-    this.keycloakService
-      .login(this.selectedRealm, this.username, this.password, this.selectedClientId, '')
-      .subscribe({
-        next: (res: any) => {
-          this.loading = false;
-          this.errorMessage = '';
+    const body: LoginRequest = {
+      username: this.username,
+      password: this.password,
+      client_id: this.selectedClientId,
+    };
 
-          // 🔹 Backend returns { access_token: '...', base_url: 'http://...' }
-          const token = res.access_token;
-          const baseUrl = res.base_url;
+    this.apiGateway.login(this.selectedRealm, body).subscribe({
+      next: (res: LoginResponse) => {
+        this.loading = false;
+        this.errorMessage = '';
+        const token = res.access_token;
+        const baseUrl = res.base_url;
 
-          if (token) {
-            this.token = token;
-            this.baseUrl = baseUrl || '';
-
-            // Store token for future API calls
-            localStorage.setItem('access_token', token);
-            localStorage.setItem('token', token);
-            
-            if (baseUrl) {
-              localStorage.setItem('base_url', baseUrl);
-            }
-
-            // Redirect to dashboard
-            window.location.href = `/dashboard?realm=${this.selectedRealm}`;
-          } else {
-            this.errorMessage = 'Login successful but no token received';
+        if (token) {
+          this.token = token;
+          this.baseUrl = baseUrl || '';
+          if (baseUrl && typeof window !== 'undefined') {
+            window.localStorage.setItem('base_url', baseUrl);
           }
-        },
-        error: (err: any) => {
-          this.loading = false;
-          const errorMsg = err.error?.message || err.error?.error || err.message || 'Login failed. Please check your credentials.';
-          this.errorMessage = errorMsg;
-          console.error('Login error:', err);
-        },
-      });
+          window.location.href = `/dashboard?realm=${this.selectedRealm}`;
+        } else {
+          this.errorMessage = 'Login successful but no token received';
+        }
+      },
+      error: (err: any) => {
+        this.loading = false;
+        this.errorMessage = err.error?.message || err.error?.error || err.message || 'Login failed. Please check your credentials.';
+        console.error('Login error:', err);
+      },
+    });
   }
 }

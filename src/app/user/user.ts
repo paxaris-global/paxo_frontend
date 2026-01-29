@@ -1,8 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { KeycloakService } from '../services/keycloak';
-import { Observable } from 'rxjs';
+import { ApiGatewayService } from '../services/api-gateway.service';
+import { UserCreationRequest, AssignRolePayload } from '../models';
+import { getStoredToken, getStoredRealm } from '../auth-storage';
+import { Subscription } from 'rxjs';
+import { UsersTabComponent } from './users-tab/users-tab.component';
+import { RolesTabComponent } from './roles-tab/roles-tab.component';
+import { AssignRoleTabComponent } from './assign-role-tab/assign-role-tab.component';
 
 interface UrlUriPair {
   url: string;
@@ -12,11 +19,18 @@ interface UrlUriPair {
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    UsersTabComponent,
+    RolesTabComponent,
+    AssignRoleTabComponent,
+  ],
   templateUrl: './user.html',
   styleUrls: ['./user.css'],
 })
-export class User {
+export class User implements OnInit, OnDestroy {
   users: any[] = [];
   roles: any[] = [];
   clients: any[] = [];
@@ -25,6 +39,9 @@ export class User {
   currentProduct: string = '';
 
   activeSection: 'users' | 'roles' | 'assign' | 'test' = 'users';
+  showTabs = true;
+  private clientChangesSub: Subscription | null = null;
+  private routeDataSub: Subscription | null = null;
   userForm: FormGroup;
   roleForm: FormGroup;
   assignForm: FormGroup;
@@ -47,7 +64,14 @@ export class User {
   }> = [];
   openApiBaseUrl: string = '';
 
-  constructor(private keycloakService: KeycloakService, private fb: FormBuilder) {
+  private _initialLoadDone = false;
+
+  constructor(
+    private keycloakService: KeycloakService,
+    private apiGateway: ApiGatewayService,
+    private fb: FormBuilder,
+    private route: ActivatedRoute
+  ) {
     this.userForm = this.fb.group({
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -57,7 +81,7 @@ export class User {
     });
 
     this.roleForm = this.fb.group({
-      realm: ['', Validators.required],
+      realm: [getStoredRealm() || '', Validators.required],
       client: ['', Validators.required],
       roleName: ['', Validators.required],
       description: [''],
@@ -75,19 +99,54 @@ export class User {
       httpMethod: ['GET'],
       makeActualRequest: [false],
     });
+  }
 
-    this.loadUsers();
-    this.loadClients();
-    this.loadRoles();
-    this.loadRealms();
-    
-    // Get current realm and product from localStorage or token
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+  ngOnInit(): void {
+    const token = getStoredToken();
     if (token) {
       this.currentToken = token;
       this.getRealmAndProductFromToken(token);
       this.loadTokenInfo(token);
     }
+    const storedRealm = getStoredRealm();
+    if (storedRealm) {
+      if (!this.currentRealm) this.currentRealm = storedRealm;
+      if (!this.roleForm.get('realm')?.value) this.roleForm.patchValue({ realm: storedRealm });
+    }
+    this.roleForm.get('realm')?.disable();
+
+    const realm = this.currentRealm || this.roleForm.get('realm')?.value;
+    if (realm && !this._initialLoadDone) {
+      this._initialLoadDone = true;
+      this.loadUsers();
+      this.loadClients();
+      this.loadRoles();
+    }
+
+    const sub = this.roleForm.get('client')?.valueChanges?.subscribe(() => this.loadRoles());
+    if (sub) this.clientChangesSub = sub;
+
+    this.routeDataSub = this.route.data.subscribe((d) => {
+      const section = d['section'];
+      if (section === 'users' || section === 'roles' || section === 'assign') {
+        this.activeSection = section;
+        this.showTabs = false;
+        if (section === 'roles') {
+          const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+          if (realm && this.clients.length > 0 && !this.roleForm.get('client')?.value) {
+            this.roleForm.patchValue({ client: this.clients[0] });
+          }
+          this.loadRoles();
+        }
+      } else {
+        this.showTabs = true;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.clientChangesSub?.unsubscribe();
+    this.routeDataSub?.unsubscribe();
   }
 
   // Get URL/URI pairs FormArray
@@ -131,18 +190,17 @@ export class User {
     }
   }
 
-  loadRealms(): void {
-    this.keycloakService.getRealms().subscribe({
-      next: (data: string[]) => (this.realms = data || []),
-      error: (err: any) => console.error('Error loading realms:', err),
-    });
-  }
-
   setSection(section: 'users' | 'roles' | 'assign' | 'test') {
     this.activeSection = section;
+    if (section === 'roles') {
+      const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+      if (realm && this.clients.length > 0 && !this.roleForm.get('client')?.value) {
+        this.roleForm.patchValue({ client: this.clients[0] });
+      }
+      this.loadRoles();
+    }
     if (section === 'test') {
-      // Load token info when switching to test section
-      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const token = getStoredToken();
       if (token) {
         this.currentToken = token;
         this.loadTokenInfo(token);
@@ -156,30 +214,42 @@ export class User {
       console.warn('Cannot load users: realm not specified');
       return;
     }
-    this.keycloakService.getUsers(realm).subscribe({
+    this.apiGateway.getUsers(realm).subscribe({
       next: (data: any[]) => (this.users = data || []),
       error: (err: any) => console.error('Error loading users:', err),
     });
   }
 
   loadRoles(): void {
-    const realm = this.currentRealm || this.roleForm.get('realm')?.value;
-    const client = this.roleForm.get('client')?.value;
+    const raw = this.roleForm.getRawValue();
+    const realm = this.currentRealm || raw?.realm;
+    const client = raw?.client ?? this.roleForm.get('client')?.value;
     if (!realm || !client) {
-      console.warn('Cannot load roles: realm or client not specified');
+      this.roles = [];
       return;
     }
-    this.keycloakService.getRoles(realm, client).subscribe({
-      next: (data: any[]) => (this.roles = data || []),
-      error: (err: any) => console.error('Error loading roles:', err),
+    this.apiGateway.getRoles(realm, client).subscribe({
+      next: (data: any[]) => {
+        this.roles = (data || []).map((r) => ({ ...r, client }));
+      },
+      error: (err: any) => {
+        console.error('Error loading roles:', err);
+        this.roles = [];
+      },
     });
   }
 
   loadClients(): void {
     const realm = this.currentRealm || this.roleForm.get('realm')?.value;
-    this.keycloakService.getClients(realm).subscribe({
-      next: (data: any[]) => (this.clients = data || []),
-      error: (err: any) => console.error('Error loading clients:', err),
+    if (!realm) return;
+    this.apiGateway.getClients(realm).subscribe({
+      next: (data) => {
+        this.clients = (data || []).map((c) => c.clientId ?? c['id'] ?? '').filter(Boolean);
+      },
+      error: (err) => {
+        console.error('Error loading clients:', err);
+        this.clients = [];
+      },
     });
   }
 
@@ -190,7 +260,16 @@ export class User {
         alert('Please select a realm first');
         return;
       }
-      this.keycloakService.createUser(realm, this.userForm.value).subscribe({
+      const body: UserCreationRequest = {
+        username: this.userForm.value.username,
+        email: this.userForm.value.email,
+        firstName: this.userForm.value.firstName,
+        lastName: this.userForm.value.lastName,
+        enabled: true,
+        emailVerified: true,
+        credentials: [{ type: 'password', value: this.userForm.value.password, temporary: false }],
+      };
+      this.apiGateway.createUser(realm, body).subscribe({
         next: () => {
           alert('✅ User created successfully');
           this.loadUsers();
@@ -206,7 +285,7 @@ export class User {
 
   createRole(): void {
     if (this.roleForm.valid) {
-      const formValue = this.roleForm.value;
+      const formValue = this.roleForm.getRawValue();
       const realm = formValue.realm || this.currentRealm;
       const client = formValue.client;
       const roleName = formValue.roleName;
@@ -270,13 +349,13 @@ export class User {
         return;
       }
       const { userId, client, roleName } = this.assignForm.value;
-      // Find username from userId
-      const user = this.users.find(u => u.id === userId);
+      const user = this.users.find((u) => u.id === userId);
       if (!user || !user.username) {
         alert('User not found or username missing');
         return;
       }
-      this.keycloakService.assignRole(realm, user.username, client, roleName).subscribe({
+      const body: AssignRolePayload = [{ name: roleName }];
+      this.apiGateway.assignRoleToUser(realm, user.username, client, body).subscribe({
         next: () => {
           alert('✅ Role assigned successfully');
           this.assignForm.reset();
@@ -334,7 +413,7 @@ export class User {
       return;
     }
 
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const token = getStoredToken();
     if (!token) {
       alert('No authentication token found. Please login first.');
       return;
@@ -348,11 +427,9 @@ export class User {
     const makeActualRequest = this.testAccessForm.value.makeActualRequest;
 
     if (makeActualRequest) {
-      // Make actual HTTP request through gateway
       this.makeActualHttpRequest(token, testUrl, method);
     } else {
-      // Just validate access
-      this.keycloakService.validateAccess(token, testUrl).subscribe({
+      this.apiGateway.validateAccess(token, testUrl).subscribe({
         next: (response: any) => {
           this.testingAccess = false;
           
