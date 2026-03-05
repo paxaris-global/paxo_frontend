@@ -1,0 +1,53 @@
+<div class="section section-roles">
+  <h3>Create Role</h3>
+
+  <form [formGroup]="roleForm" (ngSubmit)="onSubmit($event)">
+
+    <div class="field">
+      <label>Realm</label>
+      <input type="text" formControlName="realm" readonly />
+    </div>
+
+    <div class="field">
+      <label>Client</label>
+      <select formControlName="client">
+        <option value="">-- Select Client --</option>
+        <option *ngFor="let client of clients" [value]="client">
+          {{ client }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Role Name</label>
+      <input type="text" formControlName="roleName" />
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <input type="text" formControlName="description" />
+    </div>
+
+    <button type="submit" class="btn-submit">
+      Create Role
+    </button>
+  </form>
+
+  <h4>Existing Roles</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Role</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of roles">
+        <td>{{ role.client }}</td>
+        <td>{{ role.name }}</td>
+        <td>{{ role.description }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,61 @@
+<div class="form-card section-client">
+  <h3><i class="fa-solid fa-gears"></i> Create New Product</h3>
+  <p class="hint">Create via API (realm + product ID + URLs) or upload a Docker image with Product ID.</p>
+
+  <form [formGroup]="clientForm" (ngSubmit)="createClient()" enctype="multipart/form-data">
+    <div class="field">
+      <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
+      <input
+        id="realm"
+        type="text"
+        formControlName="realm"
+        placeholder="e.g. test2"
+        readonly
+      />
+    </div>
+    <div class="field">
+      <label for="clientId"><i class="fa-solid fa-id-badge"></i> Product ID</label>
+      <input
+        id="clientId"
+        type="text"
+        formControlName="clientId"
+        placeholder="e.g. test-product5"
+      />
+    </div>
+    <div class="field">
+      <label for="urls"><i class="fa-solid fa-link"></i> URLs (comma-separated)</label>
+      <input
+        id="urls"
+        type="text"
+        formControlName="urls"
+        placeholder="e.g. https://localhost:8083"
+      />
+    </div>
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="publicClient" />
+        Public product
+      </label>
+    </div>
+
+    <hr class="divider" />
+    <div class="field">
+      <label for="dockerFile"><i class="fa-solid fa-file-archive"></i>upload project</label>
+      <input
+        id="dockerFile"
+        type="file"
+        (change)="onFileSelected($event)"
+        accept=".tar,.gz,.zip"
+      />
+      <small *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</small>
+    </div>
+
+    <button type="submit">
+      <i class="fa-solid fa-plus-circle"></i> Create Product
+    </button>
+  </form>
+
+  <div *ngIf="responseMessage" class="response-message">
+    {{ responseMessage }}
+  </div>
+</div>

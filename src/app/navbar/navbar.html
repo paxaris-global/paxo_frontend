@@ -1,0 +1,13 @@
+<nav class="nav">
+  <div class="title">🔐 Paxaris Global</div>
+
+  <div class="actions">
+    @if (!loggedIn) {
+      <a routerLink="/login" routerLinkActive="active" class="btn ghost">Login</a>
+      <a routerLink="/signup" routerLinkActive="active" class="btn primary">Signup</a>
+    } @else {
+      <!-- <a routerLink="/dashboard" routerLinkActive="active" class="btn ghost">Dashboard</a> -->
+      <a href="#" (click)="logout($event)" class="btn primary">Logout</a>
+    }
+  </div>
+</nav>

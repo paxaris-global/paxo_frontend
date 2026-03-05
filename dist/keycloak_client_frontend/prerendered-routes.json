@@ -1,0 +1,15 @@
+{
+  "routes": {
+    "/": {},
+    "/dashboard": {},
+    "/dashboard/client": {},
+    "/dashboard/client/assign-roles": {},
+    "/dashboard/client/products": {},
+    "/dashboard/client/roleUrl": {},
+    "/dashboard/client/roles": {},
+    "/dashboard/client/users": {},
+    "/dashboard/settings": {},
+    "/login": {},
+    "/signup": {}
+  }
+}

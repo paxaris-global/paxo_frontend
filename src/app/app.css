@@ -1,0 +1,9 @@
+/* App Component Styles */
+app-navbar {
+  display: block;
+}
+
+router-outlet {
+  display: block;
+  min-height: calc(100vh - 70px);
+}

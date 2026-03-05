@@ -1,0 +1,187 @@
+/* Section Container */
+.section {
+  background: #ffffff; /* Light card background */
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-top: 4px solid #2563eb; /* Primary color accent */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Section Headings */
+.section h3 {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section h4 {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Role Dropdown */
+.section select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.section select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* File Input */
+.section input[type="file"] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: 0.2s;
+}
+
+.section input[type="file"]:hover {
+  border-color: #2563eb;
+}
+
+/* Extracted Endpoints List */
+.section div[ngIf] {
+  margin-top: 12px;
+}
+
+.section div[ngFor] label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.section div[ngFor] input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Endpoint Action Buttons */
+.section button {
+  padding: 8px 16px;
+  margin-right: 8px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.section button:hover {
+  transform: translateY(-1px);
+}
+
+/* Specific Button Colors */
+.section button:nth-of-type(1) { background-color: #059669; color: #fff; } /* Select All */
+.section button:nth-of-type(2) { background-color: #d97706; color: #fff; } /* Deselect All */
+.section button:nth-of-type(3) { background-color: #2563eb; color: #fff; } /* Load Selected */
+.section button:nth-of-type(4) { background-color: #6b7280; color: #fff; } /* Clear */
+
+/* URL / URI Pairs */
+.url-uri-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  align-items: center;
+}
+
+.url-uri-pair input,
+.url-uri-pair select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  flex: 1 1 200px;
+  transition: 0.2s;
+}
+
+.url-uri-pair input:focus,
+.url-uri-pair select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* Remove Button */
+.url-uri-pair button {
+  background-color: #dc2626;
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.url-uri-pair button:hover {
+  background-color: #b91c1c;
+}
+
+/* Add URL / URI Button */
+.section > button:last-child {
+  background-color: #059669;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.section > button:last-child:hover {
+  background-color: #047857;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .url-uri-pair {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .url-uri-pair input,
+  .url-uri-pair select {
+    flex: 1 1 auto;
+  }
+
+  .section button {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}

@@ -1,0 +1,115 @@
+<div class="user-page">
+
+ <!-- @if (showTabs) {
+<div class="tabs" *ngIf="showTabs">
+  <button [class.active]="activeSection === 'users'" (click)="setSection('users')">Users</button>
+  <button [class.active]="activeSection === 'roles'" (click)="setSection('roles')">Roles</button>
+  <button [class.active]="activeSection === 'roleUrl'" (click)="setSection('roleUrl')">Role Url</button>
+  <button [class.active]="activeSection === 'assign'" (click)="setSection('assign')">Assign Roles</button>
+</div>
+ } -->
+
+
+  <!-- Users Tab -->
+<div *ngIf="activeSection === 'users'">
+  <app-users-tab
+    [currentRealm]="currentRealm"
+    [users]="users"
+    [userForm]="userForm"
+    (createUser)="createUser()"
+    (updateUser)="updateUserFromModal($event)"
+     (deleteUser)="onDeleteUser($event)"
+  ></app-users-tab>
+</div>
+
+<!-- Roles Tab -->
+<div *ngIf="activeSection === 'roles'">
+  <app-roles-tab
+    [roleForm]="roleForm"
+    [clients]="clients"
+    [roles]="roles"
+    (createRole)="createRole()"
+  ></app-roles-tab>
+</div>
+
+
+<!-- Role URL / URI Tab -->
+<div *ngIf="activeSection === 'roleUrl'">
+  <app-role-url-tab
+    [roleForm]="roleForm"
+    [clients]="clients"
+    [roles]="roles"
+    [openApiEndpoints]="openApiEndpoints"
+    (addUrlUriPair)="addUrlUriPair()"
+    (removeUrlUriPair)="removeUrlUriPair($event)"
+    (openApiFileSelected)="onOpenApiFileSelected($event)"
+    (toggleEndpointSelection)="toggleEndpointSelection($event)"
+    (selectAllEndpoints)="selectAllEndpoints()"
+    (deselectAllEndpoints)="deselectAllEndpoints()"
+    (savePermissions)="saveRolePermissions()"
+    (loadSelectedEndpoints)="loadSelectedEndpointsToForm()"
+    (clearOpenApi)="clearOpenApiData()"
+  ></app-role-url-tab>
+</div>
+
+<!-- Assign Role Tab -->
+<div *ngIf="activeSection === 'assign'">
+  <div class="section section-assign">
+    <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
+    <div class="field">
+      <label>Realm: <span class="required">*</span></label>
+      <input type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" />
+    </div>
+    <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
+      <div class="field">
+        <label>Select User: <span class="required">*</span></label>
+        <select formControlName="userId">
+          <option value="">--Select User--</option>
+          <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Select Client: <span class="required">*</span></label>
+        <select formControlName="client">
+          <option value="">--Select Client--</option>
+          <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
+        </select>
+      </div>
+
+      <!-- New Role Selection UI -->
+      <div class="field">
+        <label>Selected Roles:</label>
+        <div class="selected-roles-container" *ngIf="selectedRoleNames.length > 0; else noRolesSelected" style="border: 1px solid #ccc; padding: 10px; min-height: 40px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 5px;">
+          <span *ngFor="let roleName of selectedRoleNames" style="background-color: #e0e0e0; padding: 5px 10px; border-radius: 15px; display: flex; align-items: center; gap: 5px;">
+            {{ roleName }}
+            <button type="button" (click)="removeRoleFromAssignment(roleName)" style="border: none; background: none; cursor: pointer; font-size: 16px; line-height: 1;">&times;</button>
+          </span>
+        </div>
+        <ng-template #noRolesSelected>
+          <div style="border: 1px solid #ccc; padding: 10px; min-height: 40px; border-radius: 4px; color: #777;">No roles selected yet.</div>
+        </ng-template>
+      </div>
+
+      <div class="field">
+        <label>Add Role:</label>
+        <select #roleSelect (change)="addRoleToAssignment(roleSelect.value); roleSelect.value = ''">
+          <option value="">--Select a role to add--</option>
+          <option *ngFor="let role of availableRolesForAssignment" [value]="role.name">{{ role.name }}</option>
+        </select>
+      </div>
+      
+      <button type="submit" [disabled]="assignForm.invalid || !currentRealm"><i class="fa-solid fa-check-circle"></i> Assign Roles</button>
+    </form>
+  </div>
+</div>
+
+
+  <!-- Logout -->
+  <div class="logout">
+    <button (click)="logout()">
+      <i class="fa-solid fa-sign-out-alt"></i> Logout
+    </button>
+  </div>
+
+</div>
+

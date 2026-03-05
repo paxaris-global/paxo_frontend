@@ -1,0 +1,90 @@
+<div class="login-container">
+  <div class="login-header">
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Sign in to your Paxaris account</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <form (ngSubmit)="login()" class="login-form">
+    <div class="field">
+      <label for="realm">Realm <span class="required">*</span></label>
+      <input
+        id="realm"
+        type="text"
+        [(ngModel)]="selectedRealm"
+        name="realm"
+        placeholder="Enter realm name"
+        list="realms-list"
+        required
+      />
+      <datalist id="realms-list">
+        <option *ngFor="let realm of realms" [value]="realm"></option>
+      </datalist>
+    </div>
+
+    <div class="field">
+      <label for="client">Client ID <span class="required">*</span></label>
+      <input 
+        id="client" 
+        type="text" 
+        [(ngModel)]="selectedClientId" 
+        name="clientId"
+        placeholder="Enter client ID" 
+        required
+        [disabled]="loading"
+      />
+    </div>
+
+    <div class="field">
+      <label for="username">Username <span class="required">*</span></label>
+      <input 
+        id="username" 
+        type="text" 
+        [(ngModel)]="username" 
+        name="username"
+        placeholder="Enter your username" 
+        required
+        [disabled]="loading"
+        autocomplete="username"
+      />
+    </div>
+
+    <div class="field">
+      <label for="password">Password <span class="required">*</span></label>
+      <input 
+        id="password" 
+        type="password" 
+        [(ngModel)]="password" 
+        name="password"
+        placeholder="Enter your password" 
+        required
+        [disabled]="loading"
+        autocomplete="current-password"
+      />
+    </div>
+
+    <button type="submit" [disabled]="loading" class="btn btn-primary btn-lg">
+      <span *ngIf="!loading">Sign In</span>
+      <span *ngIf="loading" class="spinner"></span>
+      <span *ngIf="loading">Signing in...</span>
+    </button>
+  </form>
+
+  <div class="login-footer">
+    <p>Don't have an account? <a routerLink="/signup">Sign up here</a></p>
+  </div>
+
+  <!-- Token Info (for debugging - can be hidden in production) -->
+  <div *ngIf="token && baseUrl" class="login-info">
+    <details>
+      <summary>Login Details</summary>
+      <div class="info-content">
+        <p><strong>Token:</strong> <code>{{ token.substring(0, 50) }}...</code></p>
+        <p><strong>Base URL:</strong> <code>{{ baseUrl }}</code></p>
+      </div>
+    </details>
+  </div>
+</div>
