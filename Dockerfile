@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npx ng build --configuration production
+RUN npm run build -- --configuration production
 
 # Step 2: Run browser build output using nginx
 FROM nginx:alpine

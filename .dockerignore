@@ -1,0 +1,22 @@
+# Dependencies and build outputs
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist
+
+# VCS and editor metadata
+.git
+.gitignore
+.idea
+.vscode
+
+# Local secrets and env files
+.env
+.env.*
+
+# OS/archives/temp
+__MACOSX
+*.swp
+*.tmp
