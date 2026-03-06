@@ -1,24 +1,30 @@
-name: Trigger Central CI/CD
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
       - main
+      - master
 
 jobs:
-  trigger-central-workflow:
+
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Central Workflow
-        uses: peter-evans/repository-dispatch@v3
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          repository: paxaris-global/paxo
-          event-type: build-image
-          client-payload: |
-            {
-              "repo": "${{ github.repository }}",
-              "ref": "${{ github.ref }}",
-              "sha": "${{ github.sha }}"
-            }
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t devopspaxarisglobalrepo/paxo_frontend:latest .
+
+      - name: Push Docker Image
+        run: docker push devopspaxarisglobalrepo/paxo_frontend:latest

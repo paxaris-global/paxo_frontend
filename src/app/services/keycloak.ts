@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { getStoredToken, setStoredToken } from '../auth-storage';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeycloakService {
-  private baseUrl = 'http://localhost:8085';
+  private baseUrl = environment.apiGatewayBaseUrl;
 
   constructor(private http: HttpClient) {}
 

@@ -12,6 +12,7 @@ import {
   AssignRolePayload,
 } from '../models';
 import { getStoredToken, setStoredToken } from '../auth-storage';
+import { environment } from '../../environments/environment';
 /**
  * API Gateway Service – mirrors Postman collection "api gateway".
  * Uses relative URLs so /identity and /gateway are proxied to localhost:8085
@@ -23,7 +24,7 @@ import { getStoredToken, setStoredToken } from '../auth-storage';
   providedIn: 'root',
 })
 export class ApiGatewayService {
-  private readonly baseUrl = 'http://localhost:8085';
+  private readonly baseUrl = environment.apiGatewayBaseUrl;
   private usersInFlight = new Map<string, Observable<any[]>>();
   private clientsInFlight = new Map<string, Observable<Array<{ clientId: string; [key: string]: any }>>>();
   constructor(private http: HttpClient) {}
