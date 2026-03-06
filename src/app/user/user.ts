@@ -380,7 +380,7 @@ onDeleteUser(user: any): void {
 }
 
 
-// Update user details emitted from UsersTab modal.
+// Update user details emitted from UsersTab modals.
 updateUserFromModal(updatedData: { username: string; email: string; firstName: string; lastName: string }): void {
   if (!updatedData?.username) {
     alert('No user selected for editing');
