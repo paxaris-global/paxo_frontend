@@ -363,7 +363,7 @@ closeEditModal(): void {
   this.editingUsername = null;
 }
 
-// ✅ DELETE USER
+// ✅ DELETE USERs
 onDeleteUser(user: any): void {
   const realm = this.currentRealm;
 
