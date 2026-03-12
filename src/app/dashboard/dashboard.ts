@@ -16,8 +16,8 @@ import { getStoredRealm, setStoredRealm } from '../auth-storage';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   realmName = 'Unknown Realm';
-  clients: any[] = [];
-  loadingClients = false;
+  products: any[] = [];
+  loadingProducts = false;
   usersAndRolesMenuOpen = true;
 
   private destroy$ = new Subject<void>();
@@ -34,29 +34,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (realmFromQuery) {
         this.realmName = realmFromQuery;
         setStoredRealm(realmFromQuery);
-        this.loadClients();
+        this.loadProducts();
       } else {
         this.realmName = getStoredRealm() || 'Unknown Realm';
-        this.loadClients();
+        this.loadProducts();
         this.dashboardService.getRealmUser().subscribe({
           next: (realm) => {
             const name = (realm?.trim() || getStoredRealm()) || 'Unknown Realm';
             this.realmName = name;
             if (name !== 'Unknown Realm') {
               setStoredRealm(name);
-              this.loadClients();
+              this.loadProducts();
             } else {
-              this.clients = [];
-              this.loadingClients = false;
+              this.products = [];
+              this.loadingProducts = false;
             }
           },
           error: () => {
             this.realmName = getStoredRealm() || 'Unknown Realm';
             if (this.realmName !== 'Unknown Realm') {
-              this.loadClients();
+              this.loadProducts();
             } else {
-              this.clients = [];
-              this.loadingClients = false;
+              this.products = [];
+              this.loadingProducts = false;
             }
           },
         });
@@ -69,21 +69,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadClients(): void {
+  private loadProducts(): void {
     if (!this.realmName || this.realmName === 'Unknown Realm') {
-      this.clients = [];
-      this.loadingClients = false;
+      this.products = [];
+      this.loadingProducts = false;
       return;
     }
-    this.loadingClients = true;
-    this.apiGateway.getClients(this.realmName).subscribe({
-      next: (data) => {
-        this.clients = data ?? [];
-        this.loadingClients = false;
+    this.loadingProducts = true;
+    this.apiGateway.getProducts(this.realmName).subscribe({
+      next: (data: any) => {
+        this.products = data ?? [];
+        this.loadingProducts = false;
       },
       error: () => {
-        this.clients = [];
-        this.loadingClients = false;
+        this.products = [];
+        this.loadingProducts = false;
       },
     });
   }

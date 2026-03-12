@@ -33,7 +33,7 @@ interface UrlUriPair {
 export class User implements OnInit, OnDestroy {
   users: any[] = [];
   roles: any[] = [];
-  clients: any[] = [];
+  products: any[] = [];
   realms: string[] = [];
   editingUsername: string | null = null;
   currentRealm: string = '';
@@ -42,8 +42,8 @@ export class User implements OnInit, OnDestroy {
 
   activeSection: 'users' | 'roles' | 'roleUrl' | 'assign' | 'test' | 'products' = 'users';
   showTabs = true;
-  private clientChangesSub: Subscription | null = null;
-  private assignClientSub: Subscription | null = null;
+  private productChangesSub: Subscription | null = null;
+  private assignProductSub: Subscription | null = null;
   private routeDataSub: Subscription | null = null;
   userForm: FormGroup;
   roleForm: FormGroup;
@@ -96,7 +96,7 @@ export class User implements OnInit, OnDestroy {
 
     this.assignForm = this.fb.group({
       userId: ['', Validators.required],
-      client: ['', Validators.required],
+      product: ['', Validators.required],
       roleName: [[], Validators.required],
     });
 
@@ -133,24 +133,24 @@ export class User implements OnInit, OnDestroy {
     if (realm && !this._initialLoadDone) {
       this._initialLoadDone = true;
       this.loadUsers();
-      this.loadClients();
+      this.loadProducts();
       this.loadRoles();
     }
 
 
 
- this.clientChangesSub = this.roleForm.get('client')!.valueChanges.subscribe(client => {
-  if (!client) {
+ this.productChangesSub = this.roleForm.get('product')!.valueChanges.subscribe((product: any) => {
+  if (!product) {
     this.roles = [];
     return;
   }
   const realm = this.currentRealm || this.roleForm.getRawValue().realm;
 
-  this.keycloakService.getRoles(realm, client).subscribe({
-    next: data => {
+  this.keycloakService.getRoles(realm, product).subscribe({
+    next: (data: any) => {
       this.roles = data || [];
     },
-    error: err => {
+    error: (err: any) => {
       console.error(err);
       this.roles = [];
     }
@@ -163,7 +163,7 @@ export class User implements OnInit, OnDestroy {
 
 
 
-this.routeDataSub = this.route.data.subscribe((d) => {
+this.routeDataSub = this.route.data.subscribe((d: any) => {
   const section = d['section'];
   if (section === 'users' || section === 'roles' || section === 'roleUrl' || section === 'assign') {
     this.activeSection = section;
@@ -175,8 +175,8 @@ this.routeDataSub = this.route.data.subscribe((d) => {
 
   if (this.activeSection === 'roles') {
     const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
-    if (realm && this.clients.length > 0 && !this.roleForm.get('client')?.value) {
-      this.roleForm.patchValue({ client: this.clients[0] });
+    if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
+      this.roleForm.patchValue({ product: this.products[0] });
     }
     this.loadRoles();
   }
@@ -185,8 +185,8 @@ this.routeDataSub = this.route.data.subscribe((d) => {
   }
 
   ngOnDestroy(): void {
-    this.clientChangesSub?.unsubscribe();
-    this.assignClientSub?.unsubscribe(); 
+    this.productChangesSub?.unsubscribe();
+    this.assignProductSub?.unsubscribe();
     this.routeDataSub?.unsubscribe();
   }
 
@@ -245,8 +245,8 @@ this.routeDataSub = this.route.data.subscribe((d) => {
     this.activeSection = section;
     if (section === 'roles') {
       const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
-      if (realm && this.clients.length > 0 && !this.roleForm.get('client')?.value) {
-        this.roleForm.patchValue({ client: this.clients[0] });
+      if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
+        this.roleForm.patchValue({ product: this.products[0] });
       }
       this.loadRoles();
     }
@@ -274,14 +274,14 @@ this.routeDataSub = this.route.data.subscribe((d) => {
   loadRoles(): void {
     const raw = this.roleForm.getRawValue();
     const realm = this.currentRealm || raw?.realm;
-    const client = raw?.client ?? this.roleForm.get('client')?.value;
-    if (!realm || !client) {
+    const product = raw?.product ?? this.roleForm.get('product')?.value;
+    if (!realm || !product) {
       this.roles = [];
       return;
     }
-    this.apiGateway.getRoles(realm, client).subscribe({
+    this.apiGateway.getRoles(realm, product).subscribe({
       next: (data: any[]) => {
-        this.roles = (data || []).map((r) => ({ ...r, client }));
+        this.roles = (data || []).map((r: any) => ({ ...r, product }));
       },
       error: (err: any) => {
         console.error('Error loading roles:', err);
@@ -290,22 +290,23 @@ this.routeDataSub = this.route.data.subscribe((d) => {
     });
   }
 
-loadClients(): void {
+
+loadProducts(): void {
   const realm = this.currentRealm || this.roleForm.get('realm')?.value;
   if (!realm) return;
 
-  this.apiGateway.getClients(realm).subscribe({
-    next: data => {
-      console.log('Clients loaded:', data);
-      this.clients = (data || []).map(c => c.clientId);
-      // Auto-select first client for the dropdown if none selected
-      if (!this.roleForm.get('client')?.value && this.clients.length) {
-        this.roleForm.patchValue({ client: this.clients[0] });
+  this.apiGateway.getProducts(realm).subscribe({
+    next: (data: any) => {
+      console.log('Products loaded:', data);
+      this.products = (data || []).map((p: any) => p.productId);
+      // Auto-select first product for the dropdown if none selected
+      if (!this.roleForm.get('product')?.value && this.products.length) {
+        this.roleForm.patchValue({ product: this.products[0] });
       }
     },
-    error: err => {
-      console.error('Failed to load clients:', err);
-      this.clients = [];
+    error: (err: any) => {
+      console.error('Failed to load products:', err);
+      this.products = [];
     }
   });
 }
@@ -424,7 +425,7 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
       
       const form = this.productForm.value;
       const body: any = {
-        clientId: form.clientId,
+        productId: form.clientId,
         publicClient: form.publicClient,
         rootUrl: form.rootUrl,
         baseUrl: form.rootUrl,
@@ -432,10 +433,10 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
         webOrigins: form.webOrigins ? form.webOrigins.split(',').map((s: string) => s.trim()) : []
       };
 
-      this.apiGateway.createClient(realm, body).subscribe({
+      this.apiGateway.createProduct(realm, body).subscribe({
         next: () => {
-          alert('✅ Product (Client) created successfully');
-          this.loadClients();
+          alert('✅ Product created successfully');
+          this.loadProducts();
           this.productForm.reset({ publicClient: true, redirectUris: '*', webOrigins: '*' });
         },
         error: (err: any) => {
@@ -488,8 +489,8 @@ saveRolePermissions(): void {
 
   const form = this.roleForm.getRawValue();
 
-  if (!form.client || !form.selectedRole) {
-    alert('Please select client and role');
+  if (!form.product || !form.selectedRole) {
+    alert('Please select product and role');
     return;
   }
 
@@ -506,7 +507,7 @@ saveRolePermissions(): void {
 
   this.keycloakService.saveRoleUrls(
     realm,
-    form.client,
+    form.product,
     form.selectedRole,
     urls
   ).subscribe({
@@ -515,7 +516,7 @@ saveRolePermissions(): void {
       alert('✅ Permissions saved successfully');
     },
 
-    error: err => {
+    error: (err: any) => {
       console.error(err);
       alert('❌ Failed to save permissions');
     }
@@ -550,14 +551,14 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         alert('Please select a realm first');
         return;
       }
-      const { userId, client, roleName } = this.assignForm.value;
+      const { userId, product, roleName } = this.assignForm.value;
       const user = this.users.find((u) => u.id === userId);
       if (!user || !user.username) {
         alert('User not found or username missing');
         return;
       }
       const roles = Array.isArray(roleName) ? roleName : [roleName];
-      this.keycloakService.assignRole(realm, user.username, client, roles).subscribe({
+      this.keycloakService.assignRole(realm, user.username, product, roles).subscribe({
         next: () => {
           alert('✅ Roles assigned successfully');
           this.assignForm.reset();

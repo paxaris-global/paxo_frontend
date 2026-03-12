@@ -4,6 +4,6 @@
 export * from './login.model';
 export * from './signup.model';
 export * from './user-creation.model';
-export * from './create-client.model';
+export * from './create-product.model';
 export * from './role-creation.model';
 export * from './assign-role.model';

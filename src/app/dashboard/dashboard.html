@@ -6,18 +6,18 @@
 
     <!-- <div class="sidebar-group"> -->
       <nav class="sidebar-children">
-        <!-- <a [routerLink]="['client', 'products']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">📦 Products</a> -->
+        <!-- <a [routerLink]="['product', 'products']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">📦 Products</a> -->
         <div class="sidebar-subgroup">
           <button type="button" class="sidebar-subgroup-toggle" (click)="usersAndRolesMenuOpen = !usersAndRolesMenuOpen" [attr.aria-expanded]="usersAndRolesMenuOpen">
             <span>👥 Users and Role</span>
             <span class="sidebar-chevron" [class.open]="usersAndRolesMenuOpen">▼</span>
           </button>
          <nav class="sidebar-subchildren" [class.open]="usersAndRolesMenuOpen">
-  <a [routerLink]="['client', 'users']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Users</a>
-  <a [routerLink]="['client', 'roles']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Roles</a>
-  <a [routerLink]="['client', 'roleUrl']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Assign URIs to Role</a>
-  <a [routerLink]="['client', 'client']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Create Product</a>
-  <a [routerLink]="['client', 'assign-roles']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Assign Roles</a>
+  <a [routerLink]="['product', 'users']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Users</a>
+  <a [routerLink]="['product', 'roles']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Roles</a>
+  <a [routerLink]="['product', 'roleUrl']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Assign URIs to Role</a>
+  <a [routerLink]="['product', 'products']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Create Product</a>
+  <a [routerLink]="['product', 'assign-roles']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Assign Roles</a>
 </nav>
 
         </div>
@@ -31,10 +31,10 @@
   <main class="content">
     <header>
       <h1>Realm: <span>{{ realmName }}</span></h1>
-      <p *ngIf="!loadingClients && realmName !== 'Unknown Realm'" class="realm-summary">
-        {{ clients.length }} product(s) in this realm
+      <p *ngIf="!loadingProducts && realmName !== 'Unknown Realm'" class="realm-summary">
+        {{ products.length }} product(s) in this realm
       </p>
-      <p *ngIf="loadingClients" class="realm-summary">Loading…</p>
+      <p *ngIf="loadingProducts" class="realm-summary">Loading…</p>
     </header>
 
     <!-- SPA content loads here -->

@@ -9,11 +9,11 @@
     </div>
 
     <div class="field">
-      <label>Client</label>
-      <select formControlName="client">
-        <option value="">-- Select Client --</option>
-        <option *ngFor="let client of clients" [value]="client">
-          {{ client }}
+      <label>Product</label>
+      <select formControlName="product">
+        <option value="">-- Select Product --</option>
+        <option *ngFor="let product of products" [value]="product">
+          {{ product }}
         </option>
       </select>
     </div>
@@ -37,14 +37,14 @@
   <table>
     <thead>
       <tr>
-        <th>Client</th>
+        <th>Product</th>
         <th>Role</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let role of roles">
-        <td>{{ role.client }}</td>
+        <td>{{ role.product }}</td>
         <td>{{ role.name }}</td>
         <td>{{ role.description }}</td>
       </tr>

@@ -2,12 +2,12 @@
   "routes": {
     "/": {},
     "/dashboard": {},
-    "/dashboard/client": {},
-    "/dashboard/client/assign-roles": {},
-    "/dashboard/client/products": {},
-    "/dashboard/client/roleUrl": {},
-    "/dashboard/client/roles": {},
-    "/dashboard/client/users": {},
+    "/dashboard/product": {},
+    "/dashboard/product/assign-roles": {},
+    "/dashboard/product/products": {},
+    "/dashboard/product/roleUrl": {},
+    "/dashboard/product/roles": {},
+    "/dashboard/product/users": {},
     "/dashboard/settings": {},
     "/login": {},
     "/signup": {}

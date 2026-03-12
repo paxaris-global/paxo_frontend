@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, shareReplay, finalize } from 'rxjs/operators';
@@ -7,7 +7,7 @@ import {
   LoginResponse,
   SignupRequest,
   UserCreationRequest,
-  CreateClientRequest,
+  CreateProductRequest,
   CreateRolesPayload,
   AssignRolePayload,
 } from '../models';
@@ -26,7 +26,7 @@ import { environment } from '../../environments/environment';
 export class ApiGatewayService {
   private readonly baseUrl = environment.apiGatewayBaseUrl;
   private usersInFlight = new Map<string, Observable<any[]>>();
-  private clientsInFlight = new Map<string, Observable<Array<{ clientId: string; [key: string]: any }>>>();
+  private productsInFlight = new Map<string, Observable<Array<{ productId: string; [key: string]: any }>>>();
   constructor(private http: HttpClient) {}
   private getAuthHeaders(): HttpHeaders {
     const token = getStoredToken();
@@ -130,71 +130,70 @@ export class ApiGatewayService {
     const url = `${this.baseUrl}/identity/users/${realm}/${username}`;
     return this.http.put(url, body, { headers: this.getAuthHeaders() });
   }
-  // ─── Get roles (get role) ────────────────────────────────────────────────
-  /**
-   * GET /identity/{realm}/clients/{clientId}/roles
-   * Header: Authorization: Bearer {token}
-   */
-  getRoles(realm: string, clientId: string): Observable<any[]> {
-    const url = `${this.baseUrl}/identity/${realm}/clients/${clientId}/roles`;
-    return this.http.get<any[]>(url, { headers: this.getAuthHeaders() });
-  }
-  // ─── Role creation (role creation) ──────────────────────────────────────
-  /**
-   * POST /identity/{realm}/clients/{clientId}/roles
-   * Body: [{ name, description, url, uri }]
-   * Header: Authorization: Bearer {token}
-   */
-  createRoles(realm: string, clientId: string, body: CreateRolesPayload): Observable<any> {
-    this.requireToken();
-    const url = `${this.baseUrl}/identity/${realm}/clients/${clientId}/roles`;
-    return this.http.post(url, body, { headers: this.getAuthHeaders() });
-  }
   // ─── Get clients (list clients for realm) ─────────────────────────────────
   /**
-   * GET /identity/clients/{realm}
-   * Returns array of client objects; use clientId for dropdown values.
+   * GET /identity/products/{realm}
+   * Returns array of product objects; use productId for dropdown values.
    * Deduplicated: repeated calls for the same realm while in flight share one HTTP request.
    */
-  getClients(realm: string): Observable<Array<{ clientId: string; [key: string]: any }>> {
-    const existing = this.clientsInFlight.get(realm);
+  getProducts(realm: string): Observable<Array<{ productId: string; [key: string]: any }>> {
+    const existing = this.productsInFlight.get(realm);
     if (existing) return existing;
-    const url = `${this.baseUrl}/identity/clients/${realm}`;
+    const url = `${this.baseUrl}/identity/products/${realm}`;
     const req = this.http
-      .get<Array<{ clientId: string; [key: string]: any }>>(url, {
+      .get<Array<{ productId: string; [key: string]: any }>>(url, {
         headers: this.getAuthHeaders(),
       })
       .pipe(
         shareReplay(1),
-        finalize(() => this.clientsInFlight.delete(realm))
+        finalize(() => this.productsInFlight.delete(realm))
       );
-    this.clientsInFlight.set(realm, req);
+    this.productsInFlight.set(realm, req);
     return req;
   }
-  // ─── Create client (create client) ───────────────────────────────────────
+  // ─── Get roles (get role) ────────────────────────────────────────────────
   /**
-   * POST /identity/{realm}/clients
-   * Body: { clientId, publicClient, urls }
-   * Sends Bearer token when present (some backends require it).
+   * GET /identity/{realm}/products/{productId}/roles
+   * Header: Authorization: Bearer {token}
    */
-  createClient(realm: string, body: CreateClientRequest): Observable<any> {
-    const url = `${this.baseUrl}/identity/${realm}/clients`;
+  getRoles(realm: string, productId: string): Observable<any[]> {
+    const url = `${this.baseUrl}/identity/${realm}/products/${productId}/roles`;
+    return this.http.get<any[]>(url, { headers: this.getAuthHeaders() });
+  }
+  // ─── Role creation (role creation) ──────────────────────────────────────
+  /**
+   * POST /identity/{realm}/products/{productId}/roles
+   * Body: [{ name, description, url, uri }]
+   * Header: Authorization: Bearer {token}
+   */
+  createRoles(realm: string, productId: string, body: CreateRolesPayload): Observable<any> {
+    this.requireToken();
+    const url = `${this.baseUrl}/identity/${realm}/products/${productId}/roles`;
     return this.http.post(url, body, { headers: this.getAuthHeaders() });
   }
-  // ─── Assign role to user (assign role to user) ───────────────────────────
+  // ─── Create product (create product) ───────────────────────────────────────
   /**
-   * POST /identity/{realm}/users/{username}/clients/{clientName}/roles
+   * POST /identity/{realm}/products
+   * Body: { productId, publicClient, urls }
+   * Sends Bearer token when present (some backends require it).
+   */
+  createProduct(realm: string, body: CreateProductRequest): Observable<any> {
+    const url = `${this.baseUrl}/identity/${realm}/products`;
+    return this.http.post(url, body, { headers: this.getAuthHeaders() });
+  }
+  /**
+   * POST /identity/{realm}/users/{username}/products/{productName}/roles
    * Body: [{ name: "Role1" }]
    * Header: Authorization: Bearer {token}
    */
   assignRoleToUser(
     realm: string,
     username: string,
-    clientName: string,
+    productName: string,
     body: AssignRolePayload
   ): Observable<any> {
     this.requireToken();
-    const url = `${this.baseUrl}/identity/${realm}/users/${username}/clients/${clientName}/roles`;
+    const url = `${this.baseUrl}/identity/${realm}/users/${username}/products/${productName}/roles`;
     return this.http.post(url, body, { headers: this.getAuthHeaders() });
   }
   // ─── URI check-access ────────────────────────────────────────────────────

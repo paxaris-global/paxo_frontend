@@ -1,4 +1,4 @@
-/* Create Client Component - Professional Design */
+/* Create Product Component - Professional Design */
 .form-card {
   background: var(--bg-primary);
   border-radius: var(--border-radius-lg);
@@ -7,7 +7,7 @@
   margin-bottom: var(--spacing-lg);
 }
 
-.section-client {
+.section-product {
   border-top: 4px solid var(--primary);
 }
 

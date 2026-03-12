@@ -3,11 +3,11 @@
 
   <div class="form-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
     <div class="form-group" style="flex: 1;">
-      <label>Client</label>
-      <select formControlName="client" class="form-control">
-        <option value="" disabled>Select Client</option>
-        <option *ngFor="let client of clients" [value]="client">
-          {{ client }}
+      <label>Product</label>
+      <select formControlName="product" class="form-control">
+        <option value="" disabled>Select Product</option>
+        <option *ngFor="let product of products" [value]="product">
+          {{ product }}
         </option>
       </select>
     </div>

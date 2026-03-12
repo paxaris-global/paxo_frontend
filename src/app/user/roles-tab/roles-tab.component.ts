@@ -12,7 +12,7 @@ import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 export class RolesTabComponent {
 
   @Input() roleForm!: FormGroup;
-  @Input() clients: string[] = [];
+  @Input() products: string[] = [];
   @Input() roles: any[] = [];
 
   @Output() createRole = new EventEmitter<void>();

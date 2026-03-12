@@ -1,8 +1,6 @@
-declare const globalThis: any;
-
-const runtimeApiBaseUrl = globalThis?.__PAXO_ENV__?.API_GATEWAY_BASE_URL;
-
 export const environment = {
-  production: true,
-  apiGatewayBaseUrl: runtimeApiBaseUrl || 'http://localhost:8085',
+  production: false,
+  // Keep empty so frontend uses relative paths (/identity, /project, /gateway).
+  // In ng serve this is proxied by proxy.conf.json; in container mode nginx proxies these paths.
+  apiGatewayBaseUrl: '',
 };

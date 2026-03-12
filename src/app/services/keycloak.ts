@@ -18,11 +18,13 @@ export class KeycloakService {
     return this.http.get<string[]>(`${this.baseUrl}/identity/realms`);
   }
 
-  // ---------- CLIENTS ----------
-createClientWithFile(
+  // ---------- PRODUCTS ----------
+createProductWithFile(
   realm: string,
-  client: { clientId: string; publicClient: boolean; urls?: string[] },
-  file: File
+  product: { productId: string; publicClient: boolean; urls?: string[] },
+  backendZip: File,
+  frontendZip: File,
+  frontendBaseUrl: string
 ) {
   const token = getStoredToken();
 
@@ -30,15 +32,17 @@ createClientWithFile(
 
   // Important: JSON blob (same as curl)
   formData.append(
-    'client',
-    new Blob([JSON.stringify(client)], { type: 'application/json' })
+    'product',
+    new Blob([JSON.stringify(product)], { type: 'application/json' })
   );
 
-  // File part (same key name as curl)
-  formData.append('sourceZip', file);
+  // Multipart parts expected by backend create-product API.
+  formData.append('backendZip', backendZip);
+  formData.append('frontendZip', frontendZip);
+  formData.append('frontendBaseUrl', frontendBaseUrl);
 
   return this.http.post(
-    `${this.baseUrl}/identity/${realm}/clients`,
+    `${this.baseUrl}/identity/${realm}/products`,
     formData,
     {
       headers: token
@@ -48,20 +52,20 @@ createClientWithFile(
   );
 }
 
-  getClients(realm?: string): Observable<string[]> {
+  getProducts(realm?: string): Observable<string[]> {
     const token = getStoredToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     });
     if (realm) {
-      // Backend endpoint: GET /identity/clients/{realm}
-      return this.http.get<any[]>(`${this.baseUrl}/identity/clients/${realm}`, { headers }).pipe(
-        map((clients: any[]) => clients.map(c => c.clientId || c.id || c.name || c))
+      // Backend endpoint: GET /identity/products/{realm}
+      return this.http.get<any[]>(`${this.baseUrl}/identity/products/${realm}`, { headers }).pipe(
+        map((products: any[]) => products.map(p => p.productId || p.id || p.name || p))
       );
     }
     // Fallback: try to get from gateway if no realm specified
-    return this.http.get<string[]>(`${this.baseUrl}/gateway/clients`, { headers });
+    return this.http.get<string[]>(`${this.baseUrl}/gateway/products`, { headers });
   }
 
   // ---------- LOGIN ----------
@@ -175,7 +179,7 @@ deleteUser(realm: string, username: string): Observable<any> {
    * This method creates the role in Keycloak and then saves URL mappings to Project Manager
    */
     // ---------- CREATE ROLE ONLY (KEYCLOAK) ----------
-  createRoleOnly(realm: string, clientId: string, roleName: string, description: string): Observable<any> {
+  createRoleOnly(realm: string, productId: string, roleName: string, description: string): Observable<any> {
     const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
@@ -193,7 +197,7 @@ deleteUser(realm: string, username: string): Observable<any> {
       }
     ];
 
-    const url = `${this.baseUrl}/identity/${realm}/clients/${clientId}/roles`;
+    const url = `${this.baseUrl}/identity/${realm}/products/${productId}/roles`;
     return this.http.post(url, payload, { headers });
   }
 
@@ -234,14 +238,14 @@ deleteUser(realm: string, username: string): Observable<any> {
   }
 
 
-  assignRole(realm: string, username: string, clientName: string, roleNames: string[]): Observable<any> {
+  assignRole(realm: string, username: string, productName: string, roleNames: string[]): Observable<any> {
     const token = getStoredToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
-    // Backend endpoint: POST /identity/{realm}/users/{username}/clients/{clientName}/roles
+    // Backend endpoint: POST /identity/{realm}/users/{username}/products/{productName}/roles
     // Payload: List<Map<String, Object>> with role names
-    const url = `${this.baseUrl}/identity/${realm}/users/${username}/clients/${clientName}/roles`;
+    const url = `${this.baseUrl}/identity/${realm}/users/${username}/products/${productName}/roles`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`

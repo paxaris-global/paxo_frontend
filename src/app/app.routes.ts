@@ -2,8 +2,8 @@ import { Routes } from '@angular/router';
 import { LoginPage } from './login/login';
 import { SignupPage } from './signup-page/signup-page';
 import { DashboardComponent } from './dashboard/dashboard';
-import { ClientComponent } from './client/client.component';
-import { CreateClientComponent } from './create-client/create-client';
+import { ProductComponent } from './product/product.component';
+import { CreateProductComponent } from './create-product/create-product';
 import { User } from './user/user';
 import { Settings } from './settings/settings';
 import { authGuard } from './guards/auth.guard';
@@ -21,10 +21,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'client',
-        component: ClientComponent,
+        path: 'product',
+        component: ProductComponent,
         children: [
-          { path: 'products', component: CreateClientComponent },
+          { path: 'products', component: CreateProductComponent },
           { path: 'users', component: User, data: { section: 'users' } },
           { path: 'roles', component: User, data: { section: 'roles' } },
           { path: 'roleUrl', component: User, data: { section: 'roleUrl' } },
@@ -33,7 +33,7 @@ export const routes: Routes = [
         ]
       },
       { path: 'settings', component: Settings },
-      { path: '', redirectTo: 'client/products', pathMatch: 'full' }
+      { path: '', redirectTo: 'product/products', pathMatch: 'full' }
     ]
   },
 

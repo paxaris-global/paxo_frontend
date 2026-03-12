@@ -1,0 +1,72 @@
+<div class="form-card section-product">
+  <h3><i class="fa-solid fa-gears"></i> Create New Product</h3>
+  <p class="hint">Create via API using realm + product details + backend/frontend source ZIP files.</p>
+
+  <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
+    <div class="field">
+      <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
+      <input
+        id="realm"
+        type="text"
+        formControlName="realm"
+        placeholder="e.g. test2"
+        readonly
+      />
+    </div>
+    <div class="field">
+      <label for="productId"><i class="fa-solid fa-id-badge"></i> Product ID</label>
+      <input
+        id="productId"
+        type="text"
+        formControlName="productId"
+        placeholder="e.g. test-product5"
+      />
+    </div>
+    <div class="field">
+      <label for="frontendBaseUrl"><i class="fa-solid fa-link"></i> Frontend Base URL</label>
+      <input
+        id="frontendBaseUrl"
+        type="text"
+        formControlName="frontendBaseUrl"
+        placeholder="e.g. http://localhost:8083"
+      />
+    </div>
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="publicClient" />
+        Public product
+      </label>
+    </div>
+
+    <hr class="divider" />
+    <div class="field">
+      <label for="backendZip"><i class="fa-solid fa-file-archive"></i> Backend ZIP</label>
+      <input
+        id="backendZip"
+        type="file"
+        (change)="onBackendZipSelected($event)"
+        accept=".zip"
+      />
+      <small *ngIf="selectedBackendZip" class="file-name">{{ selectedBackendZip.name }}</small>
+    </div>
+
+    <div class="field">
+      <label for="frontendZip"><i class="fa-solid fa-file-archive"></i> Frontend ZIP</label>
+      <input
+        id="frontendZip"
+        type="file"
+        (change)="onFrontendZipSelected($event)"
+        accept=".zip"
+      />
+      <small *ngIf="selectedFrontendZip" class="file-name">{{ selectedFrontendZip.name }}</small>
+    </div>
+
+    <button type="submit">
+      <i class="fa-solid fa-plus-circle"></i> Create Product
+    </button>
+  </form>
+
+  <div *ngIf="responseMessage" class="response-message">
+    {{ responseMessage }}
+  </div>
+</div>

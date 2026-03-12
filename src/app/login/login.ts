@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -89,7 +89,7 @@ export class LoginPage implements OnInit {
               window.localStorage.setItem('base_url', baseUrl);
             }
 
-            const adminRedirect = `/dashboard/client/users?realm=${encodeURIComponent(this.selectedRealm)}`;
+            const adminRedirect = `/dashboard/product/users?realm=${encodeURIComponent(this.selectedRealm)}`;
             const apiRedirect = this.getApiRedirectUrl(res);
             const userRedirect = apiRedirect || this.getUserRedirectUrl();
             const targetUrl = isAdmin ? adminRedirect : userRedirect;

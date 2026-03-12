@@ -11,7 +11,7 @@ import { FormGroup, ReactiveFormsModule, FormArray } from '@angular/forms';
 })
 export class RoleUrlTabComponent {
   @Input() roleForm!: FormGroup;
-  @Input() clients: any[] = [];
+  @Input() products: any[] = [];
   @Input() roles: any[] = [];
   @Input() openApiEndpoints: any[] = [];
 
