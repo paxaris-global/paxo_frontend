@@ -137,44 +137,33 @@ export class LoginPage implements OnInit {
               window.localStorage.setItem('base_url', baseUrl);
             }
 
-            const adminRedirect = '/dashboard';
+            // Admin users always redirect to /dashboard
+            if (isAdmin) {
+              clearStoredRedirectUrl();
+              this.router.navigateByUrl('/dashboard');
+              return;
+            }
+
+            // Normal users: use backend or stored redirect URL
             const apiRedirect = this.getApiRedirectUrl(res);
             const userRedirect = apiRedirect || this.getUserRedirectUrl();
-            const targetUrl = isAdmin ? adminRedirect : userRedirect;
 
-            console.log('[Login] redirect decision:', {
-              isAdmin,
-              apiRedirect,
-              fallbackRedirect: this.getUserRedirectUrl(),
-              targetUrl,
-            });
-
-            if (!targetUrl) {
+            if (!userRedirect) {
               this.errorMessage = 'Login successful, but no redirect URL is available for this user.';
               console.warn('[Login] No valid redirect target found for non-admin user.');
               return;
             }
 
-            if (isAdmin) {
-              clearStoredRedirectUrl();
-            } else if (userRedirect) {
-              // Keep redirect_url visible in localStorage for debugging and reuse.
-              setStoredRedirectUrl(userRedirect);
-            }
-
-            if (isAdmin) {
-              this.router.navigateByUrl(targetUrl);
-            } else {
-              try {
-                if (targetUrl.startsWith('/')) {
-                  this.router.navigateByUrl(targetUrl);
-                } else {
-                  window.location.href = targetUrl;
-                }
-              } catch (redirectErr) {
-                console.error('[Login] Redirect failed:', { targetUrl, redirectErr });
-                this.errorMessage = `Login successful, but browser rejected redirect_url: ${targetUrl}`;
+            setStoredRedirectUrl(userRedirect);
+            try {
+              if (userRedirect.startsWith('/')) {
+                this.router.navigateByUrl(userRedirect);
+              } else {
+                window.location.href = userRedirect;
               }
+            } catch (redirectErr) {
+              console.error('[Login] Redirect failed:', { userRedirect, redirectErr });
+              this.errorMessage = `Login successful, but browser rejected redirect_url: ${userRedirect}`;
             }
           } else {
             setStoredRealm(this.selectedRealm);
