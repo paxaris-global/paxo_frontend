@@ -19,6 +19,7 @@ jobs:
           client-payload: |
             {
               "repo": "${{ github.repository }}",
+              "docker_repository": "devopspaxarisglobalrepo/paxo_frontend",
               "ref_name": "${{ github.ref_name }}",
               "ref": "${{ github.ref }}",
               "sha": "${{ github.sha }}"
