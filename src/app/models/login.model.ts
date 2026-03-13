@@ -21,6 +21,7 @@ export interface LoginResponse {
   base_url?: string;
   redirect_url?: string;
   scope?: string;
+  isAdmin?: boolean;
   [key: string]: unknown;
 }
 

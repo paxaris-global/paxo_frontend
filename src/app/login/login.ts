@@ -121,24 +121,6 @@ export class LoginPage implements OnInit {
         if (token) {
           this.token = token;
           this.baseUrl = baseUrl || '';
-          // Debug: log roles and admin detection
-          const isAdmin = tokenHasAdminRole(token);
-          const payload = (token && JSON.parse(atob(token.split('.')[1]))) || {};
-          const allRoles = [];
-          if (payload.realm_access && Array.isArray(payload.realm_access.roles)) {
-            allRoles.push(...payload.realm_access.roles);
-          }
-          if (payload.resource_access && typeof payload.resource_access === 'object') {
-            Object.values(payload.resource_access).forEach((r: any) => {
-              if (r && Array.isArray(r.roles)) allRoles.push(...r.roles);
-            });
-          }
-          if (Array.isArray(payload.roles)) {
-            allRoles.push(...payload.roles);
-          }
-          console.log('[Login] Token roles:', allRoles);
-          console.log('[Login] isAdmin:', isAdmin);
-
           setStoredRealm(this.selectedRealm);
           setStoredClientId(this.selectedClientId);
           setStoredTokenExpiryFromToken(token);
@@ -153,13 +135,12 @@ export class LoginPage implements OnInit {
               globalThis.window.localStorage.setItem('base_url', baseUrl);
             }
 
-            // Admin users always redirect to /dashboard
-            if (isAdmin) {
+            // Use isAdmin from backend response
+            if (res.isAdmin) {
               clearStoredRedirectUrl();
               try {
                 this.router.navigateByUrl('/dashboard');
               } catch (err) {
-                // Fallback to hard redirect if router fails
                 globalThis.window.location.href = '/dashboard';
               }
               return;
@@ -184,7 +165,6 @@ export class LoginPage implements OnInit {
               }
             } catch (redirectErr) {
               console.error('[Login] Redirect failed:', { userRedirect, redirectErr });
-              // Fallback to hard redirect if router fails
               globalThis.window.location.href = userRedirect;
             }
           } else {
