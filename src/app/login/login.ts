@@ -10,8 +10,13 @@ import {
   getStoredRedirectUrl,
   normalizeProductRedirectUrl,
   normalizeRedirectUrl,
+  setStoredClientId,
+  setStoredRefreshToken,
   setStoredRedirectUrl,
   setStoredRealm,
+  setStoredTokenExpiryFromExpiresIn,
+  setStoredTokenExpiryFromToken,
+  touchStoredLastActivity,
   tokenHasAdminRole,
 } from '../auth-storage';
 @Component({
@@ -40,14 +45,45 @@ export class LoginPage implements OnInit {
   private getUserRedirectUrl(): string | null {
     const queryReturnUrl = normalizeRedirectUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
     const storedRedirectUrl = normalizeProductRedirectUrl(getStoredRedirectUrl());
-    return queryReturnUrl || storedRedirectUrl;
+    return this.normalizeLegacyRedirectPath(queryReturnUrl || storedRedirectUrl);
   }
 
   private getApiRedirectUrl(res: LoginResponse): string | null {
     const rawRedirect = res['redirect_url'];
     if (typeof rawRedirect !== 'string') return null;
-    const trimmed = rawRedirect.trim();
-    return trimmed || null;
+    return this.normalizeLegacyRedirectPath(normalizeProductRedirectUrl(rawRedirect));
+  }
+
+  private normalizeLegacyRedirectPath(targetUrl: string | null): string | null {
+    if (!targetUrl) return null;
+
+    const normalizedUrl = targetUrl.trim();
+    if (!normalizedUrl) return null;
+
+    const rewriteDashboardPath = (pathName: string, search: string, hash: string): string => {
+      const rewrittenPath = pathName
+        .replace('/dashboard/client/products', '/dashboard/product/products')
+        .replace('/dashboard/client/users', '/dashboard/product/users')
+        .replace('/dashboard/client/roles', '/dashboard/product/roles');
+
+      return `${rewrittenPath}${search}${hash}`;
+    };
+
+    if (normalizedUrl.startsWith('/')) {
+      const parsed = new URL(normalizedUrl, 'http://local.placeholder');
+      return rewriteDashboardPath(parsed.pathname, parsed.search, parsed.hash);
+    }
+
+    try {
+      const parsed = new URL(normalizedUrl);
+      const rewritten = rewriteDashboardPath(parsed.pathname, parsed.search, parsed.hash);
+      if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
+        return rewritten;
+      }
+      return `${parsed.origin}${rewritten}`;
+    } catch {
+      return normalizedUrl;
+    }
   }
 
   ngOnInit(): void {
@@ -57,6 +93,9 @@ export class LoginPage implements OnInit {
       if (reason === 'unauthorized') {
         sessionStorage.removeItem('redirect_reason');
         this.errorMessage = 'Your session expired or you were signed out. Please log in again.';
+      } else if (reason === 'idle-timeout') {
+        sessionStorage.removeItem('redirect_reason');
+        this.errorMessage = 'You were signed out after 10 minutes of inactivity. Please log in again.';
       }
     }
   }
@@ -84,12 +123,21 @@ export class LoginPage implements OnInit {
           this.baseUrl = baseUrl || '';
           const isAdmin = tokenHasAdminRole(token);
 
+          setStoredRealm(this.selectedRealm);
+          setStoredClientId(this.selectedClientId);
+          setStoredTokenExpiryFromToken(token);
+          setStoredTokenExpiryFromExpiresIn(res.expires_in);
+          touchStoredLastActivity();
+          if (typeof res.refresh_token === 'string' && res.refresh_token.trim()) {
+            setStoredRefreshToken(res.refresh_token);
+          }
+
           if (typeof window !== 'undefined') {
             if (baseUrl) {
               window.localStorage.setItem('base_url', baseUrl);
             }
 
-            const adminRedirect = `/dashboard/product/users?realm=${encodeURIComponent(this.selectedRealm)}`;
+            const adminRedirect = '/dashboard';
             const apiRedirect = this.getApiRedirectUrl(res);
             const userRedirect = apiRedirect || this.getUserRedirectUrl();
             const targetUrl = isAdmin ? adminRedirect : userRedirect;
@@ -107,8 +155,6 @@ export class LoginPage implements OnInit {
               return;
             }
 
-            setStoredRealm(this.selectedRealm);
-
             if (isAdmin) {
               clearStoredRedirectUrl();
             } else if (userRedirect) {
@@ -119,9 +165,12 @@ export class LoginPage implements OnInit {
             if (isAdmin) {
               this.router.navigateByUrl(targetUrl);
             } else {
-              // For non-admin users, redirect exactly to backend-provided URL.
               try {
-                window.location.href = targetUrl;
+                if (targetUrl.startsWith('/')) {
+                  this.router.navigateByUrl(targetUrl);
+                } else {
+                  window.location.href = targetUrl;
+                }
               } catch (redirectErr) {
                 console.error('[Login] Redirect failed:', { targetUrl, redirectErr });
                 this.errorMessage = `Login successful, but browser rejected redirect_url: ${targetUrl}`;

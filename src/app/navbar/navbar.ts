@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { isLoggedIn, clearStoredRedirectUrl, clearStoredToken, clearStoredRealm } from '../auth-storage';
+import { clearAuthState, isLoggedIn } from '../auth-storage';
 
 @Component({
   selector: 'app-navbar',
@@ -19,9 +19,7 @@ export class NavbarComponent {
 
   logout($event: Event): void {
     $event.preventDefault();
-    clearStoredToken();
-    clearStoredRealm();
-    clearStoredRedirectUrl();
+    clearAuthState();
     this.router.navigate(['/login']);
   }
 }

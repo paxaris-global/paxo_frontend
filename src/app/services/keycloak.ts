@@ -2,7 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { getStoredToken, setStoredToken } from '../auth-storage';
+import {
+  clearAuthState,
+  getStoredToken,
+  setStoredRefreshToken,
+  setStoredToken,
+  setStoredTokenExpiryFromExpiresIn,
+  setStoredTokenExpiryFromToken,
+} from '../auth-storage';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -78,6 +85,13 @@ createProductWithFile(
         // Store token consistently as both 'token' and 'access_token'
         if (response.access_token) {
           setStoredToken(response.access_token);
+          setStoredTokenExpiryFromToken(response.access_token);
+        }
+        if (typeof response.expires_in === 'number') {
+          setStoredTokenExpiryFromExpiresIn(response.expires_in);
+        }
+        if (typeof response.refresh_token === 'string' && response.refresh_token.trim()) {
+          setStoredRefreshToken(response.refresh_token);
         }
         return response;
       })
@@ -319,6 +333,7 @@ deleteUser(realm: string, username: string): Observable<any> {
 
   // ---------- LOGOUT ----------
   logout(): void {
+    clearAuthState();
     // Replace <realm-name> with your Keycloak realm
     window.location.href = `${this.baseUrl}/identity/logout`;
   }

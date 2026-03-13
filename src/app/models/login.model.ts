@@ -17,8 +17,15 @@ export interface LoginResponse {
   expires_in?: number;
   token_type?: string;
   refresh_token?: string;
+  refresh_expires_in?: number;
   base_url?: string;
   redirect_url?: string;
   scope?: string;
   [key: string]: unknown;
+}
+
+export interface RefreshTokenRequest {
+  refresh_token: string;
+  client_id: string;
+  product_id?: string;
 }

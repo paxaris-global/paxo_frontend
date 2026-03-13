@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar'; // adjust path if needed
 import { CommonModule } from '@angular/common';
+import { SessionManagerService } from './services/session-manager.service';
 
 @Component({
   selector: 'app-root',
@@ -17,4 +18,8 @@ import { CommonModule } from '@angular/common';
     
   `]
 })
-export class App {}
+export class App {
+  constructor(private readonly sessionManager: SessionManagerService) {
+    this.sessionManager.start();
+  }
+}

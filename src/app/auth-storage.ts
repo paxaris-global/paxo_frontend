@@ -2,48 +2,93 @@
  * SSR-safe access to auth token. Use this instead of localStorage directly
  * so that server-side rendering does not throw "localStorage is not defined".
  */
+const TOKEN_KEY = 'token';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
+const REALM_KEY = 'realm';
+const CLIENT_ID_KEY = 'client_id';
+const REDIRECT_URL_KEY = 'redirect_url';
+const TOKEN_EXPIRES_AT_KEY = 'token_expires_at';
+const LAST_ACTIVITY_AT_KEY = 'last_activity_at';
+const BASE_URL_KEY = 'base_url';
+
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token') || localStorage.getItem('access_token');
+  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 export function setStoredToken(token: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('token', token);
-  localStorage.setItem('access_token', token);
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(ACCESS_TOKEN_KEY, token);
 }
 export function clearStoredToken(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('token');
-  localStorage.removeItem('access_token');
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
 }
 export function isLoggedIn(): boolean {
-  return !!getStoredToken();
+  const token = getStoredToken();
+  if (!token) return false;
+  return !isStoredTokenExpired();
 }
+
+export function getStoredRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function setStoredRefreshToken(token: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(REFRESH_TOKEN_KEY, token);
+}
+
+export function clearStoredRefreshToken(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
 /** SSR-safe realm name storage (from GET /identity/realms/user). */
 export function getStoredRealm(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('realm');
+  return localStorage.getItem(REALM_KEY);
 }
 export function setStoredRealm(realm: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('realm', realm);
+  localStorage.setItem(REALM_KEY, realm);
 }
 export function clearStoredRealm(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('realm');
+  localStorage.removeItem(REALM_KEY);
 }
+
+export function getStoredClientId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(CLIENT_ID_KEY);
+}
+
+export function setStoredClientId(clientId: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CLIENT_ID_KEY, clientId);
+}
+
+export function clearStoredClientId(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(CLIENT_ID_KEY);
+}
+
 /** SSR-safe redirect_url storage for post-login navigation. */
 export function getStoredRedirectUrl(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('redirect_url');
+  return localStorage.getItem(REDIRECT_URL_KEY);
 }
 export function setStoredRedirectUrl(redirectUrl: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('redirect_url', redirectUrl);
+  localStorage.setItem(REDIRECT_URL_KEY, redirectUrl);
 }
 export function clearStoredRedirectUrl(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('redirect_url');
+  localStorage.removeItem(REDIRECT_URL_KEY);
 }
 
 function parseJwtPayload(token: string): Record<string, unknown> | null {
@@ -58,6 +103,82 @@ function parseJwtPayload(token: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function parseTokenExp(token: string): number | null {
+  const payload = parseJwtPayload(token);
+  if (!payload) return null;
+
+  const expValue = payload['exp'];
+  if (typeof expValue === 'number' && Number.isFinite(expValue)) {
+    return expValue * 1000;
+  }
+
+  return null;
+}
+
+export function getStoredTokenExpiryAt(): number | null {
+  if (typeof window === 'undefined') return null;
+  const rawValue = localStorage.getItem(TOKEN_EXPIRES_AT_KEY);
+  if (!rawValue) return null;
+
+  const parsed = Number(rawValue);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function setStoredTokenExpiryAt(expiresAtMs: number): void {
+  if (typeof window === 'undefined') return;
+  if (!Number.isFinite(expiresAtMs)) return;
+  localStorage.setItem(TOKEN_EXPIRES_AT_KEY, Math.floor(expiresAtMs).toString());
+}
+
+export function setStoredTokenExpiryFromToken(token: string): void {
+  const expMs = parseTokenExp(token);
+  if (expMs) {
+    setStoredTokenExpiryAt(expMs);
+  }
+}
+
+export function setStoredTokenExpiryFromExpiresIn(expiresInSeconds: number | undefined): void {
+  if (typeof expiresInSeconds !== 'number' || !Number.isFinite(expiresInSeconds)) return;
+  const expiresAt = Date.now() + Math.max(0, expiresInSeconds) * 1000;
+  setStoredTokenExpiryAt(expiresAt);
+}
+
+export function isStoredTokenExpired(leewaySeconds: number = 0): boolean {
+  const token = getStoredToken();
+  if (!token) return true;
+
+  const expiresAt = getStoredTokenExpiryAt() ?? parseTokenExp(token);
+  if (!expiresAt) return false;
+
+  const threshold = Date.now() + Math.max(0, leewaySeconds) * 1000;
+  return expiresAt <= threshold;
+}
+
+export function getStoredLastActivityAt(): number | null {
+  if (typeof window === 'undefined') return null;
+  const rawValue = localStorage.getItem(LAST_ACTIVITY_AT_KEY);
+  if (!rawValue) return null;
+
+  const parsed = Number(rawValue);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function touchStoredLastActivity(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LAST_ACTIVITY_AT_KEY, Date.now().toString());
+}
+
+export function clearAuthState(): void {
+  if (typeof window === 'undefined') return;
+  clearStoredToken();
+  clearStoredRefreshToken();
+  clearStoredRealm();
+  clearStoredClientId();
+  clearStoredRedirectUrl();
+  localStorage.removeItem(LAST_ACTIVITY_AT_KEY);
+  localStorage.removeItem(BASE_URL_KEY);
 }
 
 function extractTokenRoles(payload: Record<string, unknown>): string[] {
@@ -91,14 +212,29 @@ function extractTokenRoles(payload: Record<string, unknown>): string[] {
   return Array.from(roles);
 }
 
-/** Returns true when the token includes an admin role (case-insensitive). */
+function normalizeRoleName(role: string): string {
+  return role.trim().toLowerCase().replace(/^role_/, '');
+}
+
+/**
+ * Returns true only when the token contains the full realm-management role set
+ * needed to treat the user as an internal dashboard admin.
+ */
 export function tokenHasAdminRole(token: string | null): boolean {
   if (!token) return false;
   const payload = parseJwtPayload(token);
   if (!payload) return false;
 
-  const adminRoles = new Set(['admin', 'realm-admin']);
-  return extractTokenRoles(payload).some((role) => adminRoles.has(role.toLowerCase()));
+  const requiredRoles = [
+    'create-client',
+    'impersonation',
+    'manage-clients',
+    'manage-realm',
+    'manage-users',
+  ];
+
+  const userRoles = new Set(extractTokenRoles(payload).map((role) => normalizeRoleName(role)));
+  return requiredRoles.every((role) => userRoles.has(role));
 }
 
 /** Checks admin role from the currently stored token. */

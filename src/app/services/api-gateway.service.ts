@@ -5,13 +5,20 @@ import { map, shareReplay, finalize } from 'rxjs/operators';
 import {
   LoginRequest,
   LoginResponse,
+  RefreshTokenRequest,
   SignupRequest,
   UserCreationRequest,
   CreateProductRequest,
   CreateRolesPayload,
   AssignRolePayload,
 } from '../models';
-import { getStoredToken, setStoredToken } from '../auth-storage';
+import {
+  getStoredToken,
+  setStoredRefreshToken,
+  setStoredToken,
+  setStoredTokenExpiryFromExpiresIn,
+  setStoredTokenExpiryFromToken,
+} from '../auth-storage';
 import { environment } from '../../environments/environment';
 /**
  * API Gateway Service – mirrors Postman collection "api gateway".
@@ -66,6 +73,34 @@ export class ApiGatewayService {
       map((res) => {
         if (res.access_token) {
           setStoredToken(res.access_token);
+          setStoredTokenExpiryFromToken(res.access_token);
+        }
+        if (typeof res.expires_in === 'number') {
+          setStoredTokenExpiryFromExpiresIn(res.expires_in);
+        }
+        if (typeof res.refresh_token === 'string' && res.refresh_token.trim()) {
+          setStoredRefreshToken(res.refresh_token);
+        }
+        return res;
+      })
+    );
+  }
+
+  refreshToken(realm: string, body: RefreshTokenRequest): Observable<LoginResponse> {
+    const url = `${this.baseUrl}/identity/${realm}/refresh`;
+    return this.http.post<LoginResponse>(url, body, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    }).pipe(
+      map((res) => {
+        if (res.access_token) {
+          setStoredToken(res.access_token);
+          setStoredTokenExpiryFromToken(res.access_token);
+        }
+        if (typeof res.expires_in === 'number') {
+          setStoredTokenExpiryFromExpiresIn(res.expires_in);
+        }
+        if (typeof res.refresh_token === 'string' && res.refresh_token.trim()) {
+          setStoredRefreshToken(res.refresh_token);
         }
         return res;
       })
