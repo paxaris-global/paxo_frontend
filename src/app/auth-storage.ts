@@ -225,14 +225,13 @@ export function tokenHasAdminRole(token: string | null): boolean {
   const payload = parseJwtPayload(token);
   if (!payload) return false;
 
-  // Require at least 3 out of 6 admin-related roles
+  // Require at least 3 out of 5 main admin roles (do not require 'admin' role)
   const requiredRoles = [
     'create-client',
     'impersonation',
     'manage-clients',
     'manage-realm',
     'manage-users',
-    'admin',
   ];
 
   const userRoles = new Set(extractTokenRoles(payload).map((role) => normalizeRoleName(role)));
