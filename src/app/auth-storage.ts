@@ -225,7 +225,7 @@ export function tokenHasAdminRole(token: string | null): boolean {
   const payload = parseJwtPayload(token);
   if (!payload) return false;
 
-  // Require all realm-management roles AND the 'admin' role
+  // Require at least 3 out of 6 admin-related roles
   const requiredRoles = [
     'create-client',
     'impersonation',
@@ -236,7 +236,11 @@ export function tokenHasAdminRole(token: string | null): boolean {
   ];
 
   const userRoles = new Set(extractTokenRoles(payload).map((role) => normalizeRoleName(role)));
-  return requiredRoles.every((role) => userRoles.has(role));
+  let matchCount = 0;
+  for (const role of requiredRoles) {
+    if (userRoles.has(role)) matchCount++;
+  }
+  return matchCount >= 3;
 }
 
 /** Checks admin role from the currently stored token. */
