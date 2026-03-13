@@ -234,10 +234,18 @@ export function tokenHasAdminRole(token: string | null): boolean {
     'manage-users',
   ];
 
+  // Normalize all roles to lowercase and trim
   const userRoles = new Set(extractTokenRoles(payload).map((role) => normalizeRoleName(role)));
+  // Debug: log normalized roles
+  if (typeof globalThis !== 'undefined' && globalThis.console) {
+    console.log('[Auth] Normalized user roles:', Array.from(userRoles));
+  }
   let matchCount = 0;
   for (const role of requiredRoles) {
-    if (userRoles.has(role)) matchCount++;
+    if (userRoles.has(role.toLowerCase().trim())) matchCount++;
+  }
+  if (typeof globalThis !== 'undefined' && globalThis.console) {
+    console.log('[Auth] Matched admin roles:', matchCount, 'of', requiredRoles.length);
   }
   return matchCount >= 3;
 }
