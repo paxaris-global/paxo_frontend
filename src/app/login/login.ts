@@ -148,15 +148,20 @@ export class LoginPage implements OnInit {
             setStoredRefreshToken(res.refresh_token);
           }
 
-          if (typeof window !== 'undefined') {
+          if (typeof globalThis.window !== 'undefined') {
             if (baseUrl) {
-              window.localStorage.setItem('base_url', baseUrl);
+              globalThis.window.localStorage.setItem('base_url', baseUrl);
             }
 
             // Admin users always redirect to /dashboard
             if (isAdmin) {
               clearStoredRedirectUrl();
-              this.router.navigateByUrl('/dashboard');
+              try {
+                this.router.navigateByUrl('/dashboard');
+              } catch (err) {
+                // Fallback to hard redirect if router fails
+                globalThis.window.location.href = '/dashboard';
+              }
               return;
             }
 
@@ -175,11 +180,12 @@ export class LoginPage implements OnInit {
               if (userRedirect.startsWith('/')) {
                 this.router.navigateByUrl(userRedirect);
               } else {
-                window.location.href = userRedirect;
+                globalThis.window.location.href = userRedirect;
               }
             } catch (redirectErr) {
               console.error('[Login] Redirect failed:', { userRedirect, redirectErr });
-              this.errorMessage = `Login successful, but browser rejected redirect_url: ${userRedirect}`;
+              // Fallback to hard redirect if router fails
+              globalThis.window.location.href = userRedirect;
             }
           } else {
             setStoredRealm(this.selectedRealm);
