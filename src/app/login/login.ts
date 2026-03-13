@@ -135,8 +135,9 @@ export class LoginPage implements OnInit {
               globalThis.window.localStorage.setItem('base_url', baseUrl);
             }
 
-            // Use isAdmin from backend response
-            if (res.isAdmin) {
+            // Use isAdmin from backend response (safe access for TS)
+            const isAdmin = typeof res.isAdmin === 'boolean' ? res.isAdmin : Boolean((res as any)['isAdmin']);
+            if (isAdmin) {
               clearStoredRedirectUrl();
               try {
                 this.router.navigateByUrl('/dashboard');
