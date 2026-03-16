@@ -135,38 +135,23 @@ export class LoginPage implements OnInit {
               globalThis.window.localStorage.setItem('base_url', baseUrl);
             }
 
-            // Use isAdmin from backend response (safe access for TS)
-            const isAdmin = typeof res.isAdmin === 'boolean' ? res.isAdmin : Boolean((res as any)['isAdmin']);
-            if (isAdmin) {
-              clearStoredRedirectUrl();
-              try {
-                this.router.navigateByUrl('/dashboard');
-              } catch (err) {
-                globalThis.window.location.href = '/dashboard';
-              }
-              return;
-            }
-
-            // Normal users: use backend or stored redirect URL
+            // Only use backend-provided redirect_url for all users
             const apiRedirect = this.getApiRedirectUrl(res);
-            const userRedirect = apiRedirect || this.getUserRedirectUrl();
-
-            if (!userRedirect) {
-              this.errorMessage = 'Login successful, but no redirect URL is available for this user.';
-              console.warn('[Login] No valid redirect target found for non-admin user.');
+            if (!apiRedirect) {
+              this.errorMessage = 'Login successful, but no redirect URL was provided by the backend.';
+              console.warn('[Login] No valid redirect_url provided by backend.');
               return;
             }
-
-            setStoredRedirectUrl(userRedirect);
+            setStoredRedirectUrl(apiRedirect);
             try {
-              if (userRedirect.startsWith('/')) {
-                this.router.navigateByUrl(userRedirect);
+              if (apiRedirect.startsWith('/')) {
+                this.router.navigateByUrl(apiRedirect);
               } else {
-                globalThis.window.location.href = userRedirect;
+                globalThis.window.location.href = apiRedirect;
               }
             } catch (redirectErr) {
-              console.error('[Login] Redirect failed:', { userRedirect, redirectErr });
-              globalThis.window.location.href = userRedirect;
+              console.error('[Login] Redirect failed:', { apiRedirect, redirectErr });
+              globalThis.window.location.href = apiRedirect;
             }
           } else {
             setStoredRealm(this.selectedRealm);
