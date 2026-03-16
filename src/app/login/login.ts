@@ -135,7 +135,17 @@ export class LoginPage implements OnInit {
               globalThis.window.localStorage.setItem('base_url', baseUrl);
             }
 
-            // Only use backend-provided redirect_url for all users
+            // If isAdmin is true, redirect to /dashboard/product
+            if (res.isAdmin === true) {
+              try {
+                this.router.navigateByUrl('/dashboard/product');
+              } catch (err) {
+                globalThis.window.location.href = '/dashboard/product';
+              }
+              return;
+            }
+
+            // Otherwise, use backend-provided redirect_url
             const apiRedirect = this.getApiRedirectUrl(res);
             if (!apiRedirect) {
               this.errorMessage = 'Login successful, but no redirect URL was provided by the backend.';
