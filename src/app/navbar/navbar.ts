@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { clearAuthState, isLoggedIn } from '../auth-storage';
-
+// navbar
 @Component({
   selector: 'app-navbar',
   standalone: true,
