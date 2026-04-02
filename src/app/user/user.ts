@@ -57,7 +57,7 @@ export class User implements OnInit, OnDestroy {
   currentToken: string | null = null;
   tokenInfo: any = null;
 
-  // OpenAPI Spec
+  // OpenAPI Specs
   openApiFile: File | null = null;
   openApiEndpoints: Array<{
     method: string;
