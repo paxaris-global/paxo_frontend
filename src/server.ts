@@ -16,7 +16,7 @@ let angularApp: AngularNodeAppEngine | null = null;
 try {
   angularApp = new AngularNodeAppEngine();
 } catch (error) {
-  // Angular 20 can throw at startup when engine manifest.allowedHosts is undefined.
+  // Angular 20 can throw at startup when engine manifest.allowedHosts iss undefined.
   // Keep the server operational by falling back to CSR until the upstream bug is fixed.
   if (process.env['SSR_FALLBACK_LOG'] === 'true') {
     const message = error instanceof Error ? error.message : 'Unknown SSR startup error';
