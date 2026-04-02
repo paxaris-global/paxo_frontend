@@ -60,16 +60,16 @@ export default {
 ],
   entryPointToBrowserMapping: undefined,
   assets: {
-    'index.csr.html': {size: 2219, hash: '939e5b963c0397956b6cf39b0150a39a12676eaca2d27b9483f63fb376ee2f75', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
-    'index.server.html': {size: 1019, hash: '7901aa99e65bcc7ada4c8bf52b2a888ded802b7076769a76111c272876c80e47', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
-    'signup/index.html': {size: 12104, hash: '9c48656b882c3a0365f6d4df007cc285c0377cbac20b7be38fdb0eaa1a1a4c3f', text: () => import('./assets-chunks/signup_index_html.mjs').then(m => m.default)},
-    'dashboard/settings/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_settings_index_html.mjs').then(m => m.default)},
-    'dashboard/product/users/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_users_index_html.mjs').then(m => m.default)},
-    'dashboard/product/roles/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_roles_index_html.mjs').then(m => m.default)},
+    'index.csr.html': {size: 2219, hash: '092979330708c4c02b5f618eaa5fe886cb159b12e55f81703994b81ef94cfe56', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
+    'index.server.html': {size: 1019, hash: '7cc944d13273d874a26ea5339c41c0e9e2e7d2d9b6946e1e5840d8b9513061cc', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
+    'login/index.html': {size: 12050, hash: '2d9925520937f3926a2d6f55346dd21e412f1ced11d7310d9dfe8010251e6539', text: () => import('./assets-chunks/login_index_html.mjs').then(m => m.default)},
     'dashboard/product/assign-roles/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_assign-roles_index_html.mjs').then(m => m.default)},
     'dashboard/product/products/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_products_index_html.mjs').then(m => m.default)},
+    'dashboard/product/roles/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_roles_index_html.mjs').then(m => m.default)},
     'dashboard/product/roleUrl/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_roleUrl_index_html.mjs').then(m => m.default)},
-    'login/index.html': {size: 12050, hash: '9b2084cb2836fe647337c30ba0d5ac5a5e8b9fe1cb4f541f917992cee58f7dc6', text: () => import('./assets-chunks/login_index_html.mjs').then(m => m.default)},
+    'dashboard/settings/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_settings_index_html.mjs').then(m => m.default)},
+    'dashboard/product/users/index.html': {size: 0, hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', text: () => import('./assets-chunks/dashboard_product_users_index_html.mjs').then(m => m.default)},
+    'signup/index.html': {size: 12104, hash: '3e5771f9a8c4efa28a18fcc97ee4c0897eed263bd29ec7b03b9813f88bc72851', text: () => import('./assets-chunks/signup_index_html.mjs').then(m => m.default)},
     'styles-5GCHT6XK.css': {size: 7029, hash: '57xOQ+476YU', text: () => import('./assets-chunks/styles-5GCHT6XK_css.mjs').then(m => m.default)}
   },
 };

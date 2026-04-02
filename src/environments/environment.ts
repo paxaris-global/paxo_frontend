@@ -1,6 +1,11 @@
 export const environment = {
   production: false,
-  // Keep empty so frontend uses relative paths (/identity, /project, /gateway).
-  // In ng serve this is proxied by proxy.conf.json; in container mode nginx proxies these paths.
+  // Fill these values based on your target environment.
+  // Leave apiGatewayBaseUrl empty to use relative paths with proxy/nginx.
   apiGatewayBaseUrl: '',
+  keycloakBaseUrl: '',
+  keycloakRealm: '',
+  keycloakClientId: '',
+  appBaseUrl: '',
+  githubOrg: '',
 };
