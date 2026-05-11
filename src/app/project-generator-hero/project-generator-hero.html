@@ -1,0 +1,26 @@
+<div class="hero-shell">
+  <div class="hero-track">
+    <div
+      class="logo-wrap"
+      [@logoMotion]="state"
+      [class.burnout]="state === 'burnout'"
+      [class.idle]="state === 'idle'"
+      (click)="startSequence()"
+      role="button"
+      tabindex="0"
+      aria-label="Start project generator animation"
+    >
+      <div class="outer-ring"></div>
+      <div class="core"></div>
+    </div>
+
+    <button
+      type="button"
+      class="generate-btn"
+      [@buttonReveal]="buttonVisible ? 'visible' : 'hidden'"
+      (click)="triggerGenerate()"
+    >
+      Generate Project
+    </button>
+  </div>
+</div>
