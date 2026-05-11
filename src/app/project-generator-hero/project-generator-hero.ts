@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
@@ -55,12 +55,16 @@ type HeroState = 'idle' | 'burnout' | 'collapsed';
     ]),
   ],
 })
-export class ProjectGeneratorHeroComponent {
+export class ProjectGeneratorHeroComponent implements OnInit {
   @Output() generate = new EventEmitter<void>();
 
   state: HeroState = 'idle';
-  buttonVisible = true;
+  buttonVisible = false;
   private animating = false;
+
+  ngOnInit(): void {
+    this.startSequence();
+  }
 
   startSequence(): void {
     if (this.animating) return;

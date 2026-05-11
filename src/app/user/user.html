@@ -11,7 +11,7 @@
 
 
   <!-- Users Tabs -->
-<div *ngIf="activeSection === 'users'">
+<div *ngIf="currentSectionFromUrl === 'users'">
   <app-users-tab
     [currentRealm]="currentRealm"
     [users]="users"
@@ -23,7 +23,7 @@
 </div>
 
 <!-- Roles Tab -->
-<div *ngIf="activeSection === 'roles'">
+<div *ngIf="currentSectionFromUrl === 'roles'">
   <app-roles-tab
     [roleForm]="roleForm"
     [products]="products"
@@ -34,7 +34,7 @@
 
 
 <!-- Role URL / URI Tab -->
-<div *ngIf="activeSection === 'roleUrl'">
+<div *ngIf="currentSectionFromUrl === 'roleUrl'">
   <app-role-url-tab
     [roleForm]="roleForm"
     [products]="products"
@@ -53,7 +53,7 @@
 </div>
 
 <!-- Assign Role Tab -->
-<div *ngIf="activeSection === 'assign'">
+<div *ngIf="currentSectionFromUrl === 'assign-roles'">
   <div class="section section-assign">
     <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
     <div class="field">

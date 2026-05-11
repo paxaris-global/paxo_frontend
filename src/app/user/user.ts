@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { KeycloakService } from '../services/keycloak';
 import { ApiGatewayService } from '../services/api-gateway.service';
 import { UserCreationRequest } from '../models';
 import { getStoredToken, getStoredRealm } from '../auth-storage';
-import { Subscription } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { UsersTabComponent } from './users-tab/users-tab.component';
 import { RolesTabComponent } from './roles-tab/roles-tab.component';
 import { RoleUrlTabComponent } from './roles-urls-tab/role-url-tab';
@@ -45,6 +46,8 @@ export class User implements OnInit, OnDestroy {
   private productChangesSub: Subscription | null = null;
   private assignProductSub: Subscription | null = null;
   private routeDataSub: Subscription | null = null;
+  private routeEventSub: Subscription | null = null;
+  private routeQuerySub: Subscription | null = null;
   userForm: FormGroup;
   roleForm: FormGroup;
   assignForm: FormGroup;
@@ -74,7 +77,8 @@ export class User implements OnInit, OnDestroy {
     private keycloakService: KeycloakService,
     private apiGateway: ApiGatewayService,
     private fb: FormBuilder,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.userForm = this.fb.group({
       username: ['', Validators.required],
@@ -163,24 +167,24 @@ export class User implements OnInit, OnDestroy {
 
 
 
-this.routeDataSub = this.route.data.subscribe((d: any) => {
-  const section = d['section'];
+this.syncSectionFromRoute();
+
+this.routeDataSub = this.route.data.subscribe(() => {
+  this.syncSectionFromRoute();
+});
+
+this.routeQuerySub = this.route.queryParamMap.subscribe((params) => {
+  const section = params.get('section');
   if (section === 'users' || section === 'roles' || section === 'roleUrl' || section === 'assign') {
     this.activeSection = section;
-  } else {
-    this.activeSection = 'roleUrl'; // default to Role URL tab
-  }
-
-  this.showTabs = true;
-
-  if (this.activeSection === 'roles') {
-    const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
-    if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
-      this.roleForm.patchValue({ product: this.products[0] });
-    }
-    this.loadRoles();
   }
 });
+
+this.routeEventSub = this.router.events
+  .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+  .subscribe(() => {
+    this.syncSectionFromRoute();
+  });
 
   }
 
@@ -188,6 +192,48 @@ this.routeDataSub = this.route.data.subscribe((d: any) => {
     this.productChangesSub?.unsubscribe();
     this.assignProductSub?.unsubscribe();
     this.routeDataSub?.unsubscribe();
+    this.routeEventSub?.unsubscribe();
+    this.routeQuerySub?.unsubscribe();
+  }
+
+  private syncSectionFromRoute(): void {
+    const path = this.currentSectionFromUrl;
+
+    if (path === 'users') {
+      this.activeSection = 'users';
+    } else if (path === 'roles') {
+      this.activeSection = 'roles';
+    } else if (path === 'roleUrl') {
+      this.activeSection = 'roleUrl';
+    } else if (path === 'assign-roles') {
+      this.activeSection = 'assign';
+    } else {
+      const section = this.route.snapshot.data?.['section'];
+      if (section === 'users' || section === 'roles' || section === 'roleUrl' || section === 'assign') {
+        this.activeSection = section;
+      } else {
+        this.activeSection = 'users';
+      }
+    }
+
+    this.showTabs = true;
+
+    if (this.activeSection === 'roles') {
+      const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+      if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
+        this.roleForm.patchValue({ product: this.products[0] });
+      }
+      this.loadRoles();
+    }
+  }
+
+  get currentSectionFromUrl(): 'users' | 'roles' | 'roleUrl' | 'assign-roles' | '' {
+    const cleanUrl = this.router.url.split('?')[0].split('#')[0];
+    const path = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+    if (path === 'users' || path === 'roles' || path === 'roleUrl' || path === 'assign-roles') {
+      return path;
+    }
+    return '';
   }
 
   // Get URL/URI pairs FormArray

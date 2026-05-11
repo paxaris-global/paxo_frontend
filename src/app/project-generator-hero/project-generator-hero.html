@@ -5,10 +5,7 @@
       [@logoMotion]="state"
       [class.burnout]="state === 'burnout'"
       [class.idle]="state === 'idle'"
-      (click)="startSequence()"
-      role="button"
-      tabindex="0"
-      aria-label="Start project generator animation"
+      aria-hidden="true"
     >
       <div class="outer-ring"></div>
       <div class="core"></div>
