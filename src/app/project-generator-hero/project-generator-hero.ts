@@ -59,7 +59,7 @@ export class ProjectGeneratorHeroComponent {
   @Output() generate = new EventEmitter<void>();
 
   state: HeroState = 'idle';
-  buttonVisible = false;
+  buttonVisible = true;
   private animating = false;
 
   startSequence(): void {
