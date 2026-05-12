@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ApiGatewayService } from '../services/api-gateway.service';
 import { getStoredRealm } from '../auth-storage';
 
@@ -55,9 +56,17 @@ export class SignupPage implements OnInit {
           this.message = '❌ ' + res.message;
         }
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.loading = false;
-        this.message = '❌ ' + (err.error?.message || err.message);
+        if (err instanceof HttpErrorResponse && err.status === 0) {
+          this.message =
+            '❌ Cannot reach the API. Run paxo/scripts/start-local-access.sh (port-forward), then try again.';
+        } else if (err instanceof HttpErrorResponse) {
+          const body = err.error as { message?: string } | undefined;
+          this.message = '❌ ' + (body?.message || err.message);
+        } else {
+          this.message = '❌ ' + (err instanceof Error ? err.message : 'Signup failed.');
+        }
       },
     });
   }

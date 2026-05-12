@@ -1,7 +1,8 @@
-﻿﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ApiGatewayService } from '../services/api-gateway.service';
 import { LoginRequest, LoginResponse } from '../models';
 import {
@@ -170,11 +171,27 @@ export class LoginPage implements OnInit {
           this.errorMessage = 'Login successful but no token received';
         }
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('[Login] API Gateway error response:', err);
         this.loading = false;
-        this.errorMessage = err.error?.message || err.error?.error || err.message || 'Login failed. Please check your credentials.';
-        console.error('Login error:', err);
+        if (err instanceof HttpErrorResponse) {
+          if (err.status === 0) {
+            this.errorMessage =
+              'Cannot reach the app/API (network error). Restart Kubernetes port-forwards: run paxo/scripts/start-local-access.sh';
+          } else {
+            const body = err.error as { message?: string; error?: string } | string | undefined;
+            const msgFromBody =
+              typeof body === 'string'
+                ? body
+                : body?.message || body?.error;
+            this.errorMessage =
+              msgFromBody ||
+              err.message ||
+              `Login failed (${err.status}${err.statusText ? ' ' + err.statusText : ''}).`;
+          }
+        } else {
+          this.errorMessage = err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
+        }
       },
     });
   }

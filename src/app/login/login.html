@@ -32,7 +32,7 @@
         type="text" 
         [(ngModel)]="selectedClientId" 
         name="clientId"
-        placeholder="Enter client ID" 
+        [placeholder]="selectedRealm ? (selectedRealm + '-admin-product') : '<realm>-admin-product'"
         required
         [disabled]="loading"
       />
