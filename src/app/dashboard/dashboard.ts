@@ -19,6 +19,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   products: any[] = [];
   loadingProducts = false;
   usersAndRolesMenuOpen = true;
+  generateProductMenuOpen = true;
 
   private destroy$ = new Subject<void>();
 

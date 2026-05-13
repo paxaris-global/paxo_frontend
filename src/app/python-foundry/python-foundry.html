@@ -1,0 +1,179 @@
+<div class="generate-product-page">
+  <section class="page-intro">
+    <div>
+      <p class="eyebrow">AI product generator</p>
+      <h2>Generate Product</h2>
+      <p class="intro-copy">
+        Create a Spring Boot + Angular product from a prompt, then download the generated source.
+      </p>
+    </div>
+  </section>
+
+  <section *ngIf="phase === 'idle' || phase === 'submitting'" class="card generator-card">
+    <form (ngSubmit)="generate()" class="generator-form">
+      <div class="field">
+        <label for="projectName">Project Name <span class="required">*</span></label>
+        <input
+          id="projectName"
+          name="projectName"
+          [(ngModel)]="projectName"
+          placeholder="e.g. hotel-management-system"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="prompt">Prompt</label>
+        <textarea
+          id="prompt"
+          name="prompt"
+          [(ngModel)]="prompt"
+          rows="5"
+          placeholder="Describe your product, pages, auth, workflows, entities, and reports..."
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="backend">Backend</label>
+          <select id="backend" name="backend" [(ngModel)]="backend">
+            <option value="springboot">Spring Boot</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="frontend">Frontend</label>
+          <select id="frontend" name="frontend" [(ngModel)]="frontend">
+            <option value="angular">Angular</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="features">Features</label>
+        <input
+          id="features"
+          name="features"
+          [(ngModel)]="featuresRaw"
+          placeholder="auth, dashboard, crud, reports"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="websiteLike">Website Like</label>
+          <input
+            id="websiteLike"
+            name="websiteLike"
+            [(ngModel)]="websiteLike"
+            placeholder="https://example.com"
+          />
+        </div>
+
+        <div class="field">
+          <label for="modePreference">Mode Preference</label>
+          <select id="modePreference" name="modePreference" [(ngModel)]="modePreference">
+            <option value="auto">Auto</option>
+            <option value="reuse">Reuse</option>
+            <option value="adapt">Adapt</option>
+            <option value="generate">Generate</option>
+            <option value="hybrid_scaffold">Hybrid Scaffold</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="primary-action" [disabled]="phase === 'submitting' || !projectName.trim()">
+        {{ phase === 'submitting' ? 'Starting generation...' : 'Generate Product' }}
+      </button>
+    </form>
+  </section>
+
+  <section *ngIf="phase === 'polling' || job" class="card progress-card">
+    <div class="progress-heading">
+      <div>
+        <h3>Generating project</h3>
+        <p>{{ stageLabel(job?.current_stage) }}</p>
+      </div>
+      <span class="status-pill" [ngClass]="job?.status || 'pending'">{{ job?.status || 'pending' }}</span>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="job?.progress || 0"></div>
+      </div>
+      <span class="progress-value">{{ job?.progress || 0 }}%</span>
+    </div>
+
+    <details *ngIf="stageTimings().length" class="timings">
+      <summary>Stage timings</summary>
+      <div class="timing-row" *ngFor="let timing of stageTimings()">
+        <span>{{ stageLabel(timing.key) }}</span>
+        <strong>{{ formatTiming(timing.value) }}</strong>
+      </div>
+    </details>
+
+    <button type="button" class="secondary-action" (click)="cancel()">Cancel</button>
+  </section>
+
+  <section *ngIf="phase === 'error'" class="card error-card">
+    <h3>Generation failed</h3>
+    <p>{{ errorMessage }}</p>
+    <button type="button" class="primary-action" (click)="newGeneration()">Try Again</button>
+  </section>
+
+  <section *ngIf="phase === 'done' && project as p" class="card result-card">
+    <div class="result-header">
+      <div>
+        <p class="eyebrow">Generated product</p>
+        <h3>{{ p.name }}</h3>
+      </div>
+      <span class="domain-badge">{{ p.domain || 'N/A' }}</span>
+    </div>
+
+    <p class="description">{{ p.description }}</p>
+
+    <div class="info-grid">
+      <div>
+        <span>Backend</span>
+        <strong>{{ p.backend_stack }}</strong>
+      </div>
+      <div>
+        <span>Frontend</span>
+        <strong>{{ p.frontend_stack }}</strong>
+      </div>
+      <div>
+        <span>Files Generated</span>
+        <strong>{{ p.generated_files.length }}</strong>
+      </div>
+      <div *ngIf="p.blueprint_used">
+        <span>Blueprint</span>
+        <strong>{{ p.blueprint_used }}</strong>
+      </div>
+    </div>
+
+    <details *ngIf="p.final_prompt" class="details-block">
+      <summary>Final Prompt Sent to LLM</summary>
+      <pre>{{ p.final_prompt }}</pre>
+    </details>
+
+    <details *ngIf="p.validation_report" class="details-block" open>
+      <summary>Validation Report</summary>
+      <p class="validation-line" [class.valid]="isValidProject()">
+        {{ isValidProject() ? 'Validation passed' : 'Validation needs review' }}
+      </p>
+      <ul *ngIf="validationErrors().length">
+        <li *ngFor="let error of validationErrors()">{{ error }}</li>
+      </ul>
+      <ul *ngIf="validationWarnings().length">
+        <li *ngFor="let warning of validationWarnings()">{{ warning }}</li>
+      </ul>
+    </details>
+
+    <div class="actions">
+      <button type="button" class="primary-action" (click)="downloadZip()" [disabled]="downloading || !isValidProject()">
+        {{ downloading ? 'Downloading...' : 'Download ZIP' }}
+      </button>
+      <button type="button" class="secondary-action" (click)="newGeneration()">New Generation</button>
+    </div>
+  </section>
+</div>

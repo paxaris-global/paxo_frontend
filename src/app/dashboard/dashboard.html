@@ -21,6 +21,15 @@
 </nav>
 
         </div>
+        <div class="sidebar-subgroup">
+          <button type="button" class="sidebar-subgroup-toggle" (click)="generateProductMenuOpen = !generateProductMenuOpen" [attr.aria-expanded]="generateProductMenuOpen">
+            <span>📁 Magic Generate</span>
+            <span class="sidebar-chevron" [class.open]="generateProductMenuOpen">▼</span>
+          </button>
+          <nav class="sidebar-subchildren" [class.open]="generateProductMenuOpen">
+            <a [routerLink]="['/dashboard', 'product', 'generate-product']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Generate product using AI</a>
+          </nav>
+        </div>
       </nav>
     <!-- </div> -->
 

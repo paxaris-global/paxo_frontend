@@ -8,6 +8,7 @@ import { User } from './user/user';
 import { Settings } from './settings/settings';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { PythonFoundryComponent } from './python-foundry/python-foundry';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +30,7 @@ export const routes: Routes = [
           { path: 'roles', component: User, data: { section: 'roles' } },
           { path: 'roleUrl', component: User, data: { section: 'roleUrl' } },
           { path: 'assign-roles', component: User, data: { section: 'assign' } },
+          { path: 'generate-product', component: PythonFoundryComponent },
           { path: '', redirectTo: 'products', pathMatch: 'full' }
         ]
       },

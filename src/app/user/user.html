@@ -48,6 +48,7 @@
     (deselectAllEndpoints)="deselectAllEndpoints()"
     (savePermissions)="saveRolePermissions()"
     (loadSelectedEndpoints)="loadSelectedEndpointsToForm()"
+    (loadSelectedEndpointsAndSave)="loadSelectedEndpointsAndSave()"
     (clearOpenApi)="clearOpenApiData()"
   ></app-role-url-tab>
 </div>
@@ -72,7 +73,7 @@
         <label>Select Product: <span class="required">*</span></label>
         <select formControlName="product">
           <option value="">--Select Product--</option>
-          <option *ngFor="let product of products" [value]="product">{{ product }}</option>
+          <option *ngFor="let product of products" [value]="product.clientId">{{ product.label }}</option>
         </select>
       </div>
 

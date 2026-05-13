@@ -10,19 +10,21 @@ import {
   setStoredTokenExpiryFromExpiresIn,
   setStoredTokenExpiryFromToken,
 } from '../auth-storage';
-import { environment } from '../../environments/environment';
+import { getApiGatewayBaseUrl } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeycloakService {
-  private baseUrl = environment.apiGatewayBaseUrl;
+  private gw(): string {
+    return getApiGatewayBaseUrl();
+  }
 
   constructor(private http: HttpClient) {}
 
   // ---------- REALMS ----------
   getRealms(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl}/identity/realms`);
+    return this.http.get<string[]>(`${this.gw()}/identity/realms`);
   }
 
   // ---------- PRODUCTS ----------
@@ -49,7 +51,7 @@ createProductWithFile(
   formData.append('frontendBaseUrl', frontendBaseUrl);
 
   return this.http.post(
-    `${this.baseUrl}/identity/${realm}/products`,
+    `${this.gw()}/identity/${realm}/products`,
     formData,
     {
       headers: token
@@ -67,17 +69,19 @@ createProductWithFile(
     });
     if (realm) {
       // Backend endpoint: GET /identity/products/{realm}
-      return this.http.get<any[]>(`${this.baseUrl}/identity/products/${realm}`, { headers }).pipe(
-        map((products: any[]) => products.map(p => p.productId || p.id || p.name || p))
+      return this.http.get<any[]>(`${this.gw()}/identity/products/${realm}`, { headers }).pipe(
+        map((products: any[]) =>
+          products.map((p) => p.clientId || p.productId || p.name || p.id || p)
+        )
       );
     }
     // Fallback: try to get from gateway if no realm specified
-    return this.http.get<string[]>(`${this.baseUrl}/gateway/products`, { headers });
+    return this.http.get<string[]>(`${this.gw()}/gateway/products`, { headers });
   }
 
   // ---------- LOGIN ----------
   login(realmName: string, username: string, password: string, clientId: string, clientSecret: string): Observable<any> {
-    const url = `${this.baseUrl}/identity/${realmName}/login`;
+    const url = `${this.gw()}/identity/${realmName}/login`;
     const payload = { username, password, client_id: clientId, client_secret: clientSecret || '' };
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(url, payload, { headers }).pipe(
@@ -101,7 +105,7 @@ createProductWithFile(
   // ---------- SIGNUP ----------
   
   signup(formData: FormData): Observable<any> {
-  const url = `${this.baseUrl}/identity/signup`;
+  const url = `${this.gw()}/identity/signup`;
   // DO NOT set Content-Type for multipart
   return this.http.post(url, formData);
 }
@@ -114,7 +118,7 @@ createProductWithFile(
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     });
-    return this.http.get<any[]>(`${this.baseUrl}/identity/users/${realm}`, { headers });
+    return this.http.get<any[]>(`${this.gw()}/identity/users/${realm}`, { headers });
   }
 
   createUser(realm: string, payload: any): Observable<any> {
@@ -122,7 +126,7 @@ createProductWithFile(
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const url = `${this.baseUrl}/identity/${realm}/users`;
+    const url = `${this.gw()}/identity/${realm}/users`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -137,7 +141,7 @@ updateUser(realm: string, username: string, payload: any): Observable<any> {
     throw new Error('No authentication token found');
   }
 
-  const url = `${this.baseUrl}/identity/users/${realm}/${username}`;
+  const url = `${this.gw()}/identity/users/${realm}/${username}`;
   const headers = new HttpHeaders({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
@@ -153,7 +157,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     throw new Error('No authentication token found');
   }
 
-  const url = `${this.baseUrl}/identity/users/${realm}/${username}`;
+  const url = `${this.gw()}/identity/users/${realm}/${username}`;
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${token}`
   });
@@ -167,7 +171,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const url = `${this.baseUrl}/identity/${realm}/clients/${clientName}/roles`;
+    const url = `${this.gw()}/identity/${realm}/clients/${clientName}/roles`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -180,7 +184,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const url = `${this.baseUrl}/identity/${realm}/clients/${clientId}/roles`;
+    const url = `${this.gw()}/identity/${realm}/clients/${clientId}/roles`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -211,7 +215,7 @@ deleteUser(realm: string, username: string): Observable<any> {
       }
     ];
 
-    const url = `${this.baseUrl}/identity/${realm}/products/${productId}/roles`;
+    const url = `${this.gw()}/identity/${realm}/products/${productId}/roles`;
     return this.http.post(url, payload, { headers });
   }
 
@@ -245,7 +249,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     console.log('Payload sent to save-or-update:', payload);
 
     return this.http.post(
-      `${this.baseUrl}/project/roles/save-or-update`,
+      `${this.gw()}/project/roles/save-or-update`,
       payload,
       { headers }
     );
@@ -259,7 +263,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     }
     // Backend endpoint: POST /identity/{realm}/users/{username}/products/{productName}/roles
     // Payload: List<Map<String, Object>> with role names
-    const url = `${this.baseUrl}/identity/${realm}/users/${username}/products/${productName}/roles`;
+    const url = `${this.gw()}/identity/${realm}/users/${username}/products/${productName}/roles`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -270,7 +274,7 @@ deleteUser(realm: string, username: string): Observable<any> {
 
   // ---------- UPLOAD CLIENT ----------
   uploadClient(clientId: string, file: File): Observable<any> {
-    const url = `${this.baseUrl}/gateway/clients/${clientId}/upload`;
+    const url = `${this.gw()}/gateway/clients/${clientId}/upload`;
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post(url, formData);
@@ -278,7 +282,7 @@ deleteUser(realm: string, username: string): Observable<any> {
 
   // ---------- VALIDATE ACCESS ----------
   validateAccess(token: string, url: string): Observable<any> {
-    const validateUrl = `${this.baseUrl}/identity/validate-access`;
+    const validateUrl = `${this.gw()}/identity/validate-access`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -295,7 +299,7 @@ deleteUser(realm: string, username: string): Observable<any> {
     let requestUrl = url;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       // Relative path - prepend gateway base URL
-      requestUrl = `${this.baseUrl}${url.startsWith('/') ? url : '/' + url}`;
+      requestUrl = `${this.gw()}${url.startsWith('/') ? url : '/' + url}`;
     }
 
     const headers = new HttpHeaders({
@@ -335,6 +339,6 @@ deleteUser(realm: string, username: string): Observable<any> {
   logout(): void {
     clearAuthState();
     // Replace <realm-name> with your Keycloak realm
-    window.location.href = `${this.baseUrl}/identity/logout`;
+    window.location.href = `${this.gw()}/identity/logout`;
   }
 }

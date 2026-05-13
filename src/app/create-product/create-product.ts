@@ -4,12 +4,11 @@ import { CommonModule } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { KeycloakService } from '../services/keycloak';
 import { getStoredRealm } from '../auth-storage';
-import { ProjectGeneratorHeroComponent } from '../project-generator-hero/project-generator-hero';
 
 @Component({
   selector: 'app-create-product',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ProjectGeneratorHeroComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './create-product.html',
   styleUrls: ['./create-product.css'],
 })

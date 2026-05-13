@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -20,6 +20,27 @@ import {
   touchStoredLastActivity,
   tokenHasAdminRole,
 } from '../auth-storage';
+
+/** Pull user-visible text from Spring / gateway JSON error bodies. */
+function messageFromHttpError(err: HttpErrorResponse): string {
+  const raw = err.error;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw) as { message?: string };
+      if (parsed?.message) return parsed.message;
+    } catch {
+      return raw.length > 400 ? raw.slice(0, 400) + '…' : raw;
+    }
+    return raw.length > 400 ? raw.slice(0, 400) + '…' : raw;
+  }
+  if (raw && typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if (typeof o['message'] === 'string' && o['message'].trim()) return o['message'];
+    if (typeof o['error'] === 'string' && o['error'].trim()) return o['error'];
+  }
+  return err.message || `Login failed (HTTP ${err.status}).`;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -172,24 +193,22 @@ export class LoginPage implements OnInit {
         }
       },
       error: (err: unknown) => {
-        console.error('[Login] API Gateway error response:', err);
         this.loading = false;
         if (err instanceof HttpErrorResponse) {
+          console.error('[Login] HTTP error', {
+            status: err.status,
+            statusText: err.statusText,
+            url: err.url,
+            body: err.error,
+          });
           if (err.status === 0) {
             this.errorMessage =
               'Cannot reach the app/API (network error). Restart Kubernetes port-forwards: run paxo/scripts/start-local-access.sh';
           } else {
-            const body = err.error as { message?: string; error?: string } | string | undefined;
-            const msgFromBody =
-              typeof body === 'string'
-                ? body
-                : body?.message || body?.error;
-            this.errorMessage =
-              msgFromBody ||
-              err.message ||
-              `Login failed (${err.status}${err.statusText ? ' ' + err.statusText : ''}).`;
+            this.errorMessage = messageFromHttpError(err);
           }
         } else {
+          console.error('[Login] Error:', err);
           this.errorMessage = err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
         }
       },

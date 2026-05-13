@@ -16,5 +16,14 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/python-foundry-api": {
+    "target": "http://localhost:4201",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/python-foundry-api": "/api"
+    }
   }
 }

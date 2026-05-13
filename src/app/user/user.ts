@@ -5,9 +5,15 @@ import { NavigationEnd, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { KeycloakService } from '../services/keycloak';
 import { ApiGatewayService } from '../services/api-gateway.service';
-import { UserCreationRequest } from '../models';
+import { UserCreationRequest, ProductOption, productRowToOption } from '../models';
 import { getStoredToken, getStoredRealm } from '../auth-storage';
 import { Subscription, filter } from 'rxjs';
+import * as yaml from 'js-yaml';
+import {
+  endpointsToRoleUrlPayload,
+  extractOpenApiBaseUrl,
+  parseOpenApiToEndpoints,
+} from './open-api-spec.util';
 import { UsersTabComponent } from './users-tab/users-tab.component';
 import { RolesTabComponent } from './roles-tab/roles-tab.component';
 import { RoleUrlTabComponent } from './roles-urls-tab/role-url-tab';
@@ -34,7 +40,7 @@ interface UrlUriPair {
 export class User implements OnInit, OnDestroy {
   users: any[] = [];
   roles: any[] = [];
-  products: any[] = [];
+  products: ProductOption[] = [];
   realms: string[] = [];
   editingUsername: string | null = null;
   currentRealm: string = '';
@@ -89,13 +95,14 @@ export class User implements OnInit, OnDestroy {
     });
 
     this.roleForm = this.fb.group({
-  realm: [getStoredRealm() || '', Validators.required],
-  client: ['', Validators.required],
-  roleName: ['', Validators.required],
-  description: [''],
-  selectedRole: ['', Validators.required],
-  urlUriPairs: this.fb.array([this.createUrlUriPair()]),
-});
+      realm: [getStoredRealm() || '', Validators.required],
+      client: [''],
+      product: ['', Validators.required],
+      roleName: ['', Validators.required],
+      description: [''],
+      selectedRole: ['', Validators.required],
+      urlUriPairs: this.fb.array([this.createUrlUriPair()]),
+    });
 
 
     this.assignForm = this.fb.group({
@@ -143,25 +150,29 @@ export class User implements OnInit, OnDestroy {
 
 
 
- this.productChangesSub = this.roleForm.get('product')!.valueChanges.subscribe((product: any) => {
+ this.productChangesSub = this.roleForm.get('product')!.valueChanges.subscribe((product: string | null) => {
   if (!product) {
     this.roles = [];
     return;
   }
-  const realm = this.currentRealm || this.roleForm.getRawValue().realm;
 
-  this.keycloakService.getRoles(realm, product).subscribe({
-    next: (data: any) => {
-      this.roles = data || [];
-    },
-    error: (err: any) => {
-      console.error(err);
-      this.roles = [];
-    }
-  });
-
+  if (this.activeSection === 'roles' || this.activeSection === 'roleUrl') {
+    this.loadRolesForProduct(product);
+  }
   this.urlUriPairs.clear();
   this.urlUriPairs.push(this.createUrlUriPair());
+});
+
+this.assignProductSub = this.assignForm.get('product')!.valueChanges.subscribe((product: string | null) => {
+  this.assignForm.patchValue({ roleName: [] }, { emitEvent: false });
+  if (!product) {
+    this.roles = [];
+    return;
+  }
+
+  if (this.activeSection === 'assign') {
+    this.loadRolesForProduct(product);
+  }
 });
 
 
@@ -174,9 +185,20 @@ this.routeDataSub = this.route.data.subscribe(() => {
 });
 
 this.routeQuerySub = this.route.queryParamMap.subscribe((params) => {
+  const realm = params.get('realm');
+  if (realm && realm !== this.currentRealm) {
+    this.currentRealm = realm;
+    this.roleForm.patchValue({ realm });
+    this.loadUsers();
+    this.loadProducts();
+  } else if (realm && !this.products.length) {
+    this.loadProducts();
+  }
+
   const section = params.get('section');
   if (section === 'users' || section === 'roles' || section === 'roleUrl' || section === 'assign') {
     this.activeSection = section;
+    this.ensureDataForActiveSection();
   }
 });
 
@@ -218,13 +240,44 @@ this.routeEventSub = this.router.events
 
     this.showTabs = true;
 
-    if (this.activeSection === 'roles') {
-      const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
-      if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
-        this.roleForm.patchValue({ product: this.products[0] });
-      }
-      this.loadRoles();
+    this.ensureDataForActiveSection();
+  }
+
+  private ensureDataForActiveSection(): void {
+    if (this.activeSection === 'users') {
+      this.loadUsers();
+      return;
     }
+
+    if (this.activeSection === 'roles' || this.activeSection === 'roleUrl') {
+      this.ensureProductSelectedAndRolesLoaded('roleForm');
+      return;
+    }
+
+    if (this.activeSection === 'assign') {
+      this.loadUsers();
+      this.ensureProductSelectedAndRolesLoaded('assignForm');
+    }
+  }
+
+  private ensureProductSelectedAndRolesLoaded(formName: 'roleForm' | 'assignForm'): void {
+    const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+    if (!realm) return;
+
+    if (!this.products.length) {
+      this.loadProducts();
+      return;
+    }
+
+    const form = formName === 'roleForm' ? this.roleForm : this.assignForm;
+    const selectedProduct = form.get('product')?.value;
+    const selectedExists = this.products.some((product) => product.clientId === selectedProduct);
+    if (!selectedProduct || !selectedExists) {
+      form.patchValue({ product: this.products[0].clientId });
+      return;
+    }
+
+    this.loadRolesForProduct(selectedProduct);
   }
 
   get currentSectionFromUrl(): 'users' | 'roles' | 'roleUrl' | 'assign-roles' | '' {
@@ -289,12 +342,8 @@ this.routeEventSub = this.router.events
 
   setSection(section: 'users' | 'roles' | 'roleUrl' | 'assign' | 'test' | 'products') {
     this.activeSection = section;
-    if (section === 'roles') {
-      const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
-      if (realm && this.products.length > 0 && !this.roleForm.get('product')?.value) {
-        this.roleForm.patchValue({ product: this.products[0] });
-      }
-      this.loadRoles();
+    if (section === 'users' || section === 'roles' || section === 'roleUrl' || section === 'assign') {
+      this.ensureDataForActiveSection();
     }
     if (section === 'test') {
       const token = getStoredToken();
@@ -325,6 +374,15 @@ this.routeEventSub = this.router.events
       this.roles = [];
       return;
     }
+    this.loadRolesForProduct(product);
+  }
+
+  private loadRolesForProduct(product: string): void {
+    const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+    if (!realm || !product) {
+      this.roles = [];
+      return;
+    }
     this.apiGateway.getRoles(realm, product).subscribe({
       next: (data: any[]) => {
         this.roles = (data || []).map((r: any) => ({ ...r, product }));
@@ -344,10 +402,24 @@ loadProducts(): void {
   this.apiGateway.getProducts(realm).subscribe({
     next: (data: any) => {
       console.log('Products loaded:', data);
-      this.products = (data || []).map((p: any) => p.productId);
-      // Auto-select first product for the dropdown if none selected
-      if (!this.roleForm.get('product')?.value && this.products.length) {
-        this.roleForm.patchValue({ product: this.products[0] });
+      this.products = (data || [])
+        .map((p: any) => productRowToOption(p))
+        .filter((x: ProductOption | null): x is ProductOption => x != null);
+
+      const selectedProduct = this.roleForm.get('product')?.value;
+      const selectedExists = this.products.some((product) => product.clientId === selectedProduct);
+      if ((!selectedProduct || !selectedExists) && this.products.length) {
+        this.roleForm.patchValue({ product: this.products[0].clientId });
+      } else if ((this.activeSection === 'roles' || this.activeSection === 'roleUrl') && selectedProduct) {
+        this.loadRolesForProduct(selectedProduct);
+      }
+
+      const selectedAssignProduct = this.assignForm.get('product')?.value;
+      const selectedAssignExists = this.products.some((product) => product.clientId === selectedAssignProduct);
+      if ((!selectedAssignProduct || !selectedAssignExists) && this.products.length) {
+        this.assignForm.patchValue({ product: this.products[0].clientId });
+      } else if (this.activeSection === 'assign' && selectedAssignProduct) {
+        this.loadRolesForProduct(selectedAssignProduct);
       }
     },
     error: (err: any) => {
@@ -497,8 +569,8 @@ createRole(): void {
 
   const form = this.roleForm.getRawValue();
 
-  if (!form.client || !form.roleName) {
-    alert('Client and Role Name are required');
+  if (!form.product || !form.roleName) {
+    alert('Product and Role Name are required');
     return;
   }
 
@@ -506,7 +578,7 @@ createRole(): void {
 
   this.keycloakService.createRoleOnly(
     realm,
-    form.client,
+    form.product,
     form.roleName,
     form.description || ''
   ).subscribe({
@@ -770,14 +842,12 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         if (file.name.endsWith('.json')) {
           spec = JSON.parse(content);
         } else if (file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
-          // For YAML, we'll need a YAML parser, but for now try JSON.parse if it's actually JSON
-          // In production, you'd want to use a YAML parser library
-          try {
-            spec = JSON.parse(content);
-          } catch {
-            alert('YAML parsing not fully supported. Please use JSON format or install a YAML parser.');
+          const doc = yaml.load(content as string);
+          if (doc == null || typeof doc !== 'object') {
+            alert('Invalid OpenAPI YAML (empty or not an object).');
             return;
           }
+          spec = doc;
         } else {
           alert('Unsupported file format. Please use .json or .yaml/.yml');
           return;
@@ -794,50 +864,25 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
   }
 
   parseOpenApiSpec(spec: any): void {
-    this.openApiEndpoints = [];
-    
-    // Extract base URL/server URL
-    if (spec.servers && spec.servers.length > 0) {
-      this.openApiBaseUrl = spec.servers[0].url || '';
-    } else if (spec.host) {
-      const scheme = spec.schemes?.[0] || 'https';
-      this.openApiBaseUrl = `${scheme}://${spec.host}${spec.basePath || ''}`;
+    if (!spec || typeof spec !== 'object') {
+      alert('Invalid OpenAPI spec');
+      return;
     }
-
-    // Extract paths and operations
-    if (!spec.paths) {
+    const rec = spec as Record<string, unknown>;
+    if (!rec['paths']) {
       alert('No paths found in OpenAPI spec');
       return;
     }
 
-    const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'];
-    
-    Object.keys(spec.paths).forEach((path: string) => {
-      const pathItem = spec.paths[path];
-      
-      httpMethods.forEach((method: string) => {
-        if (pathItem[method]) {
-          const operation = pathItem[method];
-          this.openApiEndpoints.push({
-            method: method.toUpperCase(),
-            path: path,
-            summary: operation.summary,
-            description: operation.description,
-            selected: true // Select all by default
-          });
-        }
-      });
-    });
+    this.openApiBaseUrl = extractOpenApiBaseUrl(rec);
+    this.openApiEndpoints = parseOpenApiToEndpoints(rec);
 
     if (this.openApiEndpoints.length === 0) {
       alert('No endpoints found in OpenAPI spec');
-    } else {
-      // Prompt for base URL if not found in spec
-      if (!this.openApiBaseUrl) {
-        const userUrl = prompt('Enter the base URL for these endpoints (e.g., http://localhost:8083):');
-        if (userUrl) {
-          this.openApiBaseUrl = userUrl;
-        }
+    } else if (!this.openApiBaseUrl) {
+      const userUrl = prompt('Enter the base URL for these endpoints (e.g., http://localhost:8083):');
+      if (userUrl) {
+        this.openApiBaseUrl = userUrl;
       }
     }
   }
@@ -897,5 +942,35 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
       fileInput.value = '';
     }
   }
-  
+
+  /** Apply selected OpenAPI operations and POST them to project-manager (same as filling the form + Save). */
+  loadSelectedEndpointsAndSave(): void {
+    const selectedEndpoints = this.openApiEndpoints.filter((e) => e.selected);
+    if (selectedEndpoints.length === 0) {
+      alert('Please select at least one endpoint');
+      return;
+    }
+    if (!this.openApiBaseUrl?.trim()) {
+      alert('Base URL is required (from OpenAPI servers[] or enter when prompted).');
+      return;
+    }
+    const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+    const product = this.roleForm.getRawValue()?.product;
+    const selectedRole = this.roleForm.getRawValue()?.selectedRole;
+    if (!realm || !product || !selectedRole) {
+      alert('Please select product and role first.');
+      return;
+    }
+
+    const urls = endpointsToRoleUrlPayload(selectedEndpoints, this.openApiBaseUrl);
+
+    this.keycloakService.saveRoleUrls(realm, product, selectedRole, urls).subscribe({
+      next: () =>
+        alert(`Saved ${selectedEndpoints.length} URI(s) for role "${selectedRole}" from OpenAPI.`),
+      error: (err: any) => {
+        console.error(err);
+        alert('Failed to save permissions: ' + (err.error?.message || err.message || 'Unknown error'));
+      },
+    });
+  }
 }

@@ -69,7 +69,7 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "proxyConfig": "proxy.conf.json",
+            "proxyConfig": "proxy.conf.js",
             "allowedHosts": [
               "proexpert-superobstinate-adena.ngrok-free.dev",
               ".ngrok-free.dev",

@@ -5,7 +5,6 @@
   <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
     <div class="field">
       <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
-      <app-project-generator-hero (generate)="createProduct()"></app-project-generator-hero>
       <input
         id="realm"
         type="text"

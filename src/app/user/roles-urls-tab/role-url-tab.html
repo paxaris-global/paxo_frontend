@@ -1,87 +1,186 @@
 <div class="role-url-tab" [formGroup]="roleForm">
-  <h3>Configure Role URLs</h3>
-
-  <div class="form-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
-    <div class="form-group" style="flex: 1;">
-      <label>Product</label>
-      <select formControlName="product" class="form-control">
-        <option value="" disabled>Select Product</option>
-        <option *ngFor="let product of products" [value]="product">
-          {{ product }}
-        </option>
-      </select>
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">Access control</p>
+      <h3>Assign URIs to Role</h3>
+      <p class="subtitle">Select a product and role, import OpenAPI endpoints, then save allowed methods and paths.</p>
     </div>
+    <span class="count-pill">{{ urlUriPairs.length }} permission row{{ urlUriPairs.length === 1 ? '' : 's' }}</span>
+  </section>
 
-    <div class="form-group" style="flex: 1;">
-      <label>Role</label>
-      <select formControlName="selectedRole" class="form-control">
-        <option value="" disabled>Select Role</option>
-        <option *ngFor="let role of roles" [value]="role.name">
-          {{ role.name }}
-        </option>
-      </select>
-    </div>
-  </div>
-
-  <hr />
-
-  <!-- OpenAPI Section -->
-  <div class="openapi-section" style="margin-bottom: 20px;">
-    <h4>Import from OpenAPI (Optional)</h4>
-    <div class="file-input-row" style="margin-bottom: 10px;">
-      <input type="file" (change)="openApiFileSelected.emit($event)" accept=".json,.yaml,.yml" />
-      <button type="button" (click)="clearOpenApi.emit()" *ngIf="openApiEndpoints.length > 0">Clear</button>
-    </div>
-
-    <div *ngIf="openApiEndpoints.length > 0" class="endpoints-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
-      <div class="actions" style="margin-bottom: 10px;">
-        <button type="button" (click)="selectAllEndpoints.emit()">Select All</button>
-        <button type="button" (click)="deselectAllEndpoints.emit()">Deselect All</button>
-        <button type="button" (click)="loadSelectedEndpoints.emit()" class="primary">Load Selected to Form</button>
-      </div>
-      <div class="endpoint-item" *ngFor="let endpoint of openApiEndpoints; let i = index">
-        <label>
-          <input type="checkbox" [checked]="endpoint.selected" (change)="toggleEndpointSelection.emit(i)" />
-          <strong>{{ endpoint.method }}</strong> {{ endpoint.path }}
-          <span *ngIf="endpoint.summary" style="color: #666;">- {{ endpoint.summary }}</span>
-        </label>
+  <section class="panel selector-panel">
+    <div class="panel-header">
+      <div>
+        <h4>Target Role</h4>
+        <p>Choose where these URI permissions should be attached.</p>
       </div>
     </div>
-  </div>
 
-  <hr />
-
-  <!-- URL/URI Pairs -->
-  <h4>URL Permissions</h4>
-  <div formArrayName="urlUriPairs">
-    <div *ngFor="let pair of urlUriPairs.controls; let i = index" [formGroupName]="i" class="url-pair-row" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end;">
+    <div class="selector-grid">
       <div class="form-group">
-        <label>Method</label>
-        <select formControlName="httpMethod" class="form-control">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="PATCH">PATCH</option>
-          <option value="*">*</option>
+        <label for="role-url-product">Product</label>
+        <select id="role-url-product" formControlName="product" class="form-control">
+          <option value="" disabled>Select Product</option>
+          <option *ngFor="let product of products" [value]="product.clientId">
+            {{ product.label }}
+          </option>
         </select>
       </div>
-      <div class="form-group" style="flex: 1;">
-        <label>URL (Base)</label>
-        <input formControlName="url" class="form-control" placeholder="http://localhost:8080" />
-      </div>
-      <div class="form-group" style="flex: 1;">
-        <label>URI (Path)</label>
-        <input formControlName="uri" class="form-control" placeholder="/api/resource" />
-      </div>
-      <button type="button" class="remove-btn" (click)="removeUrlUriPair.emit(i)" *ngIf="urlUriPairs.length > 1" style="margin-bottom: 2px;">
-        <i class="fa fa-trash"></i> Remove
-      </button>
-    </div>
-  </div>
 
-  <div class="actions-row" style="margin-top: 20px;">
-    <button type="button" (click)="addUrlUriPair.emit()">+ Add URL</button>
-    <button type="button" class="save-btn" (click)="savePermissions.emit()" style="margin-left: 10px;">Save Permissions</button>
-  </div>
+      <div class="form-group">
+        <label for="role-url-role">Role</label>
+        <select id="role-url-role" formControlName="selectedRole" class="form-control">
+          <option value="" disabled>Select Role</option>
+          <option *ngFor="let role of roles" [value]="role.name">
+            {{ role.name }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel openapi-section">
+    <div class="section-shell">
+      <div class="section-aside">
+        <span class="step-badge">01</span>
+        <h4>Import from OpenAPI</h4>
+        <p>Drop in your spec, select operations, and convert them into role permissions.</p>
+      </div>
+
+      <div class="section-body">
+        <label class="upload-zone">
+          <input type="file" (change)="openApiFileSelected.emit($event)" accept=".json,.yaml,.yml" />
+          <span class="upload-icon"><i class="fa fa-cloud-upload"></i></span>
+          <span class="upload-title">Choose OpenAPI file</span>
+          <span class="upload-subtitle">Supports .json, .yaml, and .yml specs</span>
+        </label>
+
+        <div *ngIf="openApiEndpoints.length > 0" class="openapi-summary">
+          <div class="summary-card">
+            <span>Total endpoints</span>
+            <strong>{{ openApiEndpoints.length }}</strong>
+          </div>
+          <div class="summary-card selected">
+            <span>Selected</span>
+            <strong>{{ selectedEndpointCount }}</strong>
+          </div>
+          <button type="button" class="btn ghost clear-btn" (click)="clearOpenApi.emit()">Clear import</button>
+        </div>
+
+        <div *ngIf="openApiEndpoints.length > 0" class="endpoints-card">
+          <div class="endpoint-toolbar">
+            <div>
+              <strong>Available operations</strong>
+              <span>Review and choose which API routes this role can access.</span>
+            </div>
+            <div class="toolbar-actions">
+              <button type="button" class="btn muted" (click)="selectAllEndpoints.emit()">Select All</button>
+              <button type="button" class="btn muted" (click)="deselectAllEndpoints.emit()">Deselect All</button>
+              <button type="button" class="btn secondary" (click)="loadSelectedEndpoints.emit()">Load to Form</button>
+              <button type="button" class="btn primary" (click)="loadSelectedEndpointsAndSave.emit()">
+                Load &amp; Save
+              </button>
+            </div>
+          </div>
+
+          <div class="endpoint-list">
+            <div class="endpoint-list-header">
+              <span>Use</span>
+              <span>Method</span>
+              <span>Endpoint</span>
+            </div>
+
+            <label class="endpoint-item" *ngFor="let endpoint of openApiEndpoints; let i = index" [class.selected]="endpoint.selected">
+              <input type="checkbox" [checked]="endpoint.selected" (change)="toggleEndpointSelection.emit(i)" />
+              <span
+                class="method-badge"
+                [class.get]="endpoint.method === 'GET'"
+                [class.post]="endpoint.method === 'POST'"
+                [class.put]="endpoint.method === 'PUT'"
+                [class.patch]="endpoint.method === 'PATCH'"
+                [class.delete]="endpoint.method === 'DELETE'"
+              >
+                {{ endpoint.method }}
+              </span>
+              <span class="endpoint-main">
+                <strong>{{ endpoint.path }}</strong>
+                <small *ngIf="endpoint.summary">{{ endpoint.summary }}</small>
+                <small *ngIf="!endpoint.summary">No summary provided</small>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div *ngIf="openApiEndpoints.length === 0" class="empty-state">
+          <strong>No OpenAPI file loaded yet</strong>
+          <span>Upload a spec to preview routes here, or add permissions manually below.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel permissions-section">
+    <div class="section-shell">
+      <div class="section-aside">
+        <span class="step-badge">02</span>
+        <h4>URL Permissions</h4>
+        <p>Fine tune the final permissions before saving them to the selected role.</p>
+      </div>
+
+      <div class="section-body">
+        <div class="permission-topbar">
+          <div>
+            <strong>Permission editor</strong>
+            <span>{{ urlUriPairs.length }} row{{ urlUriPairs.length === 1 ? '' : 's' }} ready to save</span>
+          </div>
+          <button type="button" class="btn secondary" (click)="addUrlUriPair.emit()">+ Add URL</button>
+        </div>
+
+        <div formArrayName="urlUriPairs" class="permission-table">
+          <div class="permission-header">
+            <span>#</span>
+            <span>Method</span>
+            <span>Service base URL</span>
+            <span>URI path</span>
+            <span></span>
+          </div>
+
+          <div *ngFor="let pair of urlUriPairs.controls; let i = index" [formGroupName]="i" class="permission-row">
+            <div class="row-index">{{ i + 1 }}</div>
+
+            <div class="field-cell method-cell">
+              <label>Method</label>
+              <select formControlName="httpMethod" class="form-control compact-control">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="*">*</option>
+              </select>
+            </div>
+
+            <div class="field-cell">
+              <label>Base URL</label>
+              <input formControlName="url" class="form-control compact-control" placeholder="http://localhost:8080" />
+            </div>
+
+            <div class="field-cell">
+              <label>URI Path</label>
+              <input formControlName="uri" class="form-control compact-control" placeholder="/api/resource" />
+            </div>
+
+            <button type="button" class="icon-btn danger" (click)="removeUrlUriPair.emit(i)" *ngIf="urlUriPairs.length > 1" aria-label="Remove permission row">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn ghost" (click)="addUrlUriPair.emit()">+ Add Another URL</button>
+          <button type="button" class="btn primary save-btn" (click)="savePermissions.emit()">Save Permissions</button>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

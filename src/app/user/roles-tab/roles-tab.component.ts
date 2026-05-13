@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { ProductOption } from '../../models';
 
 @Component({
   selector: 'app-roles-tab',
@@ -12,7 +13,7 @@ import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 export class RolesTabComponent {
 
   @Input() roleForm!: FormGroup;
-  @Input() products: string[] = [];
+  @Input() products: ProductOption[] = [];
   @Input() roles: any[] = [];
 
   @Output() createRole = new EventEmitter<void>();

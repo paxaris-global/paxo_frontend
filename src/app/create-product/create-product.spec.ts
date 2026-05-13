@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { CreateProductComponent } from './create-product';
+import { KeycloakService } from '../services/keycloak';
 
-import { CreateClient } from './create-client';
-
-describe('CreateClient', () => {
-  let component: CreateClient;
-  let fixture: ComponentFixture<CreateClient>;
+describe('CreateProductComponent', () => {
+  let fixture: ComponentFixture<CreateProductComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateClient]
-    })
-    .compileComponents();
+      imports: [CreateProductComponent],
+      providers: [KeycloakService, provideHttpClient(), provideAnimations()],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(CreateClient);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(CreateProductComponent);
     fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

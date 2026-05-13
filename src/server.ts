@@ -4,13 +4,106 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
-import express from 'express';
+import express, { type Request, type Response } from 'express';
+import type { IncomingHttpHeaders } from 'node:http';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+
+/** Same targets as proxy.conf.js — ng serve SSR uses this Express app; CLI proxy config does not apply here. */
+const API_GATEWAY_URL =
+  process.env['API_GATEWAY_URL'] ??
+  `http://127.0.0.1:${process.env['PAXO_GATEWAY_LOCAL_PORT'] ?? '8085'}`;
+const PYTHON_FOUNDRY_FRONTEND_URL =
+  process.env['PYTHON_FOUNDRY_FRONTEND_URL'] ??
+  `http://127.0.0.1:${process.env['PAXO_PYTHON_FRONTEND_LOCAL_PORT'] ?? '4201'}`;
+
+function isGatewayApiPath(urlPath: string): boolean {
+  const pathOnly = urlPath.split('?')[0] ?? '';
+  return (
+    pathOnly === '/identity' ||
+    pathOnly.startsWith('/identity/') ||
+    pathOnly === '/gateway' ||
+    pathOnly.startsWith('/gateway/') ||
+    pathOnly === '/project' ||
+    pathOnly.startsWith('/project/')
+  );
+}
+
+function isPythonFoundryApiPath(urlPath: string): boolean {
+  const pathOnly = urlPath.split('?')[0] ?? '';
+  return pathOnly === '/python-foundry-api' || pathOnly.startsWith('/python-foundry-api/');
+}
+
+function stripHopByHopHeaders(headers: IncomingHttpHeaders): Record<string, string | string[] | undefined> {
+  const out: Record<string, string | string[] | undefined> = { ...headers };
+  delete out['connection'];
+  delete out['keep-alive'];
+  delete out['transfer-encoding'];
+  delete out['proxy-connection'];
+  return out;
+}
+
+function rewritePythonFoundryUrl(rawUrl: string): string {
+  const [pathPart, query] = rawUrl.split('?');
+  const rewrittenPath = (pathPart || '/').replace(/^\/python-foundry-api(?=\/|$)/, '/api');
+  return query == null ? rewrittenPath : `${rewrittenPath}?${query}`;
+}
+
+function proxyRequest(inReq: Request, outRes: Response, targetBaseUrl: string, outPath: string): void {
+  const base = new URL(targetBaseUrl);
+  const lib = base.protocol === 'https:' ? https : http;
+  const port =
+    base.port !== ''
+      ? Number(base.port)
+      : base.protocol === 'https:'
+        ? 443
+        : 80;
+  const fwdHeaders = stripHopByHopHeaders(inReq.headers);
+  fwdHeaders['host'] = base.host;
+
+  const proxyReq = lib.request(
+    {
+      hostname: base.hostname,
+      port,
+      path: outPath,
+      method: inReq.method,
+      headers: fwdHeaders as http.OutgoingHttpHeaders,
+    },
+    (proxyRes) => {
+      outRes.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers as http.OutgoingHttpHeaders);
+      proxyRes.pipe(outRes);
+    },
+  );
+
+  proxyReq.on('error', (err) => {
+    if (!outRes.headersSent) {
+      outRes.statusCode = 502;
+      outRes.setHeader('Content-Type', 'application/json');
+      outRes.end(JSON.stringify({ message: `Cannot reach upstream at ${targetBaseUrl}: ${err.message}` }));
+    }
+  });
+
+  inReq.pipe(proxyReq);
+}
+
+app.use((req, res, next) => {
+  const pathOnly = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
+  if (!isGatewayApiPath(pathOnly)) {
+    if (!isPythonFoundryApiPath(pathOnly)) {
+      return next();
+    }
+    const rawUrl = req.originalUrl ?? req.url ?? '/';
+    proxyRequest(req, res, PYTHON_FOUNDRY_FRONTEND_URL, rewritePythonFoundryUrl(rawUrl));
+    return;
+  }
+  proxyRequest(req, res, API_GATEWAY_URL, req.originalUrl ?? req.url ?? '/');
+});
 let angularApp: AngularNodeAppEngine | null = null;
 
 try {

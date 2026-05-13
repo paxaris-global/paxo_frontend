@@ -1,27 +1,28 @@
-import { Routes } from '@angular/router';
-import { LoginPage } from './login/login';
-import { SignupPage } from './signup-page/signup-page';
-import { DashboardComponent } from './dashboard/dashboard';
-import { CreateClientComponent } from './create-client/create-client';
-import { User } from './user/user';
-import { Settings } from './settings/settings';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { App } from './app';
+import { SessionManagerService } from './services/session-manager.service';
 
-export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+describe('App', () => {
+  let fixture: ComponentFixture<App>;
 
-  { path: 'login', component: LoginPage },
-  { path: 'signup', component: SignupPage },
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideRouter([]),
+        {
+          provide: SessionManagerService,
+          useValue: { start: (): void => undefined, ngOnDestroy: (): void => undefined },
+        },
+      ],
+    }).compileComponents();
 
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    children: [
-      { path: 'clients', component: CreateClientComponent },
-      { path: 'users', component: User },
-      { path: 'settings', component: Settings },
-      { path: '', redirectTo: 'clients', pathMatch: 'full' }
-    ]
-  },
+    fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+  });
 
-  { path: '**', redirectTo: 'login' }
-];
+  it('should create', () => {
+    expect(fixture.componentInstance).toBeTruthy();
+  });
+});
