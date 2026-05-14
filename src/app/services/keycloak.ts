@@ -32,8 +32,7 @@ createProductWithFile(
   realm: string,
   product: { productId: string; publicClient: boolean; urls?: string[] },
   backendZip: File,
-  frontendZip: File,
-  frontendBaseUrl: string
+  frontendZip: File
 ) {
   const token = getStoredToken();
 
@@ -48,7 +47,6 @@ createProductWithFile(
   // Multipart parts expected by backend create-product API.
   formData.append('backendZip', backendZip);
   formData.append('frontendZip', frontendZip);
-  formData.append('frontendBaseUrl', frontendBaseUrl);
 
   return this.http.post(
     `${this.gw()}/identity/${realm}/products`,

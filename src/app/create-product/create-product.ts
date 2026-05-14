@@ -29,7 +29,6 @@ export class CreateProductComponent implements OnInit {
       realm: [{ value: getStoredRealm() || '', disabled: true }],
       productId: [''],
       publicClient: [false],
-      frontendBaseUrl: ['http://localhost:8083'],
     });
   }
 
@@ -57,12 +56,6 @@ export class CreateProductComponent implements OnInit {
     return;
   }
 
-  const frontendBaseUrl = (this.productForm.get('frontendBaseUrl')?.value || '').trim();
-  if (!frontendBaseUrl) {
-    this.responseMessage = '⚠️ Frontend Base URL is required.';
-    return;
-  }
-
   const productPayload = {
     productId,
     publicClient: this.productForm.get('publicClient')?.value ?? false
@@ -73,13 +66,15 @@ export class CreateProductComponent implements OnInit {
       realm,
       productPayload,
       this.selectedBackendZip,
-      this.selectedFrontendZip,
-      frontendBaseUrl
+      this.selectedFrontendZip
     )
     .subscribe({
-      next: () => {
-        this.responseMessage = '✅ Product created and source code uploaded successfully!';
-        this.productForm.reset({ publicClient: false, frontendBaseUrl: 'http://localhost:8083' });
+      next: (res: any) => {
+        const frontendUrl = res?.token?.frontendBaseUrl;
+        this.responseMessage = frontendUrl
+          ? `✅ Product created successfully! Open it at ${frontendUrl}`
+          : '✅ Product created and source code uploaded successfully!';
+        this.productForm.reset({ publicClient: false });
         this.selectedBackendZip = null;
         this.selectedFrontendZip = null;
       },
