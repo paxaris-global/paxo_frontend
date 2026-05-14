@@ -9,9 +9,10 @@ import { Settings } from './settings/settings';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { PythonFoundryComponent } from './python-foundry/python-foundry';
+import { HomePage } from './home/home';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', component: HomePage },
 
   { path: 'login', component: LoginPage, canActivate: [guestGuard] },
   { path: 'signup', component: SignupPage, canActivate: [guestGuard] },
@@ -39,5 +40,5 @@ export const routes: Routes = [
     ]
   },
 
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,63 @@
+<main class="home-page">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Paxaris Gateway Platform</p>
+      <h1>Provision secure products from source ZIPs to Kubernetes in one guided flow.</h1>
+      <p class="subtitle">
+        Paxo brings Keycloak identity, product provisioning, API access control, Python Foundry generation,
+        Argo CD GitOps, and Kubernetes deployments into one admin experience.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/login" class="btn primary">Sign in to Paxo</a>
+        <a routerLink="/signup" class="btn ghost">Create admin realm</a>
+        <a routerLink="/dashboard" class="btn subtle">Open dashboard</a>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <div class="panel-topline">
+        <span class="status-dot"></span>
+        <span>GitOps ready</span>
+      </div>
+      <h2>Create Product API Flow</h2>
+      <ol>
+        <li *ngFor="let item of flow">{{ item }}</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="capabilities">
+    <div class="section-heading">
+      <p class="eyebrow">What Paxo manages</p>
+      <h2>Everything needed after login, visible before login.</h2>
+    </div>
+
+    <div class="capability-grid">
+      <article class="capability-card" *ngFor="let capability of capabilities">
+        <span class="icon"><i [class]="capability.icon"></i></span>
+        <h3>{{ capability.title }}</h3>
+        <p>{{ capability.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="platform-strip">
+    <div>
+      <strong>Identity Service</strong>
+      <span>Keycloak realms, users, clients, roles</span>
+    </div>
+    <div>
+      <strong>Product Management</strong>
+      <span>GitHub repos, NodePorts, manifests, URLs</span>
+    </div>
+    <div>
+      <strong>Argo CD + Minikube</strong>
+      <span>Synced Kubernetes workloads</span>
+    </div>
+    <div>
+      <strong>Observability</strong>
+      <span>Jaeger tracing for microservices</span>
+    </div>
+  </section>
+</main>

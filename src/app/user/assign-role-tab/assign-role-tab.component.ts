@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
+import { ProductOption } from '../../models';
 
 @Component({
   selector: 'app-assign-role-tab',
@@ -12,9 +13,13 @@ import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 export class AssignRoleTabComponent {
   @Input() currentRealm = '';
   @Input() users: any[] = [];
-  @Input() clients: string[] = [];
+  @Input() products: ProductOption[] = [];
   @Input() roles: any[] = [];
+  @Input() selectedRoleNames: string[] = [];
+  @Input() availableRolesForAssignment: any[] = [];
   @Input() assignForm!: FormGroup;
 
   @Output() assignRole = new EventEmitter<void>();
+  @Output() addRole = new EventEmitter<string>();
+  @Output() removeRole = new EventEmitter<string>();
 }

@@ -55,53 +55,18 @@
 
 <!-- Assign Role Tab -->
 <div *ngIf="currentSectionFromUrl === 'assign-roles'">
-  <div class="section section-assign">
-    <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
-    <div class="field">
-      <label>Realm: <span class="required">*</span></label>
-      <input type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" />
-    </div>
-    <form [formGroup]="assignForm" (ngSubmit)="assignRole()">
-      <div class="field">
-        <label>Select User: <span class="required">*</span></label>
-        <select formControlName="userId">
-          <option value="">--Select User--</option>
-          <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Select Product: <span class="required">*</span></label>
-        <select formControlName="product">
-          <option value="">--Select Product--</option>
-          <option *ngFor="let product of products" [value]="product.clientId">{{ product.label }}</option>
-        </select>
-      </div>
-
-      <!-- New Role Selection UI -->
-      <div class="field">
-        <label>Selected Roles:</label>
-        <div class="selected-roles-container" *ngIf="selectedRoleNames.length > 0; else noRolesSelected" style="border: 1px solid #ccc; padding: 10px; min-height: 40px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 5px;">
-          <span *ngFor="let roleName of selectedRoleNames" style="background-color: #e0e0e0; padding: 5px 10px; border-radius: 15px; display: flex; align-items: center; gap: 5px;">
-            {{ roleName }}
-            <button type="button" (click)="removeRoleFromAssignment(roleName)" style="border: none; background: none; cursor: pointer; font-size: 16px; line-height: 1;">&times;</button>
-          </span>
-        </div>
-        <ng-template #noRolesSelected>
-          <div style="border: 1px solid #ccc; padding: 10px; min-height: 40px; border-radius: 4px; color: #777;">No roles selected yet.</div>
-        </ng-template>
-      </div>
-
-      <div class="field">
-        <label>Add Role:</label>
-        <select #roleSelect (change)="addRoleToAssignment(roleSelect.value); roleSelect.value = ''">
-          <option value="">--Select a role to add--</option>
-          <option *ngFor="let role of availableRolesForAssignment" [value]="role.name">{{ role.name }}</option>
-        </select>
-      </div>
-      
-      <button type="submit" [disabled]="assignForm.invalid || !currentRealm"><i class="fa-solid fa-check-circle"></i> Assign Roles</button>
-    </form>
-  </div>
+  <app-assign-role-tab
+    [currentRealm]="currentRealm"
+    [users]="users"
+    [products]="products"
+    [roles]="roles"
+    [selectedRoleNames]="selectedRoleNames"
+    [availableRolesForAssignment]="availableRolesForAssignment"
+    [assignForm]="assignForm"
+    (assignRole)="assignRole()"
+    (addRole)="addRoleToAssignment($event)"
+    (removeRole)="removeRoleFromAssignment($event)"
+  ></app-assign-role-tab>
 </div>
 
 

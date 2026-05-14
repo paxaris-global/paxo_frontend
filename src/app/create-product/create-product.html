@@ -1,63 +1,67 @@
-<div class="form-card section-product">
-  <h3><i class="fa-solid fa-gears"></i> Create New Product</h3>
-  <p class="hint">Create via API using realm + product details + backend/frontend source ZIP files.</p>
+<div class="create-product-page">
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">Product provisioning</p>
+      <h3><i class="fa-solid fa-gears"></i> Create New Product</h3>
+      <p class="subtitle">Upload backend and frontend ZIPs. Paxo will allocate ports and configure Keycloak automatically.</p>
+    </div>
+    <span class="count-pill">Dynamic URL</span>
+  </section>
 
-  <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
-    <div class="field">
-      <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
-      <input
-        id="realm"
-        type="text"
-        formControlName="realm"
-        placeholder="e.g. test2"
-        readonly
-      />
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h4>Product Details</h4>
+        <p>Enter the product ID and choose the Keycloak client type.</p>
+      </div>
     </div>
-    <div class="field">
-      <label for="productId"><i class="fa-solid fa-id-badge"></i> Product ID</label>
-      <input
-        id="productId"
-        type="text"
-        formControlName="productId"
-        placeholder="e.g. test-product5"
-      />
-    </div>
-    <div class="field checkbox-field">
-      <label>
+
+    <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
+      <div class="selector-grid">
+        <div class="form-group">
+          <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
+          <input id="realm" type="text" formControlName="realm" placeholder="e.g. test2" readonly class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="productId"><i class="fa-solid fa-id-badge"></i> Product ID</label>
+          <input id="productId" type="text" formControlName="productId" placeholder="e.g. test-product5" class="form-control" />
+        </div>
+      </div>
+
+      <label class="client-card">
         <input type="checkbox" formControlName="publicClient" />
-        Public product
+        <span>
+          <strong>Public product</strong>
+          <small>Use this when the frontend product should authenticate as a public Keycloak client.</small>
+        </span>
       </label>
+
+      <div class="upload-grid">
+        <label class="upload-zone">
+          <input id="backendZip" type="file" (change)="onBackendZipSelected($event)" accept=".zip" />
+          <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
+          <span class="upload-title">Backend ZIP</span>
+          <span class="upload-subtitle">{{ selectedBackendZip?.name || 'Choose backend source archive' }}</span>
+        </label>
+
+        <label class="upload-zone">
+          <input id="frontendZip" type="file" (change)="onFrontendZipSelected($event)" accept=".zip" />
+          <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
+          <span class="upload-title">Frontend ZIP</span>
+          <span class="upload-subtitle">{{ selectedFrontendZip?.name || 'Choose frontend source archive' }}</span>
+        </label>
+      </div>
+
+      <div class="footer-actions">
+        <button type="submit" class="btn primary">
+          <i class="fa-solid fa-plus-circle"></i> Create Product
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="responseMessage" class="response-message">
+      {{ responseMessage }}
     </div>
-
-    <hr class="divider" />
-    <div class="field">
-      <label for="backendZip"><i class="fa-solid fa-file-archive"></i> Backend ZIP</label>
-      <input
-        id="backendZip"
-        type="file"
-        (change)="onBackendZipSelected($event)"
-        accept=".zip"
-      />
-      <small *ngIf="selectedBackendZip" class="file-name">{{ selectedBackendZip.name }}</small>
-    </div>
-
-    <div class="field">
-      <label for="frontendZip"><i class="fa-solid fa-file-archive"></i> Frontend ZIP</label>
-      <input
-        id="frontendZip"
-        type="file"
-        (change)="onFrontendZipSelected($event)"
-        accept=".zip"
-      />
-      <small *ngIf="selectedFrontendZip" class="file-name">{{ selectedFrontendZip.name }}</small>
-    </div>
-
-    <button type="submit">
-      <i class="fa-solid fa-plus-circle"></i> Create Product
-    </button>
-  </form>
-
-  <div *ngIf="responseMessage" class="response-message">
-    {{ responseMessage }}
-  </div>
+  </section>
 </div>

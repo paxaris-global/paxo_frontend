@@ -17,6 +17,7 @@ import {
 import { UsersTabComponent } from './users-tab/users-tab.component';
 import { RolesTabComponent } from './roles-tab/roles-tab.component';
 import { RoleUrlTabComponent } from './roles-urls-tab/role-url-tab';
+import { AssignRoleTabComponent } from './assign-role-tab/assign-role-tab.component';
 
 interface UrlUriPair {
   url: string;
@@ -32,7 +33,8 @@ interface UrlUriPair {
     ReactiveFormsModule,
     UsersTabComponent,
     RolesTabComponent,
-    RoleUrlTabComponent
+    RoleUrlTabComponent,
+    AssignRoleTabComponent
   ],
   templateUrl: './user.html',
   styleUrls: ['./user.css'],

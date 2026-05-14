@@ -1,114 +1,205 @@
-/* Create Product Component - Professional Design */
-.form-card {
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow);
-  margin-bottom: var(--spacing-lg);
-}
-
-.section-product {
-  border-top: 4px solid var(--primary);
-}
-
-.form-card h3 {
-  margin-bottom: var(--spacing-lg);
-  color: var(--text-primary);
-  font-size: var(--font-size-xl);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.field {
+.create-product-page {
   display: flex;
   flex-direction: column;
-  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-xl, 1.5rem);
 }
 
-.field label {
-  font-weight: 500;
-  margin-bottom: var(--spacing-xs);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
+.hero-card,
+.panel {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--border-radius-lg, 14px);
+  box-shadow: var(--shadow, 0 10px 28px rgba(15, 23, 42, 0.08));
+}
+
+.hero-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-lg, 1.5rem);
+  padding: var(--spacing-xl, 2rem);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(37, 99, 235, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.96), #fff);
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--primary, #2563eb);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-card h3,
+.panel h4 {
+  margin: 0;
+  color: var(--text-primary, #111827);
+}
+
+.hero-card h3 {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 0.55rem;
+  font-size: 1.6rem;
 }
 
-input[type="text"],
-input[type="file"],
-select {
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  background: var(--bg-primary);
-  transition: var(--transition);
+.subtitle,
+.panel-header p {
+  margin: 0.45rem 0 0;
+  color: var(--text-secondary, #64748b);
 }
 
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+.count-pill {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
-.file-name {
-  color: var(--primary);
-  margin-top: var(--spacing-xs);
-  font-weight: 500;
-  font-size: var(--font-size-sm);
+.panel {
+  padding: var(--spacing-xl, 1.5rem);
 }
 
-button {
+.panel-header {
+  margin-bottom: var(--spacing-lg, 1.25rem);
+}
+
+.selector-grid,
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-lg, 1.25rem);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-primary, #111827);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.form-control {
   width: 100%;
-  padding: var(--spacing-md) var(--spacing-xl);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: var(--text-white);
-  border: none;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: var(--border-radius, 10px);
+  background: #fff;
+  color: var(--text-primary, #111827);
+  font: inherit;
+  padding: 0.75rem 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.client-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  margin: var(--spacing-lg, 1.25rem) 0;
+  padding: var(--spacing-md, 1rem);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--border-radius-lg, 14px);
+  background: #f8fafc;
   cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
 }
 
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.client-card input {
+  margin-top: 0.2rem;
+  accent-color: var(--primary, #2563eb);
 }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+.client-card strong {
+  display: block;
+  color: var(--text-primary, #111827);
 }
 
-.response-message {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-md);
+.client-card small,
+.upload-subtitle {
+  color: var(--text-secondary, #64748b);
+}
+
+.upload-zone {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.4rem;
+  border: 1px dashed #bfdbfe;
+  border-radius: var(--border-radius-lg, 14px);
+  background: #eff6ff;
+  cursor: pointer;
   text-align: center;
-  font-weight: 600;
-  border-radius: var(--border-radius);
 }
 
-.response-message:empty {
+.upload-zone input {
   display: none;
 }
 
-.response-message.success {
-  background-color: #d1fae5;
-  color: #065f46;
-  border: 1px solid var(--success);
+.upload-icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
 }
 
-.response-message.error {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border: 1px solid var(--error);
+.upload-title {
+  color: var(--text-primary, #111827);
+  font-weight: 800;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg, 1.25rem);
+}
+
+.btn {
+  border: 0;
+  border-radius: var(--border-radius, 10px);
+  padding: 0.75rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary, #2563eb), var(--primary-dark, #1d4ed8));
+}
+
+.response-message {
+  margin-top: var(--spacing-md, 1rem);
+  padding: var(--spacing-md, 1rem);
+  border-radius: var(--border-radius, 10px);
+  background: #f8fafc;
+  color: var(--text-primary, #111827);
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .hero-card,
+  .selector-grid,
+  .upload-grid {
+    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
 }

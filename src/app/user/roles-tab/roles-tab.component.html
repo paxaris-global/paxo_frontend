@@ -1,53 +1,87 @@
-<div class="section section-roles">
-  <h3>Create Role</h3>
+<div class="roles-tab">
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">Access control</p>
+      <h3>Create Role</h3>
+      <p class="subtitle">Create product roles and review the roles available for URI permissions.</p>
+    </div>
+    <span class="count-pill">{{ roles.length }} role{{ roles.length === 1 ? '' : 's' }}</span>
+  </section>
 
-  <form [formGroup]="roleForm" (ngSubmit)="onSubmit($event)">
-
-    <div class="field">
-      <label>Realm</label>
-      <input type="text" formControlName="realm" readonly />
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h4>Role Details</h4>
+        <p>Select a product and define the role users can receive.</p>
+      </div>
     </div>
 
-    <div class="field">
-      <label>Product</label>
-      <select formControlName="product">
-        <option value="">-- Select Product --</option>
-        <option *ngFor="let product of products" [value]="product.clientId">
-          {{ product.label }}
-        </option>
-      </select>
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit($event)">
+      <div class="selector-grid">
+        <div class="form-group">
+          <label for="role-realm">Realm</label>
+          <input id="role-realm" type="text" formControlName="realm" readonly class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="role-product">Product</label>
+          <select id="role-product" formControlName="product" class="form-control">
+            <option value="">Select Product</option>
+            <option *ngFor="let product of products" [value]="product.clientId">
+              {{ product.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="role-name">Role Name</label>
+          <input id="role-name" type="text" formControlName="roleName" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="role-description">Description</label>
+          <input id="role-description" type="text" formControlName="description" class="form-control" />
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button type="submit" class="btn primary">Create Role</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h4>Existing Roles</h4>
+        <p>Roles loaded for the selected product.</p>
+      </div>
     </div>
 
-    <div class="field">
-      <label>Role Name</label>
-      <input type="text" formControlName="roleName" />
+    <div class="table-shell" *ngIf="roles.length > 0; else emptyRoles">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Role</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of roles">
+            <td>{{ role.product || '-' }}</td>
+            <td><span class="role-chip">{{ role.name }}</span></td>
+            <td>{{ role.description || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <div class="field">
-      <label>Description</label>
-      <input type="text" formControlName="description" />
-    </div>
-
-    <button type="submit" class="btn-submit">
-      Create Role
-    </button>
-  </form>
-
-  <h4>Existing Roles</h4>
-  <table>
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Role</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let role of roles">
-        <td>{{ role.product }}</td>
-        <td>{{ role.name }}</td>
-        <td>{{ role.description }}</td>
-      </tr>
-    </tbody>
-  </table>
+    <ng-template #emptyRoles>
+      <div class="empty-state">
+        <strong>No roles loaded</strong>
+        <span>Select a product or create the first role.</span>
+      </div>
+    </ng-template>
+  </section>
 </div>

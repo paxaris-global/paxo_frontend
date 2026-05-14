@@ -1,31 +1,75 @@
-<div class="section section-assign">
-  <h3><i class="fa-solid fa-user-plus"></i> Assign Role to User</h3>
-  <div class="field">
-    <label>Realm: <span class="required">*</span></label>
-    <input type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" />
-  </div>
-  <form [formGroup]="assignForm" (ngSubmit)="assignRole.emit()">
-    <div class="field">
-      <label>Select User: <span class="required">*</span></label>
-      <select formControlName="userId">
-        <option value="">--Select User--</option>
-        <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
-      </select>
+<div class="assign-role-tab" [formGroup]="assignForm">
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">Access control</p>
+      <h3><i class="fa-solid fa-user-plus"></i> Assign Roles</h3>
+      <p class="subtitle">Choose a user, product, and one or more roles to grant access.</p>
     </div>
-    <div class="field">
-      <label>Select Client: <span class="required">*</span></label>
-      <select formControlName="client">
-        <option value="">--Select Client--</option>
-        <option *ngFor="let client of clients" [value]="client">{{ client }}</option>
-      </select>
+    <span class="count-pill">{{ selectedRoleNames.length }} selected</span>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h4>Assignment Target</h4>
+        <p>Select the exact user and product context before adding roles.</p>
+      </div>
     </div>
-    <div class="field">
-      <label>Select Role: <span class="required">*</span></label>
-      <select formControlName="roleName" multiple size="5">
-        <option value="">--Select Role--</option>
-        <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
-      </select>
-    </div>
-    <button type="submit" [disabled]="assignForm.invalid || !currentRealm"><i class="fa-solid fa-check-circle"></i> Assign Role</button>
-  </form>
+
+    <form (ngSubmit)="assignRole.emit()">
+      <div class="selector-grid">
+        <div class="form-group">
+          <label for="assign-realm">Realm</label>
+          <input id="assign-realm" type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="assign-user">User <span class="required">*</span></label>
+          <select id="assign-user" formControlName="userId" class="form-control">
+            <option value="">Select User</option>
+            <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="assign-product">Product <span class="required">*</span></label>
+          <select id="assign-product" formControlName="product" class="form-control">
+            <option value="">Select Product</option>
+            <option *ngFor="let product of products" [value]="product.clientId">{{ product.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="assign-role-picker">Add Role</label>
+          <select id="assign-role-picker" #roleSelect class="form-control" (change)="addRole.emit(roleSelect.value); roleSelect.value = ''">
+            <option value="">Select a role to add</option>
+            <option *ngFor="let role of availableRolesForAssignment" [value]="role.name">{{ role.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="selected-panel">
+        <div>
+          <strong>Selected Roles</strong>
+          <span>{{ selectedRoleNames.length ? 'Ready to assign' : 'No roles selected yet' }}</span>
+        </div>
+
+        <div class="selected-roles-container" *ngIf="selectedRoleNames.length > 0; else noRolesSelected">
+          <span class="selected-role-chip" *ngFor="let roleName of selectedRoleNames">
+            {{ roleName }}
+            <button type="button" (click)="removeRole.emit(roleName)" aria-label="Remove role">&times;</button>
+          </span>
+        </div>
+        <ng-template #noRolesSelected>
+          <div class="selected-roles-empty">Choose a role from the dropdown above.</div>
+        </ng-template>
+      </div>
+
+      <div class="footer-actions">
+        <button type="submit" class="btn primary" [disabled]="assignForm.invalid || !currentRealm">
+          <i class="fa-solid fa-check-circle"></i> Assign Roles
+        </button>
+      </div>
+    </form>
+  </section>
 </div>

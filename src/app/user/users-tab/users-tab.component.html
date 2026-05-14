@@ -1,81 +1,137 @@
-<div class="section section-users">
-  <h3><i class="fa-solid fa-users"></i> Create User</h3>
-  <div class="field">
-    <label>Realm: <span class="required">*</span></label>
-    <input type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" />
-  </div>
-  <form [formGroup]="userForm" (ngSubmit)="createUser.emit()">
-    <div class="field"><label>Username:</label><input formControlName="username" type="text" /></div>
-    <div class="field"><label>Email:</label><input formControlName="email" type="email" /></div>
-    <div class="field"><label>First Name:</label><input formControlName="firstName" type="text" /></div>
-    <div class="field"><label>Last Name:</label><input formControlName="lastName" type="text" /></div>
-    <div class="field"><label>Password:</label><input formControlName="password" type="password" /></div>
-    <button type="submit" [disabled]="userForm.invalid || !currentRealm"><i class="fa-solid fa-plus-circle"></i> Create User</button>
-  </form>
+<div class="users-tab">
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">Identity admin</p>
+      <h3><i class="fa-solid fa-users"></i> Users</h3>
+      <p class="subtitle">Create and manage users for the selected realm.</p>
+    </div>
+    <span class="count-pill">{{ users.length }} user{{ users.length === 1 ? '' : 's' }}</span>
+  </section>
 
-  <h4>Existing Users</h4>
-  <table>
-    <thead>
-      <tr><th>Username</th><th>Email</th><th>First Name</th><th>Last Name</th></tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.firstName }}</td>
-        <td>{{ user.lastName }}</td>
-     <td>
-  <button type="button" (click)="openEditModal(user)">
-  <i class="fa-solid fa-pen-to-square"></i> Edit
-</button>
-</td>
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h4>Create User</h4>
+        <p>Add a new user account with a permanent password.</p>
+      </div>
+    </div>
 
-<td>
-  <button type="button" (click)="deleteUser.emit(user)">
-    <i class="fa-solid fa-trash"></i> Delete
-  </button>
-</td>
-      </tr>
-    </tbody>
-  </table>
+    <form [formGroup]="userForm" (ngSubmit)="createUser.emit()">
+      <div class="selector-grid user-form-grid">
+        <div class="form-group full-width">
+          <label for="user-realm">Realm <span class="required">*</span></label>
+          <input id="user-realm" type="text" [ngModel]="currentRealm" [ngModelOptions]="{standalone: true}" readonly placeholder="Realm name" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" formControlName="username" type="text" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" formControlName="email" type="email" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input id="firstName" formControlName="firstName" type="text" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input id="lastName" formControlName="lastName" type="text" class="form-control" />
+        </div>
+        <div class="form-group full-width">
+          <label for="password">Password</label>
+          <input id="password" formControlName="password" type="password" class="form-control" />
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button type="submit" class="btn primary" [disabled]="userForm.invalid || !currentRealm">
+          <i class="fa-solid fa-plus-circle"></i> Create User
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel table-panel">
+    <div class="panel-header">
+      <div>
+        <h4>Existing Users</h4>
+        <p>Review, edit, or remove users in this realm.</p>
+      </div>
+    </div>
+
+    <div class="table-shell" *ngIf="users.length > 0; else emptyUsers">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td><strong>{{ user.username }}</strong></td>
+            <td>{{ user.email || '-' }}</td>
+            <td>{{ user.firstName || '-' }}</td>
+            <td>{{ user.lastName || '-' }}</td>
+            <td>
+              <div class="row-actions">
+                <button type="button" class="btn ghost small" (click)="openEditModal(user)">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+                <button type="button" class="btn danger small" (click)="deleteUser.emit(user)">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyUsers>
+      <div class="empty-state">
+        <strong>No users found</strong>
+        <span>Create the first user using the form above.</span>
+      </div>
+    </ng-template>
+  </section>
 </div>
 
-<!-- EDIT MODAL -->
 <div class="modal-backdrop" *ngIf="showEditModal">
-  <div class="modal">
+  <div class="modal panel">
+    <div class="panel-header">
+      <div>
+        <h4>Edit User</h4>
+        <p>Update user profile details.</p>
+      </div>
+    </div>
 
-    <h3>Edit User</h3>
-
-    <form [formGroup]="editForm">
-
-      <div class="field">
+    <form [formGroup]="editForm" class="modal-form">
+      <div class="form-group">
         <label>Username</label>
-        <input formControlName="username" readonly />
+        <input formControlName="username" readonly class="form-control" />
       </div>
-
-      <div class="field">
+      <div class="form-group">
         <label>Email</label>
-        <input formControlName="email" type="email" />
+        <input formControlName="email" type="email" class="form-control" />
       </div>
-
-      <div class="field">
+      <div class="form-group">
         <label>First Name</label>
-        <input formControlName="firstName" />
+        <input formControlName="firstName" class="form-control" />
       </div>
-
-      <div class="field">
+      <div class="form-group">
         <label>Last Name</label>
-        <input formControlName="lastName" />
+        <input formControlName="lastName" class="form-control" />
       </div>
-
     </form>
 
     <div class="modal-actions">
-      <button (click)="saveEdit()" [disabled]="editForm.invalid">
-        Save
-      </button>
-      <button (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn ghost" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn primary" (click)="saveEdit()" [disabled]="editForm.invalid">Save</button>
     </div>
-
   </div>
 </div>

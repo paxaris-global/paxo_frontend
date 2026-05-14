@@ -1,1 +1,206 @@
-/* Reuse parent user page styles */
+.assign-role-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl, 1.5rem);
+}
+
+.hero-card,
+.panel {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--border-radius-lg, 14px);
+  box-shadow: var(--shadow, 0 10px 28px rgba(15, 23, 42, 0.08));
+}
+
+.hero-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-lg, 1.5rem);
+  padding: var(--spacing-xl, 2rem);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(37, 99, 235, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.96), #fff);
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--primary, #2563eb);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-card h3,
+.panel h4 {
+  margin: 0;
+  color: var(--text-primary, #111827);
+}
+
+.hero-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.6rem;
+}
+
+.subtitle,
+.panel-header p {
+  margin: 0.45rem 0 0;
+  color: var(--text-secondary, #64748b);
+}
+
+.count-pill {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.panel {
+  padding: var(--spacing-xl, 1.5rem);
+}
+
+.panel-header {
+  margin-bottom: var(--spacing-lg, 1.25rem);
+}
+
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-lg, 1.25rem);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-group label {
+  color: var(--text-primary, #111827);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: var(--border-radius, 10px);
+  background: #fff;
+  color: var(--text-primary, #111827);
+  font: inherit;
+  padding: 0.75rem 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.selected-panel {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: var(--spacing-lg, 1.25rem);
+  padding: var(--spacing-md, 1rem);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--border-radius-lg, 14px);
+  background: #f8fafc;
+}
+
+.selected-panel strong {
+  display: block;
+  color: var(--text-primary, #111827);
+}
+
+.selected-panel span {
+  color: var(--text-secondary, #64748b);
+  font-size: 0.85rem;
+}
+
+.selected-roles-container,
+.selected-roles-empty {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: var(--border-radius, 10px);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.selected-roles-empty {
+  align-items: center;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.9rem;
+}
+
+.selected-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.selected-role-chip button {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg, 1.25rem);
+}
+
+.btn {
+  border: 0;
+  border-radius: var(--border-radius, 10px);
+  padding: 0.75rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary, #2563eb), var(--primary-dark, #1d4ed8));
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .hero-card,
+  .selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card {
+    flex-direction: column;
+  }
+}
