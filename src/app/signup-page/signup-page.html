@@ -1,31 +1,50 @@
-<div class="signup-wrapper">
-  <div class="signup-card">
-    <h2>🧩 Create New Realm</h2>
-    <p class="subtitle">Provision a new Keycloak Realm & Admin User</p>
+<main class="auth-page signup-page">
+  <section class="auth-visual">
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <p class="eyebrow">Realm onboarding</p>
+    <h1>Create a secure Paxo realm.</h1>
+    <p>
+      Provision a Keycloak realm and admin access so your team can start creating products,
+      users, roles, and AI-generated applications.
+    </p>
 
-    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-
-      <!-- Realm Section -->
-      <div class="section">
-        <h3>🌐 Realm Details</h3>
-
-        <div class="field">
-          <label>Realm Name</label>
-          <input type="text" formControlName="realmName" placeholder="e.g. myRealmVip"  />
-        </div>
-
-        <div class="field">
-          <label>Admin Password</label>
-          <input type="password" formControlName="adminPassword" placeholder="Set admin password" />
-        </div>
+    <div class="signal-card">
+      <span class="status-dot"></span>
+      <div>
+        <strong>Realm bootstrap</strong>
+        <small>Admin product access included</small>
       </div>
-      
+    </div>
+  </section>
 
-      <button type="submit" [disabled]="signupForm.invalid || loading">
-        {{ loading ? 'Processing...' : 'Sign Up' }}
+  <section class="auth-panel">
+    <div class="panel-header">
+      <p class="eyebrow">Get started</p>
+      <h2>Create New Realm</h2>
+      <span>Set the realm name and admin password for your Paxo workspace.</span>
+    </div>
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="field">
+        <label for="realmName">Realm Name</label>
+        <input id="realmName" type="text" formControlName="realmName" placeholder="e.g. myRealmVip" />
+      </div>
+
+      <div class="field">
+        <label for="adminPassword">Admin Password</label>
+        <input id="adminPassword" type="password" formControlName="adminPassword" placeholder="Set admin password" />
+      </div>
+
+      <button type="submit" class="auth-submit" [disabled]="signupForm.invalid || loading">
+        {{ loading ? 'Processing...' : 'Create Realm' }}
       </button>
     </form>
 
+    <div class="auth-footer">
+      <p>Already have a realm? <a routerLink="/login">Login here</a></p>
+    </div>
+
     <div *ngIf="message" class="message">{{ message }}</div>
-  </div>
-</div>
+  </section>
+</main>

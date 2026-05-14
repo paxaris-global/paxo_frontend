@@ -3,7 +3,6 @@
 
   <div class="actions">
     @if (!loggedIn) {
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="btn ghost">Home</a>
       <a routerLink="/login" routerLinkActive="active" class="btn ghost">Login</a>
       <a routerLink="/signup" routerLinkActive="active" class="btn primary">Signup</a>
     } @else {

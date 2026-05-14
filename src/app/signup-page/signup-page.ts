@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiGatewayService } from '../services/api-gateway.service';
 import { getStoredRealm } from '../auth-storage';
@@ -9,7 +9,7 @@ import { getStoredRealm } from '../auth-storage';
 @Component({
   selector: 'app-signup-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './signup-page.html',
   styleUrls: ['./signup-page.css'],
 })

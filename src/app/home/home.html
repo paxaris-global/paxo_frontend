@@ -2,10 +2,9 @@
   <section class="hero">
     <div class="hero-copy">
       <p class="eyebrow">Paxaris Gateway Platform</p>
-      <h1>Provision secure products from source ZIPs to Kubernetes in one guided flow.</h1>
+      <h1>Build, secure, and deploy products with Paxo.</h1>
       <p class="subtitle">
-        Paxo brings Keycloak identity, product provisioning, API access control, Python Foundry generation,
-        Argo CD GitOps, and Kubernetes deployments into one admin experience.
+        A clean control plane for product generation, identity, provisioning, and GitOps delivery on Kubernetes.
       </p>
 
       <div class="hero-actions">
@@ -13,51 +12,107 @@
         <a routerLink="/signup" class="btn ghost">Create admin realm</a>
         <a routerLink="/dashboard" class="btn subtle">Open dashboard</a>
       </div>
+
+      <div class="stats-row">
+        <div *ngFor="let stat of stats">
+          <strong>{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      </div>
     </div>
 
-    <div class="hero-panel">
-      <div class="panel-topline">
+    <div class="hero-visual">
+      <img
+        src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80"
+        alt="Paxo platform dashboard preview"
+      />
+      <div class="floating-card top">
         <span class="status-dot"></span>
-        <span>GitOps ready</span>
+        <strong>Synced Healthy</strong>
       </div>
-      <h2>Create Product API Flow</h2>
-      <ol>
-        <li *ngFor="let item of flow">{{ item }}</li>
-      </ol>
+      <div class="floating-card bottom">
+        <i class="fa-solid fa-code-branch"></i>
+        <strong>GitOps deployment</strong>
+      </div>
     </div>
   </section>
 
-  <section class="capabilities">
+  <section class="ai-section">
+    <div class="ai-orb" aria-hidden="true"></div>
+    <div class="ai-copy">
+      <p class="eyebrow">Python Foundry</p>
+      <h2>Generate Product Using AI</h2>
+      <p>
+        Turn a product idea into a working backend and frontend starter with a guided AI generation flow.
+      </p>
+      <div class="ai-actions">
+        <a routerLink="/dashboard/product/generate-product" class="btn primary">Try AI generator</a>
+        <a routerLink="/login" class="btn glass">Login first</a>
+      </div>
+    </div>
+    <div class="ai-panel">
+      <span class="ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI workflow</span>
+      <div class="ai-line" *ngFor="let item of aiHighlights">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>{{ item }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="products-section">
     <div class="section-heading">
-      <p class="eyebrow">What Paxo manages</p>
-      <h2>Everything needed after login, visible before login.</h2>
+      <p class="eyebrow">Products</p>
+      <h2>Build, secure, and ship product experiences from Paxo.</h2>
     </div>
 
-    <div class="capability-grid">
-      <article class="capability-card" *ngFor="let capability of capabilities">
-        <span class="icon"><i [class]="capability.icon"></i></span>
-        <h3>{{ capability.title }}</h3>
-        <p>{{ capability.description }}</p>
+    <div class="product-grid">
+      <article class="product-card" *ngFor="let product of products">
+        <img [src]="product.image" [alt]="product.name + ' preview image'" />
+        <div class="product-body">
+          <span>{{ product.tag }}</span>
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.description }}</p>
+        </div>
       </article>
     </div>
   </section>
 
-  <section class="platform-strip">
-    <div>
-      <strong>Identity Service</strong>
-      <span>Keycloak realms, users, clients, roles</span>
+  <footer class="home-footer">
+    <div class="footer-inner">
+      <div class="footer-hero">
+        <div class="footer-brand">
+          <span class="footer-logo">PG</span>
+          <div>
+            <strong>Paxaris Global</strong>
+            <p>AI generation, identity, provisioning, and GitOps delivery for Paxo products.</p>
+          </div>
+        </div>
+
+        <div class="footer-status-grid">
+          <span><i class="fa-solid fa-circle"></i> Argo CD synced</span>
+          <span><i class="fa-solid fa-shield-halved"></i> Keycloak secured</span>
+          <span><i class="fa-solid fa-cubes"></i> Kubernetes ready</span>
+        </div>
+      </div>
+
+      <div class="footer-columns">
+        <div>
+          <strong>Platform</strong>
+          <a routerLink="/dashboard">Dashboard</a>
+          <a routerLink="/dashboard/product/products">Create Product</a>
+          <a routerLink="/dashboard/product/generate-product">Generate Product Using AI</a>
+        </div>
+        <div>
+          <strong>Access</strong>
+          <a routerLink="/login">Login</a>
+          <a routerLink="/signup">Signup</a>
+        </div>
+      </div>
     </div>
-    <div>
-      <strong>Product Management</strong>
-      <span>GitHub repos, NodePorts, manifests, URLs</span>
+
+    <div class="footer-bottom">
+      <span>Built for Paxo microservices on Minikube and Argo CD.</span>
+      <span>Identity • Products • AI • GitOps</span>
     </div>
-    <div>
-      <strong>Argo CD + Minikube</strong>
-      <span>Synced Kubernetes workloads</span>
-    </div>
-    <div>
-      <strong>Observability</strong>
-      <span>Jaeger tracing for microservices</span>
-    </div>
-  </section>
+  </footer>
 </main>
