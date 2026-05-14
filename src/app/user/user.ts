@@ -56,6 +56,8 @@ export class User implements OnInit, OnDestroy {
   private routeDataSub: Subscription | null = null;
   private routeEventSub: Subscription | null = null;
   private routeQuerySub: Subscription | null = null;
+  private productsRequestSeq = 0;
+  private rolesRequestSeq = 0;
   userForm: FormGroup;
   roleForm: FormGroup;
   assignForm: FormGroup;
@@ -154,7 +156,9 @@ export class User implements OnInit, OnDestroy {
 
  this.productChangesSub = this.roleForm.get('product')!.valueChanges.subscribe((product: string | null) => {
   if (!product) {
-    this.roles = [];
+    if (this.activeSection === 'roles' || this.activeSection === 'roleUrl') {
+      this.roles = [];
+    }
     return;
   }
 
@@ -168,7 +172,9 @@ export class User implements OnInit, OnDestroy {
 this.assignProductSub = this.assignForm.get('product')!.valueChanges.subscribe((product: string | null) => {
   this.assignForm.patchValue({ roleName: [] }, { emitEvent: false });
   if (!product) {
-    this.roles = [];
+    if (this.activeSection === 'assign') {
+      this.roles = [];
+    }
     return;
   }
 
@@ -188,12 +194,12 @@ this.routeDataSub = this.route.data.subscribe(() => {
 
 this.routeQuerySub = this.route.queryParamMap.subscribe((params) => {
   const realm = params.get('realm');
-  if (realm && realm !== this.currentRealm) {
+  if (realm && !this.currentRealm) {
     this.currentRealm = realm;
     this.roleForm.patchValue({ realm });
     this.loadUsers();
     this.loadProducts();
-  } else if (realm && !this.products.length) {
+  } else if (realm && realm === this.currentRealm && !this.products.length) {
     this.loadProducts();
   }
 
@@ -385,15 +391,31 @@ this.routeEventSub = this.router.events
       this.roles = [];
       return;
     }
+    const requestSeq = ++this.rolesRequestSeq;
     this.apiGateway.getRoles(realm, product).subscribe({
       next: (data: any[]) => {
+        if (requestSeq !== this.rolesRequestSeq || !this.isProductStillSelected(product)) {
+          return;
+        }
         this.roles = (data || []).map((r: any) => ({ ...r, product }));
       },
       error: (err: any) => {
+        if (requestSeq !== this.rolesRequestSeq) {
+          return;
+        }
         console.error('Error loading roles:', err);
-        this.roles = [];
+        if (!this.roles.length) {
+          this.roles = [];
+        }
       },
     });
+  }
+
+  private isProductStillSelected(product: string): boolean {
+    if (this.activeSection === 'assign') {
+      return this.assignForm.get('product')?.value === product;
+    }
+    return this.roleForm.get('product')?.value === product;
   }
 
 
@@ -401,8 +423,12 @@ loadProducts(): void {
   const realm = this.currentRealm || this.roleForm.get('realm')?.value;
   if (!realm) return;
 
+  const requestSeq = ++this.productsRequestSeq;
   this.apiGateway.getProducts(realm).subscribe({
     next: (data: any) => {
+      if (requestSeq !== this.productsRequestSeq) {
+        return;
+      }
       console.log('Products loaded:', data);
       this.products = (data || [])
         .map((p: any) => productRowToOption(p))
@@ -425,8 +451,13 @@ loadProducts(): void {
       }
     },
     error: (err: any) => {
+      if (requestSeq !== this.productsRequestSeq) {
+        return;
+      }
       console.error('Failed to load products:', err);
-      this.products = [];
+      if (!this.products.length) {
+        this.products = [];
+      }
     }
   });
 }

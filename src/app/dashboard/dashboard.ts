@@ -36,31 +36,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.realmName = realmFromQuery;
         setStoredRealm(realmFromQuery);
         this.loadProducts();
+        this.refreshRealmFromToken();
       } else {
         this.realmName = getStoredRealm() || 'Unknown Realm';
         this.loadProducts();
-        this.dashboardService.getRealmUser().subscribe({
-          next: (realm) => {
-            const name = (realm?.trim() || getStoredRealm()) || 'Unknown Realm';
-            this.realmName = name;
-            if (name !== 'Unknown Realm') {
-              setStoredRealm(name);
-              this.loadProducts();
-            } else {
-              this.products = [];
-              this.loadingProducts = false;
-            }
-          },
-          error: () => {
-            this.realmName = getStoredRealm() || 'Unknown Realm';
-            if (this.realmName !== 'Unknown Realm') {
-              this.loadProducts();
-            } else {
-              this.products = [];
-              this.loadingProducts = false;
-            }
-          },
-        });
+        this.refreshRealmFromToken();
       }
     });
   }
@@ -85,6 +65,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
       error: () => {
         this.products = [];
         this.loadingProducts = false;
+      },
+    });
+  }
+
+  private refreshRealmFromToken(): void {
+    this.dashboardService.getRealmUser().subscribe({
+      next: (realm) => {
+        const name = (realm?.trim() || getStoredRealm()) || 'Unknown Realm';
+        this.realmName = name;
+        if (name !== 'Unknown Realm') {
+          setStoredRealm(name);
+          this.loadProducts();
+        } else {
+          this.products = [];
+          this.loadingProducts = false;
+        }
+      },
+      error: () => {
+        this.realmName = getStoredRealm() || 'Unknown Realm';
+        if (this.realmName !== 'Unknown Realm') {
+          this.loadProducts();
+        } else {
+          this.products = [];
+          this.loadingProducts = false;
+        }
       },
     });
   }
