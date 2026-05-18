@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import {
   clearAuthState,
   getStoredToken,
@@ -28,34 +28,71 @@ export class KeycloakService {
   }
 
   // ---------- PRODUCTS ----------
-createProductWithFile(
+/** Phase 1: create Keycloak client and reserve product URLs. */
+createProductInKeycloak(
   realm: string,
-  product: { productId: string; publicClient: boolean; urls?: string[] },
+  product: { productId: string; publicClient: boolean }
+) {
+  const token = getStoredToken();
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+  return this.http.post(
+    `${this.gw()}/identity/${realm}/products/keycloak`,
+    product,
+    { headers }
+  );
+}
+
+getProductDeploymentStatus(realm: string, productId: string) {
+  const token = getStoredToken();
+  const headers = new HttpHeaders({
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+  return this.http.get(
+    `${this.gw()}/identity/${realm}/products/${encodeURIComponent(productId)}/deployment-status`,
+    { headers }
+  );
+}
+
+/** Phase 2: GitHub + Kubernetes provisioning (after Keycloak success). */
+deployProductWithFiles(
+  realm: string,
+  product: { productId: string; publicClient: boolean },
   backendZip: File,
   frontendZip: File
 ) {
   const token = getStoredToken();
-
   const formData = new FormData();
-
-  // Important: JSON blob (same as curl)
   formData.append(
     'product',
     new Blob([JSON.stringify(product)], { type: 'application/json' })
   );
-
-  // Multipart parts expected by backend create-product API.
   formData.append('backendZip', backendZip);
   formData.append('frontendZip', frontendZip);
-
   return this.http.post(
-    `${this.gw()}/identity/${realm}/products`,
+    `${this.gw()}/identity/${realm}/products/deploy`,
     formData,
     {
       headers: token
         ? new HttpHeaders({ Authorization: `Bearer ${token}` })
         : undefined,
     }
+  );
+}
+
+/** Keycloak first, then deploy — used by Create Product button. */
+createProductWithFile(
+  realm: string,
+  product: { productId: string; publicClient: boolean; urls?: string[] },
+  backendZip: File,
+  frontendZip: File
+) {
+  return this.createProductInKeycloak(realm, product).pipe(
+    switchMap(() =>
+      this.deployProductWithFiles(realm, product, backendZip, frontendZip)
+    )
   );
 }
 

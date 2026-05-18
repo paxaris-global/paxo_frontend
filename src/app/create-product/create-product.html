@@ -39,14 +39,14 @@
 
       <div class="upload-grid">
         <label class="upload-zone">
-          <input id="backendZip" type="file" (change)="onBackendZipSelected($event)" accept=".zip" />
+          <input id="backendZip" type="file" (change)="onBackendZipSelected($event)" accept=".zip" [disabled]="isCreating" />
           <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
           <span class="upload-title">Backend ZIP</span>
           <span class="upload-subtitle">{{ selectedBackendZip?.name || 'Choose backend source archive' }}</span>
         </label>
 
         <label class="upload-zone">
-          <input id="frontendZip" type="file" (change)="onFrontendZipSelected($event)" accept=".zip" />
+          <input id="frontendZip" type="file" (change)="onFrontendZipSelected($event)" accept=".zip" [disabled]="isCreating" />
           <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
           <span class="upload-title">Frontend ZIP</span>
           <span class="upload-subtitle">{{ selectedFrontendZip?.name || 'Choose frontend source archive' }}</span>
@@ -54,13 +54,48 @@
       </div>
 
       <div class="footer-actions">
-        <button type="submit" class="btn primary">
-          <i class="fa-solid fa-plus-circle"></i> Create Product
+        <button type="submit" class="btn primary" [disabled]="isCreating">
+          <i class="fa-solid" [ngClass]="isCreating ? 'fa-spinner fa-spin' : 'fa-plus-circle'"></i>
+          {{ isCreating ? 'Creating product…' : 'Create Product' }}
         </button>
       </div>
     </form>
 
-    <div *ngIf="responseMessage" class="response-message">
+    <section *ngIf="isCreating" class="progress-panel" aria-live="polite">
+      <div class="progress-header">
+        <div>
+          <h4>Provisioning progress</h4>
+          <p class="progress-current">{{ currentStepLabel }}</p>
+        </div>
+        <span class="progress-percent">{{ progressPercent }}%</span>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+
+      <p class="progress-meta">{{ doneStepCount }} / {{ progressSteps.length }} steps completed</p>
+
+      <ol class="progress-steps">
+        <li
+          *ngFor="let step of progressSteps"
+          [class]="'progress-step progress-step--' + step.status"
+        >
+          <span class="progress-step-icon" aria-hidden="true">
+            <i *ngIf="step.status === 'done'" class="fa-solid fa-check"></i>
+            <i *ngIf="step.status === 'active'" class="fa-solid fa-spinner fa-spin"></i>
+            <i *ngIf="step.status === 'failed'" class="fa-solid fa-xmark"></i>
+            <i *ngIf="step.status === 'pending'" class="fa-regular fa-circle"></i>
+          </span>
+          <span class="progress-step-body">
+            <span class="progress-step-label">{{ step.label }}</span>
+            <small *ngIf="step.detail" class="progress-step-detail">{{ step.detail }}</small>
+          </span>
+        </li>
+      </ol>
+    </section>
+
+    <div *ngIf="responseMessage" class="response-message" [class.response-message--error]="responseMessage.startsWith('❌')">
       {{ responseMessage }}
     </div>
   </section>
