@@ -1,0 +1,205 @@
+.showcase-card {
+  --showcase-media-h: 200px;
+  --showcase-body-h: 252px;
+  --showcase-total-h: calc(var(--showcase-media-h) + var(--showcase-body-h));
+  --showcase-glow: rgba(96, 165, 250, 0.35);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: var(--showcase-total-h);
+  min-height: var(--showcase-total-h);
+  max-height: var(--showcase-total-h);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 22px;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(15, 23, 42, 0.12);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.showcase-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 165, 250, 0.55),
+    rgba(168, 85, 247, 0.35),
+    rgba(56, 189, 248, 0.2)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.showcase-card:hover {
+  transform: translateY(-7px);
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 26px 55px rgba(37, 99, 235, 0.2),
+    0 0 28px var(--showcase-glow);
+}
+
+.showcase-card:hover::before {
+  opacity: 1;
+}
+
+/* 1. Project screenshot */
+.showcase-card__media {
+  position: relative;
+  flex: 0 0 var(--showcase-media-h);
+  width: 100%;
+  height: var(--showcase-media-h);
+  overflow: hidden;
+  background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 100%);
+}
+
+.showcase-card__media::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.35), transparent);
+  pointer-events: none;
+}
+
+.showcase-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.4s ease;
+}
+
+.showcase-card:hover .showcase-card__media img {
+  transform: scale(1.04);
+}
+
+.showcase-card__body {
+  display: flex;
+  flex: 0 0 var(--showcase-body-h);
+  flex-direction: column;
+  box-sizing: border-box;
+  height: var(--showcase-body-h);
+  max-height: var(--showcase-body-h);
+  padding: 1rem 1.15rem 1.1rem;
+  background: transparent;
+}
+
+/* 2. Realm */
+.showcase-card__realm {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 0.28rem 0.6rem;
+  color: #1d4ed8;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(96, 165, 250, 0.1));
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 3. Header */
+.showcase-card__title {
+  margin: 0.65rem 0 0;
+  color: #0f172a;
+  font-size: 1.06rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. Description (from product About / hero) */
+.showcase-card__description {
+  margin: 0.42rem 0 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 5. Divider + Open product */
+.showcase-card__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.72rem;
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.showcase-card__divider {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(96, 165, 250, 0.65) 35%,
+    rgba(168, 85, 247, 0.55) 65%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.35);
+}
+
+.showcase-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.2rem 0;
+  border: none;
+  border-radius: 0;
+  color: #2563eb;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, gap 0.2s ease, text-shadow 0.2s ease;
+}
+
+.showcase-card__action:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+  gap: 0.55rem;
+  text-shadow: 0 0 18px rgba(96, 165, 250, 0.45);
+}
+
+.showcase-card__action i {
+  font-size: 0.78rem;
+  opacity: 0.9;
+}

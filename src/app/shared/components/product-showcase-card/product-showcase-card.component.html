@@ -1,0 +1,32 @@
+<article class="showcase-card">
+  <div class="showcase-card__media">
+    <img
+      [src]="previewSrc"
+      [alt]="product.productName + ' preview'"
+      loading="lazy"
+      (error)="onImageError($event)"
+    />
+  </div>
+
+  <div class="showcase-card__body">
+    <span class="showcase-card__realm">{{ product.realmName }}</span>
+    <h3 class="showcase-card__title" [attr.title]="product.productName">
+      {{ product.productName }}
+    </h3>
+    <p class="showcase-card__description" [attr.title]="product.description">
+      {{ product.description }}
+    </p>
+    <div class="showcase-card__footer">
+      <hr class="showcase-card__divider" />
+      <a
+        class="showcase-card__action"
+        [href]="openProductUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open product
+        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</article>

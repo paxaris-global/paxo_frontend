@@ -10,9 +10,11 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { PythonFoundryComponent } from './python-foundry/python-foundry';
 import { HomePage } from './home/home';
+import { ProductCatalogPage } from './product-catalog/product-catalog';
 
 export const routes: Routes = [
   { path: '', component: HomePage },
+  { path: 'products', component: ProductCatalogPage },
 
   { path: 'login', component: LoginPage, canActivate: [guestGuard] },
   { path: 'signup', component: SignupPage, canActivate: [guestGuard] },

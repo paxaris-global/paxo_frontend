@@ -1,0 +1,52 @@
+<main class="catalog-page">
+  <div class="catalog-bg" aria-hidden="true">
+    <span class="catalog-orb catalog-orb--one"></span>
+    <span class="catalog-orb catalog-orb--two"></span>
+    <span class="catalog-bg-grid"></span>
+  </div>
+
+  <header class="catalog-header">
+    <p class="catalog-eyebrow">Product catalog</p>
+    <h1>All provisioned products</h1>
+    <p class="catalog-lead">
+      Browse live product frontends deployed through Paxo. Search by name, realm, or description.
+    </p>
+  </header>
+
+  <section class="catalog-toolbar" aria-label="Search products">
+    <label class="catalog-search" for="product-search">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input
+        id="product-search"
+        type="search"
+        name="product-search"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search products, realms, descriptions…"
+        autocomplete="off"
+      />
+    </label>
+    <span class="catalog-count" *ngIf="!loading">
+      {{ filteredProducts.length }} of {{ products.length }} products
+    </span>
+  </section>
+
+  <p class="catalog-status" *ngIf="loading">Loading products…</p>
+  <p class="catalog-status catalog-status--error" *ngIf="error">{{ error }}</p>
+  <p class="catalog-status" *ngIf="!loading && !error && !products.length">
+    No products are live yet. Deploy a product through Paxo and it will appear here.
+  </p>
+  <p
+    class="catalog-status"
+    *ngIf="!loading && !error && products.length && !filteredProducts.length"
+  >
+    No products match “{{ searchQuery }}”.
+  </p>
+
+  <section class="catalog-products-grid" *ngIf="!loading && filteredProducts.length">
+    <app-product-showcase-card
+      *ngFor="let product of filteredProducts"
+      [product]="product"
+    />
+  </section>
+</main>

@@ -13,11 +13,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { ProductShowcaseCard } from '../models/product-showcase.model';
 import { ProductShowcaseService } from '../services/product-showcase.service';
+import { ProductShowcaseCardComponent } from '../shared/components/product-showcase-card/product-showcase-card.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ProductShowcaseCardComponent],
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
 })
@@ -31,7 +32,6 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   showcaseProducts: ProductShowcaseCard[] = [];
   showcasesLoading = true;
   showcasesError = '';
-  showAllProducts = false;
   carouselIndex = 0;
   cardsPerView = 1;
 
@@ -111,20 +111,6 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
   get carouselVisibleEnd(): number {
     return Math.min(this.showcaseProducts.length, this.carouselIndex + this.cardsPerView);
-  }
-
-  toggleShowAll(): void {
-    this.showAllProducts = !this.showAllProducts;
-    if (this.showAllProducts) {
-      this.unbindCarouselScrollSync();
-      return;
-    }
-    if (isPlatformBrowser(this.platformId)) {
-      queueMicrotask(() => {
-        this.bindCarouselScrollSync();
-        this.scrollCarouselToIndex(false);
-      });
-    }
   }
 
   prevCarousel(): void {

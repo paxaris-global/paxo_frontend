@@ -72,25 +72,17 @@
     <p class="showcase-status error" *ngIf="showcasesError">{{ showcasesError }}</p>
 
     <ng-container *ngIf="showcaseProducts.length">
-      <div class="products-toolbar" *ngIf="!showAllProducts">
+      <div class="products-toolbar">
         <span class="carousel-counter">
           {{ carouselIndex + 1 }}–{{ carouselVisibleEnd }} of {{ showcaseProducts.length }}
         </span>
-        <button type="button" class="btn subtle showcase-toggle" (click)="toggleShowAll()">
+        <a routerLink="/products" class="btn subtle showcase-toggle products-view-all">
           View all products
-          <i class="fa-solid fa-table-cells"></i>
-        </button>
+          <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
+        </a>
       </div>
 
-      <div class="products-toolbar" *ngIf="showAllProducts">
-        <span class="carousel-counter">{{ showcaseProducts.length }} products</span>
-        <button type="button" class="btn subtle showcase-toggle" (click)="toggleShowAll()">
-          <i class="fa-solid fa-images"></i>
-          Back to carousel
-        </button>
-      </div>
-
-      <div class="product-carousel" *ngIf="!showAllProducts" [attr.data-cards-per-view]="cardsPerView">
+      <div class="product-carousel" [attr.data-cards-per-view]="cardsPerView">
         <button
           type="button"
           class="carousel-nav prev"
@@ -107,14 +99,9 @@
           tabindex="0"
           aria-label="Provisioned products carousel"
         >
-          <article
-            class="product-card carousel-slide"
-            *ngFor="let product of showcaseProducts"
-          >
-            <ng-container
-              *ngTemplateOutlet="productCardBody; context: { $implicit: product }"
-            ></ng-container>
-          </article>
+          <div class="carousel-slide" *ngFor="let product of showcaseProducts">
+            <app-product-showcase-card [product]="product" />
+          </div>
         </div>
 
         <button
@@ -139,44 +126,8 @@
         </div>
       </div>
 
-      <div class="product-grid product-grid--all" *ngIf="showAllProducts">
-        <article class="product-card" *ngFor="let product of showcaseProducts">
-          <ng-container
-            *ngTemplateOutlet="productCardBody; context: { $implicit: product }"
-          ></ng-container>
-        </article>
-      </div>
     </ng-container>
   </section>
-
-  <ng-template #productCardBody let-product>
-    <a
-      class="product-card-link"
-      [href]="product.frontendUrl"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <img
-        [src]="product.previewImage || ''"
-        [alt]="product.productName + ' preview'"
-        loading="lazy"
-        (error)="$any($event.target).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22900%22 height=%22520%22%3E%3Crect fill=%22%231d4ed8%22 width=%22100%25%22 height=%22100%25%22/%3E%3C/svg%3E'"
-      />
-    </a>
-    <div class="product-body">
-      <span>{{ product.realmName }}</span>
-      <h3>{{ product.productName }}</h3>
-      <p>{{ product.description }}</p>
-      <a
-        class="product-open"
-        [href]="product.frontendUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Open product <i class="fa-solid fa-arrow-up-right-from-square"></i>
-      </a>
-    </div>
-  </ng-template>
 
   <footer class="home-footer">
     <div class="footer-inner">
@@ -200,6 +151,7 @@
         <div>
           <strong>Platform</strong>
           <a routerLink="/dashboard">Dashboard</a>
+          <a routerLink="/products">All products</a>
           <a routerLink="/dashboard/product/products">Create Product</a>
           <a routerLink="/dashboard/product/generate-product">Generate Product Using AI</a>
         </div>
