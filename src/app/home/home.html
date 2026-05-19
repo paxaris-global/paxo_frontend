@@ -64,7 +64,7 @@
       <p class="eyebrow">Products</p>
       <h2>Live catalog of products provisioned through Paxo.</h2>
       <p class="section-lead" *ngIf="!showcasesLoading && !showcaseProducts.length">
-        Create a product from the dashboard — when ArgoCD reports healthy, a card with a screenshot appears here automatically.
+        Products running on Argo CD appear here automatically. If you just deployed, wait a moment for catalog sync and screenshots.
       </p>
     </div>
 
@@ -157,9 +157,10 @@
       rel="noopener noreferrer"
     >
       <img
-        [src]="product.previewImage"
+        [src]="product.previewImage || ''"
         [alt]="product.productName + ' preview'"
         loading="lazy"
+        (error)="$any($event.target).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22900%22 height=%22520%22%3E%3Crect fill=%22%231d4ed8%22 width=%22100%25%22 height=%22100%25%22/%3E%3C/svg%3E'"
       />
     </a>
     <div class="product-body">
