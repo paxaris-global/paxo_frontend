@@ -2,6 +2,20 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.0.
 
+## CI/CD (GitHub Actions)
+
+On push to `main`, workflow **Build and Deploy Paxo Frontend** (`.github/workflows/ci.yml`) builds the Docker image, pushes to Docker Hub, and updates `paxaris-global/paxo` `k8/paxo-frontend-deployment.yaml` so Argo CD rolls out the cluster.
+
+Configure these **repository secrets** under *Settings → Secrets and variables → Actions*:
+
+| Secret | Purpose |
+|--------|---------|
+| `DOCKER_HUB_USERNAME` + `DOCKER_HUB_TOKEN` | Docker Hub login (preferred) |
+| `DOCKER_USERNAME` + `DOCKER_PASSWORD` | Legacy Docker Hub secret names |
+| `GH_ACCESS_TOKEN` or `PAXO_GITOPS_TOKEN` | Classic GitHub PAT with `repo` write on `paxaris-global/paxo` ([create token](https://github.com/settings/tokens/new)) — **not** your GitHub password |
+
+If a step fails with **Bad credentials**, create a new PAT and update the secret; enable SSO for the Paxaris org if required.
+
 ## Development server
 
 To start a local development server, run:

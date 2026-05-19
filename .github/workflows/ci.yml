@@ -1,0 +1,122 @@
+# Builds the Docker image, pushes to Docker Hub, and updates paxaris-global/paxo GitOps.
+# Does not use repository-dispatch (avoids needing dispatch permissions on a separate token).
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   Docker Hub (either pair):
+#     - DOCKER_HUB_USERNAME + DOCKER_HUB_TOKEN   (recommended; same as paxo central CI)
+#     - DOCKER_USERNAME + DOCKER_PASSWORD          (legacy names from older workflow)
+#   GitOps (either one — classic PAT with repo scope on paxaris-global/paxo):
+#     - GH_ACCESS_TOKEN
+#     - PAXO_GITOPS_TOKEN
+name: Build and Deploy Paxo Frontend
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REPO: devopspaxarisglobalrepo/paxo_frontend
+      DEPLOYMENT_FILE: k8/paxo-frontend-deployment.yaml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate secrets
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          PAXO_GITOPS_TOKEN: ${{ secrets.PAXO_GITOPS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DOCKER_HUB_USERNAME:-}" ] && [ -z "${DOCKER_USERNAME:-}" ]; then
+            echo "::error::Missing Docker Hub credentials. Add repo secrets DOCKER_HUB_USERNAME + DOCKER_HUB_TOKEN (or DOCKER_USERNAME + DOCKER_PASSWORD)."
+            exit 1
+          fi
+          if [ -z "${DOCKER_HUB_TOKEN:-}" ] && [ -z "${DOCKER_PASSWORD:-}" ]; then
+            echo "::error::Missing Docker Hub password/token secret (DOCKER_HUB_TOKEN or DOCKER_PASSWORD)."
+            exit 1
+          fi
+          if [ -z "${GH_ACCESS_TOKEN:-}" ] && [ -z "${PAXO_GITOPS_TOKEN:-}" ]; then
+            echo "::error::Missing GitOps PAT. Add GH_ACCESS_TOKEN (or PAXO_GITOPS_TOKEN): a classic GitHub PAT with repo write access to paxaris-global/paxo. Create at https://github.com/settings/tokens/new — not your login password."
+            exit 1
+          fi
+
+      - name: Resolve Docker Hub credentials
+        id: docker
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          if [ -n "${DOCKER_HUB_USERNAME:-}" ]; then
+            echo "username=${DOCKER_HUB_USERNAME}" >> "$GITHUB_OUTPUT"
+            echo "password=${DOCKER_HUB_TOKEN}" >> "$GITHUB_OUTPUT"
+          else
+            echo "username=${DOCKER_USERNAME}" >> "$GITHUB_OUTPUT"
+            echo "password=${DOCKER_PASSWORD}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ steps.docker.outputs.username }}
+          password: ${{ steps.docker.outputs.password }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.IMAGE_REPO }}:latest
+            ${{ env.IMAGE_REPO }}:${{ github.sha }}
+
+      - name: Update GitOps manifests in paxo
+        env:
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          PAXO_GITOPS_TOKEN: ${{ secrets.PAXO_GITOPS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          GITOPS_TOKEN="${GH_ACCESS_TOKEN:-}"
+          [ -z "$GITOPS_TOKEN" ] && GITOPS_TOKEN="${PAXO_GITOPS_TOKEN}"
+
+          IMAGE_SHA="${{ github.sha }}"
+          TARGET_IMAGE="${IMAGE_REPO}:${IMAGE_SHA}"
+
+          git clone "https://x-access-token:${GITOPS_TOKEN}@github.com/paxaris-global/paxo.git" /tmp/paxo-gitops
+          cd /tmp/paxo-gitops
+
+          sed -i "s|^\([[:space:]]*image:[[:space:]]*\).*|\1${TARGET_IMAGE}|" "${DEPLOYMENT_FILE}"
+
+          REDEPLOY_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          SHORT_SHA="$(echo "$IMAGE_SHA" | cut -c1-8)"
+          sed -i "s|^\([[:space:]]*paxaris.gitops/redeploy-at:\).*|\1 \"${REDEPLOY_AT}\"|" "${DEPLOYMENT_FILE}"
+          sed -i "s|^\([[:space:]]*paxaris.gitops/frontend-revision:\).*|\1 \"${SHORT_SHA}\"|" "${DEPLOYMENT_FILE}"
+
+          if git diff --quiet; then
+            echo "No manifest change detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${DEPLOYMENT_FILE}"
+          git commit -m "ci: update paxo_frontend image to ${IMAGE_SHA}"
+          git push origin main
