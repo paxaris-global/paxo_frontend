@@ -62,20 +62,120 @@
   <section class="products-section">
     <div class="section-heading">
       <p class="eyebrow">Products</p>
-      <h2>Build, secure, and ship product experiences from Paxo.</h2>
+      <h2>Live catalog of products provisioned through Paxo.</h2>
+      <p class="section-lead" *ngIf="!showcasesLoading && !showcaseProducts.length">
+        Create a product from the dashboard — when ArgoCD reports healthy, a card with a screenshot appears here automatically.
+      </p>
     </div>
 
-    <div class="product-grid">
-      <article class="product-card" *ngFor="let product of products">
-        <img [src]="product.image" [alt]="product.name + ' preview image'" />
-        <div class="product-body">
-          <span>{{ product.tag }}</span>
-          <h3>{{ product.name }}</h3>
-          <p>{{ product.description }}</p>
+    <p class="showcase-status" *ngIf="showcasesLoading">Loading provisioned products…</p>
+    <p class="showcase-status error" *ngIf="showcasesError">{{ showcasesError }}</p>
+
+    <ng-container *ngIf="showcaseProducts.length">
+      <div class="products-toolbar" *ngIf="!showAllProducts">
+        <span class="carousel-counter">
+          {{ carouselIndex + 1 }}–{{ carouselVisibleEnd }} of {{ showcaseProducts.length }}
+        </span>
+        <button type="button" class="btn subtle showcase-toggle" (click)="toggleShowAll()">
+          View all products
+          <i class="fa-solid fa-table-cells"></i>
+        </button>
+      </div>
+
+      <div class="products-toolbar" *ngIf="showAllProducts">
+        <span class="carousel-counter">{{ showcaseProducts.length }} products</span>
+        <button type="button" class="btn subtle showcase-toggle" (click)="toggleShowAll()">
+          <i class="fa-solid fa-images"></i>
+          Back to carousel
+        </button>
+      </div>
+
+      <div class="product-carousel" *ngIf="!showAllProducts" [attr.data-cards-per-view]="cardsPerView">
+        <button
+          type="button"
+          class="carousel-nav prev"
+          aria-label="Previous products"
+          (click)="prevCarousel()"
+          [disabled]="!canCarouselPrev"
+        >
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <div
+          #carouselViewport
+          class="carousel-viewport"
+          tabindex="0"
+          aria-label="Provisioned products carousel"
+        >
+          <article
+            class="product-card carousel-slide"
+            *ngFor="let product of showcaseProducts"
+          >
+            <ng-container
+              *ngTemplateOutlet="productCardBody; context: { $implicit: product }"
+            ></ng-container>
+          </article>
         </div>
-      </article>
-    </div>
+
+        <button
+          type="button"
+          class="carousel-nav next"
+          aria-label="Next products"
+          (click)="nextCarousel()"
+          [disabled]="!canCarouselNext"
+        >
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div class="carousel-dots" *ngIf="carouselPageCount > 1">
+          <button
+            type="button"
+            *ngFor="let i of carouselDotIndexes"
+            class="carousel-dot"
+            [class.active]="i === carouselIndex"
+            [attr.aria-label]="'Go to slide ' + (i + 1)"
+            (click)="goToCarouselIndex(i)"
+          ></button>
+        </div>
+      </div>
+
+      <div class="product-grid product-grid--all" *ngIf="showAllProducts">
+        <article class="product-card" *ngFor="let product of showcaseProducts">
+          <ng-container
+            *ngTemplateOutlet="productCardBody; context: { $implicit: product }"
+          ></ng-container>
+        </article>
+      </div>
+    </ng-container>
   </section>
+
+  <ng-template #productCardBody let-product>
+    <a
+      class="product-card-link"
+      [href]="product.frontendUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <img
+        [src]="product.previewImage"
+        [alt]="product.productName + ' preview'"
+        loading="lazy"
+      />
+    </a>
+    <div class="product-body">
+      <span>{{ product.realmName }}</span>
+      <h3>{{ product.productName }}</h3>
+      <p>{{ product.description }}</p>
+      <a
+        class="product-open"
+        [href]="product.frontendUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open product <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </a>
+    </div>
+  </ng-template>
 
   <footer class="home-footer">
     <div class="footer-inner">

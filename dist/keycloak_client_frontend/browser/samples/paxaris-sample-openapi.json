@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Paxaris sample API",
+    "description": "Use this file to test Role URL import (upload in Admin → User → Role Url).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Change to your backend base URL if different"
+    }
+  ],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "getHealth"
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "List users",
+        "operationId": "listUsers"
+      },
+      "post": {
+        "summary": "Create user",
+        "operationId": "createUser"
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "Get user by id",
+        "operationId": "getUser"
+      },
+      "put": {
+        "summary": "Update user",
+        "operationId": "updateUser"
+      },
+      "patch": {
+        "summary": "Partial update user",
+        "operationId": "patchUser"
+      },
+      "delete": {
+        "summary": "Delete user",
+        "operationId": "deleteUser"
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "summary": "List products",
+        "operationId": "listProducts"
+      }
+    }
+  }
+}

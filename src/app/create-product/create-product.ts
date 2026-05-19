@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angul
 import { CommonModule } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { KeycloakService } from '../services/keycloak';
+import { ProductShowcaseService } from '../services/product-showcase.service';
 import { getStoredRealm } from '../auth-storage';
 import {
   CreateProductProgressStep,
@@ -34,6 +35,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private keycloakService: KeycloakService,
+    private showcaseService: ProductShowcaseService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -280,6 +282,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
             this.pollSub?.unsubscribe();
             this.setStepDone('backend');
             this.setStepDone('frontend');
+            this.captureShowcase(realm, productId);
             this.finishProgressSuccess(status?.frontendBaseUrl || frontendUrl);
             return;
           }
@@ -303,6 +306,13 @@ export class CreateProductComponent implements OnInit, OnDestroy {
           }
         },
       });
+  }
+
+  private captureShowcase(realm: string, productId: string) {
+    this.showcaseService.captureShowcase(realm, productId, productId).subscribe({
+      next: () => {},
+      error: (err) => console.warn('Showcase capture failed (home catalog may be stale):', err),
+    });
   }
 
   private recalculatePercent() {

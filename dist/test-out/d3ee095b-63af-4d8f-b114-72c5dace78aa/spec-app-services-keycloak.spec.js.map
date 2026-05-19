@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/services/keycloak.spec.ts"],
+  "sourcesContent": ["import { TestBed } from '@angular/core/testing';\nimport { KeycloakService } from './keycloak';\n\n\ndescribe('Keycloak', () => {\n  let service: KeycloakService;\n\n  beforeEach(() => {\n    TestBed.configureTestingModule({});\n    service = TestBed.inject(KeycloakService);\n  });\n\n  it('should be created', () => {\n    expect(service).toBeTruthy();\n  });\n});\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AACA;AAGA,SAAS,YAAY,MAAK;AACxB,MAAI;AAEJ,aAAW,MAAK;AACd,YAAQ,uBAAuB,CAAA,CAAE;AACjC,cAAU,QAAQ,OAAO,eAAe;EAC1C,CAAC;AAED,KAAG,qBAAqB,MAAK;AAC3B,WAAO,OAAO,EAAE,WAAU;EAC5B,CAAC;AACH,CAAC;",
+  "names": []
+}

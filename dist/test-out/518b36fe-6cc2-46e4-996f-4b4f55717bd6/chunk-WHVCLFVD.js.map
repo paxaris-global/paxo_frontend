@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/environments/environment.ts"],
+  "sourcesContent": ["export const environment = {\n  production: false,\n  // Fill these values based on your target environment.\n  // Leave apiGatewayBaseUrl empty to use relative paths with proxy/nginx.\n  apiGatewayBaseUrl: '',\n  keycloakBaseUrl: '',\n  keycloakRealm: '',\n  keycloakClientId: '',\n  appBaseUrl: '',\n  githubOrg: '',\n};\n"],
+  "mappings": ";;;;;AAAA,IAAa;AAAb;;;AAAO,IAAM,cAAc;MACzB,YAAY;;;MAGZ,mBAAmB;MACnB,iBAAiB;MACjB,eAAe;MACf,kBAAkB;MAClB,YAAY;MACZ,WAAW;;;;",
+  "names": []
+}

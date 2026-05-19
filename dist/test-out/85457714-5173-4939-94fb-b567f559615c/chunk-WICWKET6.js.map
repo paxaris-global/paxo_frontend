@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/environments/environment.ts"],
+  "sourcesContent": ["/**\n * Resolve at **request time** (not module load). SSR/build evaluated `environment` with no `window`,\n * which froze `apiGatewayBaseUrl` to '' and kept signup on :58851 → 403.\n *\n * Default ng serve :4200 uses relative URLs + proxy.conf.json → gateway :8085.\n * Random dev ports (SSR) call gateway directly.\n */\nexport function getApiGatewayBaseUrl(): string {\n  if (typeof window === 'undefined') {\n    return '';\n  }\n  const port = window.location.port;\n  const host = window.location.hostname;\n  if (port === '4200' || port === '') {\n    return '';\n  }\n  return `http://${host}:8085`;\n}\n\nexport const environment = {\n  production: false,\n  /** Prefer {@link getApiGatewayBaseUrl} in services — getter avoids one-shot SSR snapshot. */\n  get apiGatewayBaseUrl(): string {\n    return getApiGatewayBaseUrl();\n  },\n  keycloakBaseUrl: '',\n  keycloakRealm: '',\n  keycloakClientId: '',\n  appBaseUrl: '',\n  githubOrg: '',\n};\n"],
+  "mappings": ";;;;;AAOM,SAAU,uBAAoB;AAClC,MAAI,OAAO,WAAW,aAAa;AACjC,WAAO;EACT;AACA,QAAM,OAAO,OAAO,SAAS;AAC7B,QAAM,OAAO,OAAO,SAAS;AAC7B,MAAI,SAAS,UAAU,SAAS,IAAI;AAClC,WAAO;EACT;AACA,SAAO,UAAU,IAAI;AACvB;AAjBA;;;;;",
+  "names": []
+}
