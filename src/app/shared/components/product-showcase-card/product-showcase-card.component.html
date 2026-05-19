@@ -18,15 +18,10 @@
     </p>
     <div class="showcase-card__footer">
       <hr class="showcase-card__divider" />
-      <a
-        class="showcase-card__action"
-        [href]="openProductUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <button type="button" class="showcase-card__action" (click)="openProduct()">
         Open product
         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-      </a>
+      </button>
     </div>
   </div>
 </article>

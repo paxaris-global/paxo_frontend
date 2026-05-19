@@ -47,7 +47,11 @@ export class ProductShowcaseService {
   private normalizeCard(item: ProductShowcaseCard): ProductShowcaseCard {
     return {
       ...item,
-      frontendUrl: resolveProductFrontendUrl(item.frontendUrl),
+      frontendUrl: resolveProductFrontendUrl(
+        item.frontendUrl,
+        item.realmName,
+        item.productId
+      ),
     };
   }
 }

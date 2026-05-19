@@ -24,7 +24,22 @@ export class ProductShowcaseCardComponent {
   }
 
   get openProductUrl(): string {
-    return resolveProductFrontendUrl(this.product.frontendUrl);
+    return resolveProductFrontendUrl(
+      this.product.frontendUrl,
+      this.product.realmName,
+      this.product.productId
+    );
+  }
+
+  openProduct(): void {
+    const url = this.openProductUrl;
+    if (!url) {
+      return;
+    }
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      window.location.assign(url);
+    }
   }
 
   onImageError(event: Event): void {
