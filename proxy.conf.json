@@ -17,6 +17,12 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
+  "/api/v1/project": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/python-foundry-api": {
     "target": "http://localhost:4201",
     "secure": false,

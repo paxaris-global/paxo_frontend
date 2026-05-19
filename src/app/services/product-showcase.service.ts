@@ -10,7 +10,8 @@ import { ProductShowcaseCard } from '../models/product-showcase.model';
 })
 export class ProductShowcaseService {
   private base(): string {
-    return `${getApiGatewayBaseUrl()}/api/v1/project/showcases`;
+    // Same-origin path proxied to api-gateway (see proxy.conf.js and nginx default.conf)
+    return `${getApiGatewayBaseUrl()}/project/showcases`;
   }
 
   constructor(private http: HttpClient) {}

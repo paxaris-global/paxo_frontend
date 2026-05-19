@@ -24,6 +24,12 @@ module.exports = {
     changeOrigin: true,
     logLevel: 'debug',
   },
+  '/api/v1/project': {
+    target: gatewayUrl,
+    secure: false,
+    changeOrigin: true,
+    logLevel: 'debug',
+  },
   '/python-foundry-api': {
     target: pythonFrontendUrl,
     secure: false,

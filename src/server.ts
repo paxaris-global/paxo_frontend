@@ -31,7 +31,9 @@ function isGatewayApiPath(urlPath: string): boolean {
     pathOnly === '/gateway' ||
     pathOnly.startsWith('/gateway/') ||
     pathOnly === '/project' ||
-    pathOnly.startsWith('/project/')
+    pathOnly.startsWith('/project/') ||
+    pathOnly === '/api/v1/project' ||
+    pathOnly.startsWith('/api/v1/project/')
   );
 }
 
