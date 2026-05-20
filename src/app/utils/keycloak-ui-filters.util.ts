@@ -34,6 +34,27 @@ export const KEYCLOAK_ACCOUNT_DEFAULT_ROLE_NAMES = new Set(
   ].map((s) => s.toLowerCase()),
 );
 
+/**
+ * Roles auto-created during realm signup on `{realm}-admin-product` (not via Roles tab).
+ * Hide these so dropdowns show roles admins create explicitly for products.
+ */
+export const SIGNUP_AUTO_ADMIN_ROLE_NAMES = new Set(
+  [
+    'admin-management',
+    'manage-realm',
+    'manage-users',
+    'manage-clients',
+    'create-client',
+    'impersonation',
+  ].map((s) => s.toLowerCase()),
+);
+
+/** All Keycloak/system role names to hide from UI role dropdowns. */
+export const HIDDEN_DEFAULT_ROLE_NAMES = new Set([
+  ...KEYCLOAK_ACCOUNT_DEFAULT_ROLE_NAMES,
+  ...SIGNUP_AUTO_ADMIN_ROLE_NAMES,
+]);
+
 export function clientIdFromProductRow(p: unknown): string {
   if (typeof p === 'string') {
     return p.trim();
@@ -68,6 +89,6 @@ export function filterRoleRowsForUi(roles: unknown[] | null | undefined): unknow
     const name = String((r as { name?: unknown }).name ?? '')
       .trim()
       .toLowerCase();
-    return name.length > 0 && !KEYCLOAK_ACCOUNT_DEFAULT_ROLE_NAMES.has(name);
+    return name.length > 0 && !HIDDEN_DEFAULT_ROLE_NAMES.has(name);
   });
 }
