@@ -113,7 +113,11 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.selectedRealm = getStoredRealm() || '';
+    const queryRealm = this.route.snapshot.queryParamMap.get('realm')?.trim() || '';
+    this.selectedRealm = queryRealm || getStoredRealm() || '';
+    if (queryRealm) {
+      setStoredRealm(queryRealm);
+    }
     if (typeof window !== 'undefined') {
       const reason = sessionStorage.getItem('redirect_reason');
       if (reason === 'unauthorized') {
