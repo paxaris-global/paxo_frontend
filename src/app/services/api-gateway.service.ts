@@ -2,6 +2,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, shareReplay, finalize } from 'rxjs/operators';
+import { filterProductRowsForUi, filterRoleRowsForUi } from '../utils/keycloak-ui-filters.util';
 import {
   LoginRequest,
   LoginResponse,
@@ -184,6 +185,7 @@ export class ApiGatewayService {
         headers: this.getAuthHeaders(),
       })
       .pipe(
+        map((rows) => filterProductRowsForUi(rows) as Array<{ productId: string; [key: string]: any }>),
         shareReplay(1),
         finalize(() => this.productsInFlight.delete(realm))
       );
@@ -197,7 +199,9 @@ export class ApiGatewayService {
    */
   getRoles(realm: string, productId: string): Observable<any[]> {
     const url = `${this.gw()}/identity/${realm}/products/${productId}/roles`;
-    return this.http.get<any[]>(url, { headers: this.getAuthHeaders() });
+    return this.http
+      .get<any[]>(url, { headers: this.getAuthHeaders() })
+      .pipe(map((rows) => filterRoleRowsForUi(rows) as any[]));
   }
   // ─── Role creation (role creation) ──────────────────────────────────────
   /**

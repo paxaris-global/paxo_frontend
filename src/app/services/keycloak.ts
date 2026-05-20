@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { filterProductRowsForUi } from '../utils/keycloak-ui-filters.util';
 import {
   clearAuthState,
   getStoredToken,
@@ -105,9 +106,13 @@ createProductWithFile(
     if (realm) {
       // Backend endpoint: GET /identity/products/{realm}
       return this.http.get<any[]>(`${this.gw()}/identity/products/${realm}`, { headers }).pipe(
-        map((products: any[]) =>
-          products.map((p) => p.clientId || p.productId || p.name || p.id || p)
-        )
+        map((products: any[]) => {
+          const ids = filterProductRowsForUi(products || []).map((p) => {
+            const row = p as { clientId?: string; productId?: string; name?: string; id?: string };
+            return String(row.clientId || row.productId || row.name || row.id || '').trim();
+          });
+          return ids.filter((id) => id.length > 0);
+        })
       );
     }
     // Fallback: try to get from gateway if no realm specified
