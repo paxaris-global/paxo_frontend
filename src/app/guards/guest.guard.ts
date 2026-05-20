@@ -8,6 +8,7 @@ import {
   isStoredUserAdmin,
   normalizeProductRedirectUrl,
 } from '../auth-storage';
+import { navigateToAppUrl } from '../utils/app-navigation.util';
 
 /** For login/signup: redirect to dashboard when user already has a token. */
 export const guestGuard: CanActivateFn = () => {
@@ -22,16 +23,16 @@ export const guestGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (isStoredUserAdmin()) {
-    router.navigate(['/dashboard']);
+    void router.navigateByUrl('/dashboard/product/products');
     return false;
   }
 
   const redirectUrl = normalizeProductRedirectUrl(getStoredRedirectUrl());
   if (redirectUrl) {
-    if (/^https?:\/\//i.test(redirectUrl)) {
-      window.location.href = redirectUrl;
+    if (redirectUrl.startsWith('/')) {
+      void router.navigateByUrl(redirectUrl);
     } else {
-      router.navigateByUrl(redirectUrl);
+      navigateToAppUrl(redirectUrl);
     }
     return false;
   }

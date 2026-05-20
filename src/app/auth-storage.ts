@@ -1,4 +1,6 @@
-﻿/**
+﻿import { coerceAppInternalRedirect } from './utils/app-navigation.util';
+
+/**
  * SSR-safe access to auth token. Use this instead of localStorage directly
  * so that server-side rendering does not throw "localStorage is not defined".
  */
@@ -80,11 +82,17 @@ export function clearStoredClientId(): void {
 /** SSR-safe redirect_url storage for post-login navigation. */
 export function getStoredRedirectUrl(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(REDIRECT_URL_KEY);
+  const raw = localStorage.getItem(REDIRECT_URL_KEY);
+  const aligned = coerceAppInternalRedirect(raw);
+  if (raw && aligned && raw !== aligned) {
+    localStorage.setItem(REDIRECT_URL_KEY, aligned);
+  }
+  return aligned;
 }
 export function setStoredRedirectUrl(redirectUrl: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(REDIRECT_URL_KEY, redirectUrl);
+  const aligned = coerceAppInternalRedirect(redirectUrl) ?? redirectUrl;
+  localStorage.setItem(REDIRECT_URL_KEY, aligned);
 }
 export function clearStoredRedirectUrl(): void {
   if (typeof window === 'undefined') return;
@@ -313,5 +321,5 @@ export function normalizeProductRedirectUrl(rawUrl: string | null): string | nul
   }
 
   // Last fallback: same-origin/internal-style normalization.
-  return normalizeRedirectUrl(trimmed);
+  return coerceAppInternalRedirect(normalizeRedirectUrl(trimmed));
 }

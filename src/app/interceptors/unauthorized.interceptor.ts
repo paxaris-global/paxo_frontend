@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 import { clearAuthState } from '../auth-storage';
+import { navigateToAppUrl } from '../utils/app-navigation.util';
 
 /**
  * On 401 Unauthorized from any API call (e.g. GET /identity/users/{realm}):
@@ -12,7 +13,7 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
       if (err.status === 401 && typeof window !== 'undefined') {
         clearAuthState();
         sessionStorage.setItem('redirect_reason', 'unauthorized');
-        window.location.href = '/login';
+        navigateToAppUrl('/login');
       }
       return throwError(() => err);
     })

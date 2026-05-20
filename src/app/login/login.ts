@@ -20,6 +20,7 @@ import {
   touchStoredLastActivity,
   tokenHasAdminRole,
 } from '../auth-storage';
+import { coerceAppInternalRedirect, navigateToAppUrl } from '../utils/app-navigation.util';
 
 /** Pull user-visible text from Spring / gateway JSON error bodies. */
 function messageFromHttpError(err: HttpErrorResponse): string {
@@ -96,12 +97,15 @@ export class LoginPage implements OnInit {
       return rewriteDashboardPath(parsed.pathname, parsed.search, parsed.hash);
     }
 
+    const coerced = coerceAppInternalRedirect(normalizedUrl);
+    if (coerced?.startsWith('/')) {
+      const parsed = new URL(coerced, 'http://local.placeholder');
+      return rewriteDashboardPath(parsed.pathname, parsed.search, parsed.hash);
+    }
+
     try {
       const parsed = new URL(normalizedUrl);
       const rewritten = rewriteDashboardPath(parsed.pathname, parsed.search, parsed.hash);
-      if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
-        return rewritten;
-      }
       return `${parsed.origin}${rewritten}`;
     } catch {
       return normalizedUrl;
@@ -159,11 +163,9 @@ export class LoginPage implements OnInit {
 
             // If isAdmin is true, redirect to /dashboard/product
             if (res.isAdmin === true) {
-              try {
-                this.router.navigateByUrl('/dashboard/product');
-              } catch (err) {
-                globalThis.window.location.href = '/dashboard/product';
-              }
+              void this.router.navigateByUrl('/dashboard/product/products').catch(() => {
+                navigateToAppUrl('/dashboard/product/products');
+              });
               return;
             }
 
@@ -175,16 +177,9 @@ export class LoginPage implements OnInit {
               return;
             }
             setStoredRedirectUrl(apiRedirect);
-            try {
-              if (apiRedirect.startsWith('/')) {
-                this.router.navigateByUrl(apiRedirect);
-              } else {
-                globalThis.window.location.href = apiRedirect;
-              }
-            } catch (redirectErr) {
-              console.error('[Login] Redirect failed:', { apiRedirect, redirectErr });
-              globalThis.window.location.href = apiRedirect;
-            }
+            void this.router.navigateByUrl(apiRedirect).catch(() => {
+              navigateToAppUrl(apiRedirect);
+            });
           } else {
             setStoredRealm(this.selectedRealm);
           }
