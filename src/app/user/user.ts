@@ -628,9 +628,10 @@ createRole(): void {
       });
     },
 
-    error: err => {
+    error: (err: { error?: { message?: string }; message?: string; status?: number }) => {
       console.error(err);
-      alert('❌ Role creation failed');
+      const detail = err?.error?.message || err?.message;
+      alert(detail ? `❌ Role creation failed: ${detail}` : '❌ Role creation failed');
     }
 
   });

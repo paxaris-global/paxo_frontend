@@ -256,7 +256,8 @@ deleteUser(realm: string, username: string): Observable<any> {
     ];
 
     const url = `${this.gw()}/identity/${realm}/products/${productId}/roles`;
-    return this.http.post(url, payload, { headers });
+    // Backend returns plain text ("Roles created successfully..."), not JSON.
+    return this.http.post(url, payload, { headers, responseType: 'text' });
   }
 
 
@@ -309,7 +310,7 @@ deleteUser(realm: string, username: string): Observable<any> {
       'Authorization': `Bearer ${token}`
     });
     const payload = roleNames.map(name => ({ name }));
-    return this.http.post(url, payload, { headers });
+    return this.http.post(url, payload, { headers, responseType: 'text' });
   }
 
   // ---------- UPLOAD CLIENT ----------

@@ -209,10 +209,13 @@ export class ApiGatewayService {
    * Body: [{ name, description, url, uri }]
    * Header: Authorization: Bearer {token}
    */
-  createRoles(realm: string, productId: string, body: CreateRolesPayload): Observable<any> {
+  createRoles(realm: string, productId: string, body: CreateRolesPayload): Observable<string> {
     this.requireToken();
     const url = `${this.gw()}/identity/${realm}/products/${productId}/roles`;
-    return this.http.post(url, body, { headers: this.getAuthHeaders() });
+    return this.http.post(url, body, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text',
+    });
   }
   // ─── Create product (create product) ───────────────────────────────────────
   /**
@@ -237,7 +240,10 @@ export class ApiGatewayService {
   ): Observable<any> {
     this.requireToken();
     const url = `${this.gw()}/identity/${realm}/users/${username}/products/${productName}/roles`;
-    return this.http.post(url, body, { headers: this.getAuthHeaders() });
+    return this.http.post(url, body, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text',
+    });
   }
   // ─── URI check-access ────────────────────────────────────────────────────
   /**
