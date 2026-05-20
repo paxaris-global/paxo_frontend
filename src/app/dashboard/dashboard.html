@@ -13,10 +13,10 @@
             <span class="sidebar-chevron" [class.open]="usersAndRolesMenuOpen">▼</span>
           </button>
          <nav class="sidebar-subchildren" [class.open]="usersAndRolesMenuOpen">
+          <a [routerLink]="['/dashboard', 'product', 'products']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Create Product</a>
+          <a [routerLink]="['/dashboard', 'product', 'roles']" [queryParams]="{ realm: realmName, section: 'roles' }" routerLinkActive="active" class="sidebar-child">Roles</a>
+          <a [routerLink]="['/dashboard', 'product', 'roleUrl']" [queryParams]="{ realm: realmName, section: 'roleUrl' }" routerLinkActive="active" class="sidebar-child">Assign URIs to Role</a>
   <a [routerLink]="['/dashboard', 'product', 'users']" [queryParams]="{ realm: realmName, section: 'users' }" routerLinkActive="active" class="sidebar-child">Users</a>
-  <a [routerLink]="['/dashboard', 'product', 'roles']" [queryParams]="{ realm: realmName, section: 'roles' }" routerLinkActive="active" class="sidebar-child">Roles</a>
-  <a [routerLink]="['/dashboard', 'product', 'roleUrl']" [queryParams]="{ realm: realmName, section: 'roleUrl' }" routerLinkActive="active" class="sidebar-child">Assign URIs to Role</a>
-  <a [routerLink]="['/dashboard', 'product', 'products']" [queryParams]="{ realm: realmName }" routerLinkActive="active" class="sidebar-child">Create Product</a>
   <a [routerLink]="['/dashboard', 'product', 'assign-roles']" [queryParams]="{ realm: realmName, section: 'assign' }" routerLinkActive="active" class="sidebar-child">Assign Roles</a>
 </nav>
 

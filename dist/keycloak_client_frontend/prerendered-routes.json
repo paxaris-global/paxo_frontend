@@ -1,16 +1,6 @@
 {
   "routes": {
     "/": {},
-    "/dashboard": {},
-    "/dashboard/product": {},
-    "/dashboard/product/assign-roles": {},
-    "/dashboard/product/generate-product": {},
-    "/dashboard/product/products": {},
-    "/dashboard/product/roleUrl": {},
-    "/dashboard/product/roles": {},
-    "/dashboard/product/users": {},
-    "/dashboard/settings": {},
-    "/login": {},
-    "/signup": {}
+    "/products": {}
   }
 }
