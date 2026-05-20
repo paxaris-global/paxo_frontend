@@ -321,7 +321,10 @@ this.routeEventSub = this.router.events
   }
 
   get selectedRoleNames(): string[] {
-    return this.assignForm.get('roleName')?.value || [];
+    const value = this.assignForm.get('roleName')?.value;
+    return Array.isArray(value)
+      ? value.filter((name) => typeof name === 'string' && name.trim().length > 0)
+      : [];
   }
 
   get availableRolesForAssignment(): any[] {
@@ -740,8 +743,10 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
 
 
   assignRole(): void {
-    if (this.assignForm.valid) {
-      const realm = this.currentRealm || this.roleForm.get('realm')?.value;
+    if (!this.canSubmitAssignRoles()) {
+      return;
+    }
+    const realm = this.currentRealm || this.roleForm.get('realm')?.value;
       if (!realm) {
         alert('Please select a realm first');
         return;
@@ -776,7 +781,6 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
           alert('Failed to assign roles: ' + (err.error?.message || err.message || 'Unknown error'));
         },
       });
-    }
   }
 
   logout(): void {

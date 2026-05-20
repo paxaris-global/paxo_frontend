@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <form (ngSubmit)="assignRole.emit()">
+    <div class="assign-form-body">
       <div class="selector-grid">
         <div class="form-group">
           <label for="assign-realm">Realm</label>
@@ -74,10 +74,16 @@
       </p>
 
       <div class="footer-actions">
-        <button type="submit" class="btn primary" [disabled]="!canSubmitAssign">
+        <button
+          type="button"
+          class="btn primary"
+          [disabled]="!canSubmit"
+          [attr.aria-disabled]="!canSubmit"
+          (click)="onAssignClick()"
+        >
           <i class="fa-solid fa-check-circle"></i> Assign Roles
         </button>
       </div>
-    </form>
+    </div>
   </section>
 </div>
