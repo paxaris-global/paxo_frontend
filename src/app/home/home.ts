@@ -23,6 +23,9 @@ import { ProductShowcaseCardComponent } from '../shared/components/product-showc
   styleUrls: ['./home.css'],
 })
 export class HomePage implements OnInit, AfterViewInit, OnDestroy {
+  /** Shown after idle timeout or 401 sign-out when user is redirected to home. */
+  sessionEndMessage = '';
+
   readonly stats = [
     { value: 'AI', label: 'Product generation' },
     { value: 'K8s', label: 'Runtime platform' },
@@ -51,6 +54,16 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      const reason = sessionStorage.getItem('redirect_reason');
+      if (reason === 'unauthorized' || reason === 'idle-timeout') {
+        sessionStorage.removeItem('redirect_reason');
+        this.sessionEndMessage =
+          reason === 'idle-timeout'
+            ? 'You were signed out after a period of inactivity. Sign in again when you are ready.'
+            : 'Your session has ended. Sign in again when you are ready.';
+      }
+    }
     this.updateCardsPerView();
     this.showcaseService.listShowcases().subscribe({
       next: (items) => {

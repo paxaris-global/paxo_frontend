@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import { clearAuthState, getStoredToken, isStoredTokenExpired, setStoredRedirectUrl } from '../auth-storage';
 
-/** Protects routes that require a token. Redirects to login when no token. */
+/** Protects routes that require a token. Clears session and sends user home when unauthenticated. */
 export const authGuard: CanActivateFn = (_route, state) => {
   const token = getStoredToken();
   if (token && !isStoredTokenExpired()) return true;
@@ -16,6 +16,6 @@ export const authGuard: CanActivateFn = (_route, state) => {
   setStoredRedirectUrl(returnUrl);
 
   const router = inject(Router);
-  router.navigate(['/login'], { queryParams: { returnUrl } });
+  void router.navigate(['/'], { replaceUrl: true });
   return false;
 };

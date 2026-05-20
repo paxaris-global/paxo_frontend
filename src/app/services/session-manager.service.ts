@@ -174,6 +174,6 @@ export class SessionManagerService implements OnDestroy {
       sessionStorage.setItem('redirect_reason', reason);
     }
 
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/'], { replaceUrl: true });
   }
 }

@@ -20,6 +20,6 @@ export class NavbarComponent {
   logout($event: Event): void {
     $event.preventDefault();
     clearAuthState();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/'], { replaceUrl: true });
   }
 }
