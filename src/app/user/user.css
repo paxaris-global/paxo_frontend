@@ -5,6 +5,32 @@
   padding: var(--spacing-xl);
 }
 
+/* Shared hero header (Users / Roles / Assign — count pill on the right) */
+.hero-card {
+  align-items: center;
+}
+
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  align-self: center;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  min-height: 2rem;
+  color: #1e40af;
+  background-color: #dbeafe;
+  border: 1px solid #93c5fd;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.18);
+  position: relative;
+  z-index: 1;
+}
+
 /* Tabs Navigation */
 .tabs {
   display: flex;

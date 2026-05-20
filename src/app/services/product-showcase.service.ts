@@ -25,6 +25,31 @@ export class ProductShowcaseService {
       .pipe(map((items) => (items ?? []).map((item) => this.normalizeCard(item))));
   }
 
+  uploadBanner(
+    realm: string,
+    productId: string,
+    bannerImage: File,
+    productName?: string
+  ): Observable<ProductShowcaseCard> {
+    const token = getStoredToken();
+    const formData = new FormData();
+    formData.append('bannerImage', bannerImage);
+    if (productName?.trim()) {
+      formData.append('productName', productName.trim());
+    }
+    return this.http
+      .post<ProductShowcaseCard>(
+        `${this.base()}/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/banner`,
+        formData,
+        {
+          headers: token
+            ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+            : undefined,
+        }
+      )
+      .pipe(map((item) => this.normalizeCard(item)));
+  }
+
   captureShowcase(
     realm: string,
     productId: string,

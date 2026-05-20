@@ -2,60 +2,138 @@
   <section class="hero-card">
     <div>
       <p class="eyebrow">Product provisioning</p>
-      <h3><i class="fa-solid fa-gears"></i> Create New Product</h3>
-      <p class="subtitle">Upload backend and frontend ZIPs. Paxo will allocate ports and configure Keycloak automatically.</p>
+      <h3><i class="fa-solid fa-gears" aria-hidden="true"></i> Create New Product</h3>
+      <p class="subtitle">
+        Deploy backend and frontend ZIPs to Kubernetes. Add an optional banner for the home catalog card.
+      </p>
     </div>
-    <span class="count-pill">Dynamic URL</span>
+    <span class="count-pill"><i class="fa-solid fa-lock-open" aria-hidden="true"></i> Public login</span>
   </section>
 
   <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h4>Product Details</h4>
-        <p>Enter the product ID and choose the Keycloak client type.</p>
-      </div>
-    </div>
-
     <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
-      <div class="selector-grid">
-        <div class="form-group">
-          <label for="realm"><i class="fa-solid fa-database"></i> Realm</label>
-          <input id="realm" type="text" formControlName="realm" placeholder="e.g. test2" readonly class="form-control" />
+      <div class="form-section">
+        <div class="section-heading">
+          <h4>Product identity</h4>
+          <p>Realm and product ID are used for Keycloak, GitHub repos, and the catalog card.</p>
         </div>
 
-        <div class="form-group">
-          <label for="productId"><i class="fa-solid fa-id-badge"></i> Product ID</label>
-          <input id="productId" type="text" formControlName="productId" placeholder="e.g. test-product5" class="form-control" />
+        <div class="selector-grid">
+          <div class="form-group">
+            <label for="realm"><i class="fa-solid fa-database" aria-hidden="true"></i> Realm</label>
+            <input id="realm" type="text" formControlName="realm" placeholder="e.g. yatrify" readonly class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="productId"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> Product ID</label>
+            <input
+              id="productId"
+              type="text"
+              formControlName="productId"
+              placeholder="e.g. my-shop"
+              class="form-control"
+              [disabled]="isCreating"
+            />
+          </div>
         </div>
+
       </div>
 
-      <label class="client-card">
-        <input type="checkbox" formControlName="publicClient" />
-        <span>
-          <strong>Public product</strong>
-          <small>Use this when the frontend product should authenticate as a public Keycloak client.</small>
-        </span>
-      </label>
+      <div class="form-section form-section--uploads">
+        <div class="section-heading section-heading--uploads">
+          <span class="section-heading-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+          <div>
+            <h4>Source files</h4>
+            <p>Upload backend ZIP, frontend ZIP, and an optional catalog banner image.</p>
+          </div>
+        </div>
 
-      <div class="upload-grid">
-        <label class="upload-zone">
-          <input id="backendZip" type="file" (change)="onBackendZipSelected($event)" accept=".zip" [disabled]="isCreating" />
-          <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
-          <span class="upload-title">Backend ZIP</span>
-          <span class="upload-subtitle">{{ selectedBackendZip?.name || 'Choose backend source archive' }}</span>
-        </label>
+        <div class="upload-grid">
+          <label
+            class="upload-zone upload-zone--backend"
+            [class.upload-zone--selected]="selectedBackendZip"
+            for="backendZip"
+          >
+            <input
+              id="backendZip"
+              type="file"
+              (change)="onBackendZipSelected($event)"
+              accept=".zip"
+              [disabled]="isCreating"
+            />
+            <span class="upload-icon upload-icon--backend" aria-hidden="true">
+              <i class="fa-solid fa-server"></i>
+              <i class="fa-solid fa-file-zipper upload-icon-badge"></i>
+            </span>
+            <span class="upload-title">
+              <i class="fa-solid fa-server" aria-hidden="true"></i>
+              Backend ZIP
+            </span>
+            <span class="upload-subtitle" [title]="selectedBackendZip?.name || ''">
+              {{ selectedBackendZip?.name || 'Click to choose backend .zip' }}
+            </span>
+          </label>
 
-        <label class="upload-zone">
-          <input id="frontendZip" type="file" (change)="onFrontendZipSelected($event)" accept=".zip" [disabled]="isCreating" />
-          <span class="upload-icon"><i class="fa-solid fa-file-archive"></i></span>
-          <span class="upload-title">Frontend ZIP</span>
-          <span class="upload-subtitle">{{ selectedFrontendZip?.name || 'Choose frontend source archive' }}</span>
-        </label>
+          <label
+            class="upload-zone upload-zone--frontend"
+            [class.upload-zone--selected]="selectedFrontendZip"
+            for="frontendZip"
+          >
+            <input
+              id="frontendZip"
+              type="file"
+              (change)="onFrontendZipSelected($event)"
+              accept=".zip"
+              [disabled]="isCreating"
+            />
+            <span class="upload-icon upload-icon--frontend" aria-hidden="true">
+              <i class="fa-solid fa-desktop"></i>
+              <i class="fa-solid fa-file-zipper upload-icon-badge"></i>
+            </span>
+            <span class="upload-title">
+              <i class="fa-solid fa-desktop" aria-hidden="true"></i>
+              Frontend ZIP
+            </span>
+            <span class="upload-subtitle" [title]="selectedFrontendZip?.name || ''">
+              {{ selectedFrontendZip?.name || 'Click to choose frontend .zip' }}
+            </span>
+          </label>
+
+          <label
+            class="upload-zone upload-zone--banner"
+            [class.upload-zone--selected]="selectedBannerImage"
+            for="bannerImage"
+          >
+            <input
+              id="bannerImage"
+              type="file"
+              (change)="onBannerImageSelected($event)"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              [disabled]="isCreating"
+            />
+            <span class="upload-icon upload-icon--banner" aria-hidden="true">
+              <i class="fa-solid fa-table-cells"></i>
+              <i class="fa-solid fa-image upload-icon-badge"></i>
+            </span>
+            <span class="upload-title">
+              <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
+              Catalog banner
+            </span>
+            <span class="upload-subtitle" [title]="selectedBannerImage?.name || ''">
+              {{ selectedBannerImage?.name || 'Click to choose banner image (optional)' }}
+            </span>
+          </label>
+        </div>
+
+        <div *ngIf="bannerPreviewUrl" class="banner-preview">
+          <img [src]="bannerPreviewUrl" alt="Catalog banner preview" />
+          <p>Shown on home and <strong>/products</strong> after ArgoCD deploys successfully.</p>
+        </div>
       </div>
 
       <div class="footer-actions">
         <button type="submit" class="btn primary" [disabled]="isCreating">
-          <i class="fa-solid" [ngClass]="isCreating ? 'fa-spinner fa-spin' : 'fa-plus-circle'"></i>
+          <i class="fa-solid" [ngClass]="isCreating ? 'fa-spinner fa-spin' : 'fa-plus-circle'" aria-hidden="true"></i>
           {{ isCreating ? 'Creating product…' : 'Create Product' }}
         </button>
       </div>

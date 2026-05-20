@@ -14,6 +14,7 @@
 
 .hero-card {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: var(--spacing-lg, 1.5rem);
   padding: var(--spacing-xl, 2rem);
@@ -48,16 +49,6 @@
 .panel-header p {
   margin: 0.45rem 0 0;
   color: var(--text-secondary, #64748b);
-}
-
-.count-pill {
-  flex: 0 0 auto;
-  border-radius: 999px;
-  padding: 0.45rem 0.75rem;
-  color: #1d4ed8;
-  background: rgba(37, 99, 235, 0.12);
-  font-size: 0.8rem;
-  font-weight: 800;
 }
 
 .panel {

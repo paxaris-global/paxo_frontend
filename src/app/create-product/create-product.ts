@@ -19,9 +19,14 @@ import { Subscription, interval, switchMap, timer } from 'rxjs';
   styleUrls: ['./create-product.css'],
 })
 export class CreateProductComponent implements OnInit, OnDestroy {
+  /** All provisioned products use a public Keycloak client (browser username/password login). */
+  private static readonly PUBLIC_CLIENT = true;
+
   productForm!: FormGroup;
   selectedBackendZip: File | null = null;
   selectedFrontendZip: File | null = null;
+  selectedBannerImage: File | null = null;
+  bannerPreviewUrl: string | null = null;
   responseMessage = '';
 
   isCreating = false;
@@ -43,13 +48,13 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     this.productForm = this.fb.group({
       realm: [{ value: getStoredRealm() || '', disabled: true }],
       productId: [''],
-      publicClient: [false],
     });
   }
 
   ngOnDestroy() {
     this.stopDeploySimulation();
     this.pollSub?.unsubscribe();
+    this.revokeBannerPreview();
   }
 
   onBackendZipSelected(event: any) {
@@ -60,6 +65,36 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   onFrontendZipSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) this.selectedFrontendZip = file;
+  }
+
+  onBannerImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      this.responseMessage = '⚠️ Banner must be JPEG, PNG, WebP, or GIF.';
+      input.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.responseMessage = '⚠️ Banner image must be 5 MB or smaller.';
+      input.value = '';
+      return;
+    }
+    this.revokeBannerPreview();
+    this.selectedBannerImage = file;
+    this.bannerPreviewUrl = URL.createObjectURL(file);
+    this.responseMessage = '';
+  }
+
+  private revokeBannerPreview() {
+    if (this.bannerPreviewUrl) {
+      URL.revokeObjectURL(this.bannerPreviewUrl);
+      this.bannerPreviewUrl = null;
+    }
   }
 
   createProduct() {
@@ -78,7 +113,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
 
     const productPayload = {
       productId,
-      publicClient: this.productForm.get('publicClient')?.value ?? false,
+      publicClient: CreateProductComponent.PUBLIC_CLIENT,
     };
 
     this.beginProgress();
@@ -91,30 +126,46 @@ export class CreateProductComponent implements OnInit, OnDestroy {
         this.setStepDone('keycloak', kcRes?.message || 'Keycloak client created');
 
         const kcUrl = kcRes?.token?.frontendBaseUrl;
-        this.setStepActive('extract');
-        this.startDeploySimulation();
+        const hasBanner = !!this.selectedBannerImage;
 
-        this.keycloakService
-          .deployProductWithFiles(
-            realm,
-            productPayload,
-            this.selectedBackendZip!,
-            this.selectedFrontendZip!
-          )
-          .subscribe({
-            next: (res: any) => {
-              this.stopDeploySimulation();
-              this.applyDeployResponseSteps(res);
-              this.setStepActive('backend');
-              this.currentStepLabel = 'Waiting for ArgoCD and pods to become healthy…';
-              this.pollUntilRunning(realm, productId, kcUrl || res?.token?.frontendBaseUrl);
-            },
+        const startDeploy = () => {
+          this.setStepActive('extract');
+          this.startDeploySimulation();
+
+          this.keycloakService
+            .deployProductWithFiles(
+              realm,
+              productPayload,
+              this.selectedBackendZip!,
+              this.selectedFrontendZip!
+            )
+            .subscribe({
+              next: (res: any) => {
+                this.stopDeploySimulation();
+                this.applyDeployResponseSteps(res);
+                this.setStepActive('backend');
+                this.currentStepLabel = 'Waiting for ArgoCD and pods to become healthy…';
+                this.pollUntilRunning(realm, productId, kcUrl || res?.token?.frontendBaseUrl, hasBanner);
+              },
+              error: (err: any) => {
+                this.stopDeploySimulation();
+                this.failProgress(err, 'github');
+                console.error(err);
+              },
+            });
+        };
+
+        if (hasBanner) {
+          this.showcaseService.uploadBanner(realm, productId, this.selectedBannerImage!, productId).subscribe({
+            next: () => startDeploy(),
             error: (err: any) => {
-              this.stopDeploySimulation();
-              this.failProgress(err, 'github');
-              console.error(err);
+              this.failProgress(err, 'urls');
+              console.error('Banner upload failed:', err);
             },
           });
+        } else {
+          startDeploy();
+        }
       },
       error: (err: any) => {
         this.failProgress(err, 'keycloak');
@@ -143,9 +194,10 @@ export class CreateProductComponent implements OnInit, OnDestroy {
       ? `✅ Product is running! Open it at ${frontendUrl}`
       : '✅ Product is running on the cluster.';
     this.productForm.get('productId')?.reset('');
-    this.productForm.get('publicClient')?.setValue(false);
     this.selectedBackendZip = null;
     this.selectedFrontendZip = null;
+    this.selectedBannerImage = null;
+    this.revokeBannerPreview();
   }
 
   private failProgress(err: any, failedStepId: string) {
@@ -250,7 +302,12 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     this.deploySimulationSub = undefined;
   }
 
-  private pollUntilRunning(realm: string, productId: string, frontendUrl?: string) {
+  private pollUntilRunning(
+    realm: string,
+    productId: string,
+    frontendUrl?: string,
+    hasCustomBanner = false
+  ) {
     this.pollSub?.unsubscribe();
     const maxAttempts = 80;
     let attempts = 0;
@@ -282,7 +339,9 @@ export class CreateProductComponent implements OnInit, OnDestroy {
             this.pollSub?.unsubscribe();
             this.setStepDone('backend');
             this.setStepDone('frontend');
-            this.captureShowcase(realm, productId);
+            if (!hasCustomBanner) {
+              this.captureShowcase(realm, productId);
+            }
             this.finishProgressSuccess(status?.frontendBaseUrl || frontendUrl);
             return;
           }
