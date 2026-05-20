@@ -27,7 +27,9 @@
           <label for="assign-user">User <span class="required">*</span></label>
           <select id="assign-user" formControlName="userId" class="form-control">
             <option value="">Select User</option>
-            <option *ngFor="let user of users" [value]="user.id">{{ user.username }} ({{ user.email }})</option>
+            <option *ngFor="let user of users" [value]="user.username || user.id">
+              {{ user.username }}<span *ngIf="user.email"> ({{ user.email }})</span>
+            </option>
           </select>
         </div>
 
@@ -61,12 +63,18 @@
           </span>
         </div>
         <ng-template #noRolesSelected>
-          <div class="selected-roles-empty">Choose a role from the dropdown above.</div>
+          <div class="selected-roles-empty">
+            Pick a product, then choose at least one role from the “Add Role” dropdown above.
+          </div>
         </ng-template>
       </div>
 
+      <p *ngIf="assignForm.get('product')?.value && !availableRolesForAssignment.length && !selectedRoleNames.length" class="assign-hint">
+        No assignable roles for this product yet. Create roles on the <strong>Roles</strong> tab first.
+      </p>
+
       <div class="footer-actions">
-        <button type="submit" class="btn primary" [disabled]="assignForm.invalid || !currentRealm">
+        <button type="submit" class="btn primary" [disabled]="!canSubmitAssign">
           <i class="fa-solid fa-check-circle"></i> Assign Roles
         </button>
       </div>

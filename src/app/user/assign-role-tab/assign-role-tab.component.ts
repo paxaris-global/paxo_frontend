@@ -18,6 +18,7 @@ export class AssignRoleTabComponent {
   @Input() selectedRoleNames: string[] = [];
   @Input() availableRolesForAssignment: any[] = [];
   @Input() assignForm!: FormGroup;
+  @Input() canSubmitAssign = false;
 
   @Output() assignRole = new EventEmitter<void>();
   @Output() addRole = new EventEmitter<string>();

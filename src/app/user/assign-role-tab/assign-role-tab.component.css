@@ -4,6 +4,17 @@
   gap: var(--spacing-xl, 1.5rem);
 }
 
+.assign-hint {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .hero-card,
 .panel {
   background: var(--bg-primary, #fff);

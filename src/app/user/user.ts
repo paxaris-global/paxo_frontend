@@ -2,7 +2,16 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { NavigationEnd, Router } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { KeycloakService } from '../services/keycloak';
 import { ApiGatewayService } from '../services/api-gateway.service';
 import { UserCreationRequest, ProductOption, productRowToOption } from '../models';
@@ -22,6 +31,15 @@ import { AssignRoleTabComponent } from './assign-role-tab/assign-role-tab.compon
 interface UrlUriPair {
   url: string;
   uri: string;
+}
+
+/** At least one role must be chosen in the Assign Roles chips list. */
+function assignRoleNamesValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  const names = Array.isArray(value)
+    ? value.filter((name) => typeof name === 'string' && name.trim().length > 0)
+    : [];
+  return names.length > 0 ? null : { roleNamesRequired: true };
 }
 
 @Component({
@@ -112,7 +130,7 @@ export class User implements OnInit, OnDestroy {
     this.assignForm = this.fb.group({
       userId: ['', Validators.required],
       product: ['', Validators.required],
-      roleName: [[], Validators.required],
+      roleName: [[], assignRoleNamesValidator],
     });
 
     this.testAccessForm = this.fb.group({
@@ -311,6 +329,16 @@ this.routeEventSub = this.router.events
     return this.roles.filter(r => !selected.includes(r.name));
   }
 
+  /** Explicit check for Assign Roles submit (avoids stale invalid state on roleName array). */
+  canSubmitAssignRoles(): boolean {
+    if (!this.currentRealm?.trim() || !this.assignForm) {
+      return false;
+    }
+    const userId = String(this.assignForm.get('userId')?.value ?? '').trim();
+    const product = String(this.assignForm.get('product')?.value ?? '').trim();
+    return userId.length > 0 && product.length > 0 && this.selectedRoleNames.length > 0;
+  }
+
   // Create a new URL/URI pair form group
   createUrlUriPair(): FormGroup {
     return this.fb.group({
@@ -369,7 +397,13 @@ this.routeEventSub = this.router.events
       return;
     }
     this.apiGateway.getUsers(realm).subscribe({
-      next: (data: any[]) => (this.users = data || []),
+      next: (data: any[]) =>
+        (this.users = (data || []).map((u) => ({
+          ...u,
+          id: u?.id ?? u?.userId ?? u?.username,
+          username: u?.username ?? u?.preferred_username ?? '',
+          email: u?.email ?? '',
+        }))),
       error: (err: any) => console.error('Error loading users:', err),
     });
   }
@@ -677,22 +711,31 @@ saveRolePermissions(): void {
 }
 
 addRoleToAssignment(roleName: string): void {
-  if (!roleName) return;
+  const trimmed = roleName?.trim();
+  if (!trimmed) return;
   const control = this.assignForm.get('roleName');
-  if (control) {
-      const currentRoles = control.value as string[];
-      if (!currentRoles.includes(roleName)) {
-          control.setValue([...currentRoles, roleName]);
-      }
+  if (!control) return;
+
+  const currentRoles = Array.isArray(control.value)
+    ? (control.value as string[]).filter((r) => typeof r === 'string' && r.trim())
+    : [];
+  if (!currentRoles.includes(trimmed)) {
+    control.setValue([...currentRoles, trimmed]);
+    control.markAsDirty();
+    control.updateValueAndValidity();
   }
 }
 
 removeRoleFromAssignment(roleNameToRemove: string): void {
-    const control = this.assignForm.get('roleName');
-    if (control) {
-        const currentRoles = control.value as string[];
-        control.setValue(currentRoles.filter(r => r !== roleNameToRemove));
-    }
+  const control = this.assignForm.get('roleName');
+  if (!control) return;
+
+  const currentRoles = Array.isArray(control.value)
+    ? (control.value as string[]).filter((r) => typeof r === 'string' && r.trim())
+    : [];
+  control.setValue(currentRoles.filter((r) => r !== roleNameToRemove));
+  control.markAsDirty();
+  control.updateValueAndValidity();
 }
 
 
@@ -703,17 +746,30 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         alert('Please select a realm first');
         return;
       }
-      const { userId, product, roleName } = this.assignForm.value;
-      const user = this.users.find((u) => u.id === userId);
+      const { userId, product, roleName } = this.assignForm.getRawValue();
+      const userKey = String(userId ?? '').trim();
+      const user = this.users.find(
+        (u) => u.id === userKey || u.username === userKey
+      );
       if (!user || !user.username) {
         alert('User not found or username missing');
         return;
       }
-      const roles = Array.isArray(roleName) ? roleName : [roleName];
+      const roles = (Array.isArray(roleName) ? roleName : [roleName]).filter(
+        (r) => typeof r === 'string' && r.trim()
+      );
+      if (!roles.length) {
+        alert('Select at least one role to assign');
+        return;
+      }
       this.keycloakService.assignRole(realm, user.username, product, roles).subscribe({
         next: () => {
           alert('✅ Roles assigned successfully');
-          this.assignForm.reset();
+          this.assignForm.reset({
+            userId: '',
+            product: this.assignForm.get('product')?.value ?? '',
+            roleName: [],
+          });
         },
         error: (err: any) => {
           console.error('❌ Failed to assign roles', err);

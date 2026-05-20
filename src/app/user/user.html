@@ -63,6 +63,7 @@
     [selectedRoleNames]="selectedRoleNames"
     [availableRolesForAssignment]="availableRolesForAssignment"
     [assignForm]="assignForm"
+    [canSubmitAssign]="canSubmitAssignRoles()"
     (assignRole)="assignRole()"
     (addRole)="addRoleToAssignment($event)"
     (removeRole)="removeRoleFromAssignment($event)"
