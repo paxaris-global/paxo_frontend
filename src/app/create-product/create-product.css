@@ -358,10 +358,17 @@
 
 .footer-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: stretch;
   margin-top: 1.75rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.footer-actions .btn {
+  width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .btn {
@@ -540,10 +547,5 @@
 
   .selector-grid {
     grid-template-columns: 1fr;
-  }
-
-  .footer-actions .btn {
-    width: 100%;
-    justify-content: center;
   }
 }
