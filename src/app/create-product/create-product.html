@@ -11,7 +11,7 @@
   </section>
 
   <section class="panel">
-    <form [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
+    <form *ngIf="productForm" [formGroup]="productForm" (ngSubmit)="createProduct()" enctype="multipart/form-data">
       <div class="form-section">
         <div class="section-heading">
           <h4>Product identity</h4>

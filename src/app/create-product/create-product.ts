@@ -22,7 +22,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   /** All provisioned products use a public Keycloak client (browser username/password login). */
   private static readonly PUBLIC_CLIENT = true;
 
-  productForm!: FormGroup;
+  productForm: FormGroup;
   selectedBackendZip: File | null = null;
   selectedFrontendZip: File | null = null;
   selectedBannerImage: File | null = null;
@@ -42,10 +42,14 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     private keycloakService: KeycloakService,
     private showcaseService: ProductShowcaseService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) {
+    this.productForm = this.buildProductForm();
+  }
 
-  ngOnInit() {
-    this.productForm = this.fb.group({
+  ngOnInit() {}
+
+  private buildProductForm(): FormGroup {
+    return this.fb.group({
       realm: [{ value: getStoredRealm() || '', disabled: true }],
       productId: [''],
     });
