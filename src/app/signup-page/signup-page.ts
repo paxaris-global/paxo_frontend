@@ -4,7 +4,13 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiGatewayService } from '../services/api-gateway.service';
-import { getStoredRealm } from '../auth-storage';
+import {
+  getStoredRealm,
+  setStoredClientId,
+  setStoredRealm,
+  touchStoredLastActivity,
+} from '../auth-storage';
+import { LoginResponse } from '../models';
 
 @Component({
   selector: 'app-signup-page',
@@ -14,6 +20,8 @@ import { getStoredRealm } from '../auth-storage';
   styleUrls: ['./signup-page.css'],
 })
 export class SignupPage implements OnInit {
+  private static readonly DEFAULT_ADMIN_USERNAME = 'admin';
+
   signupForm!: FormGroup;
   message = '';
   loading = false;
@@ -46,13 +54,32 @@ export class SignupPage implements OnInit {
 
     this.apiGateway.signup(payload as any).subscribe({
       next: (res: any) => {
-        this.loading = false;
         if (res.status === 'SUCCESS') {
-          this.message = '✅ ' + res.message;
-          this.router.navigate(['/dashboard'], {
-            queryParams: { realm: payload.realmName },
+          this.message = '✅ ' + res.message + ' Signing you in...';
+          setStoredRealm(payload.realmName);
+          const clientId = `${payload.realmName}-admin-product`;
+          setStoredClientId(clientId);
+          this.apiGateway.login(payload.realmName, {
+            username: SignupPage.DEFAULT_ADMIN_USERNAME,
+            password: payload.adminPassword,
+            client_id: clientId,
+          }).subscribe({
+            next: (_loginRes: LoginResponse) => {
+              this.loading = false;
+              touchStoredLastActivity();
+              void this.router.navigateByUrl('/dashboard/product/products');
+            },
+            error: () => {
+              this.loading = false;
+              this.message =
+                '✅ Signup completed. Auto-login failed, please log in once to continue.';
+              void this.router.navigate(['/login'], {
+                queryParams: { realm: payload.realmName },
+              });
+            },
           });
         } else {
+          this.loading = false;
           this.message = '❌ ' + res.message;
         }
       },
