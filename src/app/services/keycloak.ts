@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { filterProductRowsForUi } from '../utils/keycloak-ui-filters.util';
 import {
@@ -13,6 +13,18 @@ import {
 } from '../auth-storage';
 import { getApiGatewayBaseUrl } from '../../environments/environment';
 
+export interface ProductProvisionResult {
+  status: string;
+  realmName?: string;
+  productId?: string;
+  backendRepository?: string;
+  frontendRepository?: string;
+  frontendNodePort?: number;
+  backendNodePort?: number;
+  frontendBaseUrl?: string;
+  backendBaseUrl?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -22,6 +34,36 @@ export class KeycloakService {
   }
 
   constructor(private http: HttpClient) {}
+
+  private bearerHeaders(json = false): HttpHeaders | undefined {
+    const token = getStoredToken();
+    if (!token) {
+      return json ? new HttpHeaders({ 'Content-Type': 'application/json' }) : undefined;
+    }
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      ...(json ? { 'Content-Type': 'application/json' } : {}),
+    });
+  }
+
+  private adminUsernameFromToken(): string {
+    const token = getStoredToken();
+    if (!token) {
+      return 'admin';
+    }
+    try {
+      const payload = token.split('.')[1];
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const json = JSON.parse(atob(normalized)) as {
+        preferred_username?: string;
+        username?: string;
+      };
+      const name = json.preferred_username ?? json.username;
+      return typeof name === 'string' && name.trim() ? name.trim() : 'admin';
+    } catch {
+      return 'admin';
+    }
+  }
 
   // ---------- REALMS ----------
   getRealms(): Observable<string[]> {
@@ -57,30 +99,69 @@ getProductDeploymentStatus(realm: string, productId: string) {
   );
 }
 
-/** Phase 2: GitHub + Kubernetes provisioning (after Keycloak success). */
+/**
+ * Phase 2: GitHub + GitOps via Product Manager (shorter path than /identity/.../deploy).
+ * Browser → nginx → gateway → product-management-service (avoids gateway→identity→PM chain).
+ */
+provisionProductViaProjectManager(
+  realm: string,
+  productId: string,
+  backendZip: File,
+  frontendZip: File
+): Observable<ProductProvisionResult> {
+  const headers = this.bearerHeaders();
+  const adminUsername = this.adminUsernameFromToken();
+  const provisionBase = `${this.gw()}/project/provision`;
+
+  const repoNameParams = (suffix: string) => ({
+    realmName: realm,
+    adminUsername,
+    productName: `${productId}-${suffix}`,
+  });
+
+  return forkJoin({
+    backendRepo: this.http.get<{ repositoryName: string }>(
+      `${provisionBase}/generate-repo-name`,
+      { params: repoNameParams('backend'), headers }
+    ),
+    frontendRepo: this.http.get<{ repositoryName: string }>(
+      `${provisionBase}/generate-repo-name`,
+      { params: repoNameParams('frontend'), headers }
+    ),
+  }).pipe(
+    switchMap(({ backendRepo, frontendRepo }) => {
+      const formData = new FormData();
+      formData.append('realmName', realm);
+      formData.append('productId', productId);
+      formData.append('backendRepoName', backendRepo.repositoryName);
+      formData.append('frontendRepoName', frontendRepo.repositoryName);
+      formData.append('backendZip', backendZip, backendZip.name || 'backend.zip');
+      formData.append('frontendZip', frontendZip, frontendZip.name || 'frontend.zip');
+      return this.http.post<ProductProvisionResult>(`${provisionBase}/product`, formData, {
+        headers,
+      });
+    })
+  );
+}
+
+/** Legacy identity multipart deploy (prefer {@link provisionProductViaProjectManager}). */
 deployProductWithFiles(
   realm: string,
   product: { productId: string; publicClient: boolean },
   backendZip: File,
   frontendZip: File
 ) {
-  const token = getStoredToken();
   const formData = new FormData();
   formData.append(
     'product',
-    new Blob([JSON.stringify(product)], { type: 'application/json' })
+    new Blob([JSON.stringify(product)], { type: 'application/json' }),
+    'product.json'
   );
-  formData.append('backendZip', backendZip);
-  formData.append('frontendZip', frontendZip);
-  return this.http.post(
-    `${this.gw()}/identity/${realm}/products/deploy`,
-    formData,
-    {
-      headers: token
-        ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-        : undefined,
-    }
-  );
+  formData.append('backendZip', backendZip, backendZip.name || 'backend.zip');
+  formData.append('frontendZip', frontendZip, frontendZip.name || 'frontend.zip');
+  return this.http.post(`${this.gw()}/identity/${realm}/products/deploy`, formData, {
+    headers: this.bearerHeaders(),
+  });
 }
 
 /** Keycloak first, then deploy — used by Create Product button. */
@@ -92,7 +173,7 @@ createProductWithFile(
 ) {
   return this.createProductInKeycloak(realm, product).pipe(
     switchMap(() =>
-      this.deployProductWithFiles(realm, product, backendZip, frontendZip)
+      this.provisionProductViaProjectManager(realm, product.productId, backendZip, frontendZip)
     )
   );
 }

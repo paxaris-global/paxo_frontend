@@ -137,9 +137,9 @@ export class CreateProductComponent implements OnInit, OnDestroy {
           this.startDeploySimulation();
 
           this.keycloakService
-            .deployProductWithFiles(
+            .provisionProductViaProjectManager(
               realm,
-              productPayload,
+              productId,
               this.selectedBackendZip!,
               this.selectedFrontendZip!
             )
@@ -149,7 +149,12 @@ export class CreateProductComponent implements OnInit, OnDestroy {
                 this.applyDeployResponseSteps(res);
                 this.setStepActive('backend');
                 this.currentStepLabel = 'Waiting for ArgoCD and pods to become healthy…';
-                this.pollUntilRunning(realm, productId, kcUrl || res?.token?.frontendBaseUrl, hasBanner);
+                this.pollUntilRunning(
+                  realm,
+                  productId,
+                  kcUrl || res?.frontendBaseUrl || res?.token?.frontendBaseUrl,
+                  hasBanner
+                );
               },
               error: (err: any) => {
                 this.stopDeploySimulation();
