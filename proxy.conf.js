@@ -10,6 +10,13 @@ const PRODUCT_UI_PORT_FORWARDS = {
   'yatrify/testyatrify': 32102,
 };
 
+/** Create Product ZIP upload (backend + frontend). */
+const LONG_PROXY_MS = 15 * 60 * 1000;
+const uploadProxy = {
+  proxyTimeout: LONG_PROXY_MS,
+  timeout: LONG_PROXY_MS,
+};
+
 const productUiProxy = {
   context: (pathname) => pathname.startsWith('/product-ui/'),
   target: 'http://127.0.0.1',
@@ -42,6 +49,7 @@ module.exports = [
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',
+    ...uploadProxy,
   },
   {
     context: ['/gateway'],
@@ -49,6 +57,7 @@ module.exports = [
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',
+    ...uploadProxy,
   },
   {
     context: ['/project'],
@@ -56,6 +65,7 @@ module.exports = [
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',
+    ...uploadProxy,
   },
   {
     context: ['/api/v1/project'],
