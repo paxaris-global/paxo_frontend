@@ -19,9 +19,9 @@ const app = express();
 const API_GATEWAY_URL =
   process.env['API_GATEWAY_URL'] ??
   `http://127.0.0.1:${process.env['PAXO_GATEWAY_LOCAL_PORT'] ?? '8085'}`;
-const PYTHON_FOUNDRY_FRONTEND_URL =
-  process.env['PYTHON_FOUNDRY_FRONTEND_URL'] ??
-  `http://127.0.0.1:${process.env['PAXO_PYTHON_FRONTEND_LOCAL_PORT'] ?? '4201'}`;
+const PYTHON_FOUNDRY_API_URL =
+  process.env['PYTHON_FOUNDRY_API_URL'] ??
+  `http://127.0.0.1:${process.env['PAXO_PYTHON_FOUNDRY_API_LOCAL_PORT'] ?? '8000'}`;
 
 function isGatewayApiPath(urlPath: string): boolean {
   const pathOnly = urlPath.split('?')[0] ?? '';
@@ -101,7 +101,7 @@ app.use((req, res, next) => {
       return next();
     }
     const rawUrl = req.originalUrl ?? req.url ?? '/';
-    proxyRequest(req, res, PYTHON_FOUNDRY_FRONTEND_URL, rewritePythonFoundryUrl(rawUrl));
+    proxyRequest(req, res, PYTHON_FOUNDRY_API_URL, rewritePythonFoundryUrl(rawUrl));
     return;
   }
   proxyRequest(req, res, API_GATEWAY_URL, req.originalUrl ?? req.url ?? '/');

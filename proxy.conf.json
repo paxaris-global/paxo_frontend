@@ -24,10 +24,12 @@
     "logLevel": "debug"
   },
   "/python-foundry-api": {
-    "target": "http://localhost:4201",
+    "target": "http://127.0.0.1:8000",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
+    "proxyTimeout": 900000,
+    "timeout": 900000,
     "pathRewrite": {
       "^/python-foundry-api": "/api"
     }

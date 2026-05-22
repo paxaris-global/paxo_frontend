@@ -4,6 +4,10 @@ const gatewayUrl =
 const pythonFrontendUrl =
   process.env.PYTHON_FOUNDRY_FRONTEND_URL ||
   `http://localhost:${process.env.PAXO_PYTHON_FRONTEND_LOCAL_PORT || '4201'}`;
+/** Python Foundry API (FastAPI), not the standalone python_frontend app on :4201. */
+const pythonFoundryApiUrl =
+  process.env.PYTHON_FOUNDRY_API_URL ||
+  `http://127.0.0.1:${process.env.PAXO_PYTHON_FOUNDRY_API_LOCAL_PORT || '8000'}`;
 
 /** Populated by ./scripts/start-local-access.sh product UI forwards (ng serve dev). */
 const PRODUCT_UI_PORT_FORWARDS = {
@@ -76,10 +80,12 @@ module.exports = [
   },
   {
     context: ['/python-foundry-api'],
-    target: pythonFrontendUrl,
+    target: pythonFoundryApiUrl,
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',
+    proxyTimeout: LONG_PROXY_MS,
+    timeout: LONG_PROXY_MS,
     pathRewrite: {
       '^/python-foundry-api': '/api',
     },
