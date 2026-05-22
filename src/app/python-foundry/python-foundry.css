@@ -56,6 +56,17 @@
   gap: var(--spacing-lg, 1.5rem);
 }
 
+.stack-hint {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #92400e;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
 .field {
   display: flex;
   flex-direction: column;

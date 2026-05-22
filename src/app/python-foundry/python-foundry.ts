@@ -5,6 +5,16 @@ import { FormsModule } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import {
+  BACKEND_STACK_OPTIONS,
+  FRONTEND_STACK_OPTIONS,
+  BackendStackId,
+  FrontendStackId,
+  SupportedBackend,
+  SupportedFrontend,
+  isSupportedBackend,
+  isSupportedFrontend,
+} from './stack-options';
 
 type ModePreference = 'auto' | 'reuse' | 'adapt' | 'generate' | 'hybrid_scaffold';
 type Phase = 'idle' | 'submitting' | 'polling' | 'done' | 'error';
@@ -12,8 +22,8 @@ type Phase = 'idle' | 'submitting' | 'polling' | 'done' | 'error';
 interface GenerateRequest {
   project_name: string;
   prompt?: string;
-  backend: 'springboot';
-  frontend: 'angular';
+  backend: SupportedBackend;
+  frontend: SupportedFrontend;
   features: string[];
   website_like?: string;
   mode_preference: ModePreference;
@@ -59,11 +69,15 @@ export class PythonFoundryComponent implements OnDestroy {
   private readonly apiBase = environment.pythonFoundryApiBaseUrl;
   private pollSub: Subscription | null = null;
 
+  readonly backendOptions = BACKEND_STACK_OPTIONS;
+  readonly frontendOptions = FRONTEND_STACK_OPTIONS;
+
   phase: Phase = 'idle';
   projectName = '';
   prompt = '';
-  backend: 'springboot' = 'springboot';
-  frontend: 'angular' = 'angular';
+  backend: BackendStackId = 'springboot';
+  frontend: FrontendStackId = 'angular';
+  stackHint = '';
   featuresRaw = '';
   websiteLike = '';
   modePreference: ModePreference = 'auto';
@@ -169,6 +183,14 @@ export class PythonFoundryComponent implements OnDestroy {
       this.fail('Project name is required.');
       return null;
     }
+
+    if (!isSupportedBackend(this.backend) || !isSupportedFrontend(this.frontend)) {
+      this.stackHint =
+        'Only backend Java and frontend Angular can be generated today. Other languages are coming soon.';
+      return null;
+    }
+
+    this.stackHint = '';
 
     const req: GenerateRequest = {
       project_name: projectName,
