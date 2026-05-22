@@ -154,10 +154,13 @@ export class ApiGatewayService {
    * Body: UserCreationRequest
    * Header: Authorization: Bearer {token}
    */
-  createUser(realm: string, body: UserCreationRequest): Observable<any> {
+  createUser(realm: string, body: UserCreationRequest): Observable<string> {
     this.requireToken();
     const url = `${this.gw()}/identity/${realm}/users`;
-    return this.http.post(url, body, { headers: this.getAuthHeaders() });
+    return this.http.post(url, body, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text',
+    });
   }
   // ─── Update user (update user) ──────────────────────────────────────────
   /**

@@ -252,7 +252,7 @@ createProductWithFile(
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-    return this.http.post(url, payload, { headers });
+    return this.http.post(url, payload, { headers, responseType: 'text' });
   }
 
 // ---------- UPDATE USER ----------
