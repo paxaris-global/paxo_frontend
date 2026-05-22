@@ -153,9 +153,26 @@ export class PythonFoundryComponent implements OnDestroy {
     if (!this.project) return;
     this.downloading = true;
     this.http
-      .get(`${this.apiBase}/projects/${this.project.id}/download`, { responseType: 'blob' })
+      .get(`${this.apiBase}/projects/${this.project.id}/download`, {
+        responseType: 'blob',
+        observe: 'response',
+      })
       .subscribe({
-        next: (blob) => {
+        next: (response) => {
+          const blob = response.body;
+          if (!blob || blob.size === 0) {
+            this.downloading = false;
+            this.fail('Download returned an empty file. Generate the project again and retry.');
+            return;
+          }
+          const contentType = response.headers.get('Content-Type') || '';
+          if (contentType.includes('application/json')) {
+            blob.text().then((text) => {
+              this.downloading = false;
+              this.fail(this.parseBlobError(text) || 'Download failed.');
+            });
+            return;
+          }
           const url = URL.createObjectURL(blob);
           const anchor = document.createElement('a');
           anchor.href = url;
@@ -168,9 +185,25 @@ export class PythonFoundryComponent implements OnDestroy {
         },
         error: (err) => {
           this.downloading = false;
+          const status = err?.status;
+          if (status === 404) {
+            this.fail(
+              'Project ZIP not found. Generate a new project (older runs may have been stored only on the worker).',
+            );
+            return;
+          }
           this.fail(this.extractError(err));
         },
       });
+  }
+
+  private parseBlobError(text: string): string {
+    try {
+      const body = JSON.parse(text) as { message?: string; detail?: string };
+      return body.message || body.detail || text;
+    } catch {
+      return text;
+    }
   }
 
   stageLabel(value?: string): string {
