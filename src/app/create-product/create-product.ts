@@ -10,6 +10,7 @@ import {
   buildInitialProgressSteps,
 } from '../models/create-product-progress.model';
 import { Subscription, interval, switchMap, timer } from 'rxjs';
+import { resolveProductFrontendUrl } from '../utils/product-showcase-url.util';
 
 @Component({
   selector: 'app-create-product',
@@ -191,7 +192,11 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     this.productForm.disable();
   }
 
-  private finishProgressSuccess(frontendUrl?: string) {
+  private finishProgressSuccess(
+    frontendUrl?: string,
+    realm?: string,
+    productId?: string
+  ) {
     this.stopDeploySimulation();
     this.pollSub?.unsubscribe();
     this.isCreating = false;
@@ -199,8 +204,9 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     this.currentStepLabel = 'Product is live on ArgoCD';
     this.productForm.enable();
     this.productForm.patchValue({ realm: getStoredRealm() || '' });
-    this.responseMessage = frontendUrl
-      ? `✅ Product is running! Open it at ${frontendUrl}`
+    const openUrl = resolveProductFrontendUrl(frontendUrl, realm, productId);
+    this.responseMessage = openUrl
+      ? `✅ Product is running! Open it at ${openUrl}`
       : '✅ Product is running on the cluster.';
     this.productForm.get('productId')?.reset('');
     this.selectedBackendZip = null;
@@ -351,7 +357,11 @@ export class CreateProductComponent implements OnInit, OnDestroy {
             if (!hasCustomBanner) {
               this.captureShowcase(realm, productId);
             }
-            this.finishProgressSuccess(status?.frontendBaseUrl || frontendUrl);
+            this.finishProgressSuccess(
+              status?.frontendBaseUrl || frontendUrl,
+              realm,
+              productId
+            );
             return;
           }
 
