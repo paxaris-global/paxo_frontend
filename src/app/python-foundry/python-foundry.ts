@@ -93,6 +93,32 @@ export class PythonFoundryComponent implements OnDestroy {
     this.pollSub?.unsubscribe();
   }
 
+  onBackendChange(value: BackendStackId): void {
+    if (!isSupportedBackend(value)) {
+      this.stackHint = `${this.backendLabel(value)} is not available yet. Choose Java for now.`;
+      return;
+    }
+    this.stackHint = '';
+    this.backend = value;
+  }
+
+  onFrontendChange(value: FrontendStackId): void {
+    if (!isSupportedFrontend(value)) {
+      this.stackHint = `${this.frontendLabel(value)} is not available yet. Choose Angular for now.`;
+      return;
+    }
+    this.stackHint = '';
+    this.frontend = value;
+  }
+
+  private backendLabel(value: BackendStackId): string {
+    return this.backendOptions.find((o) => o.value === value)?.label ?? value;
+  }
+
+  private frontendLabel(value: FrontendStackId): string {
+    return this.frontendOptions.find((o) => o.value === value)?.label ?? value;
+  }
+
   generate(): void {
     const req = this.buildRequest();
     if (!req) return;
@@ -185,8 +211,7 @@ export class PythonFoundryComponent implements OnDestroy {
     }
 
     if (!isSupportedBackend(this.backend) || !isSupportedFrontend(this.frontend)) {
-      this.stackHint =
-        'Only backend Java and frontend Angular can be generated today. Other languages are coming soon.';
+      this.stackHint = 'Select Java (backend) and Angular (frontend) to generate.';
       return null;
     }
 

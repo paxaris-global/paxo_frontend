@@ -109,6 +109,12 @@ textarea:focus {
   outline: none;
 }
 
+.stack-select,
+.stack-select option {
+  color: var(--text-primary, #111827);
+  background-color: #fff;
+}
+
 .primary-action,
 .secondary-action {
   border: 0;

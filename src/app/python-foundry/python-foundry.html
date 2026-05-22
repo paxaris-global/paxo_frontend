@@ -4,8 +4,7 @@
       <p class="eyebrow">AI product generator</p>
       <h2>Generate Product</h2>
       <p class="intro-copy">
-        Pick your backend and frontend stack, describe the product, then download generated source.
-        Full generation today: backend <strong>Java</strong> + frontend <strong>Angular</strong>. Other languages are listed for upcoming support.
+        Pick your backend and frontend language, describe the product, then download generated source.
       </p>
     </div>
   </section>
@@ -37,26 +36,30 @@
       <div class="form-row">
         <div class="field">
           <label for="backend">Backend language</label>
-          <select id="backend" name="backend" [(ngModel)]="backend">
-            <option
-              *ngFor="let opt of backendOptions"
-              [value]="opt.value"
-              [disabled]="!opt.supported"
-            >
-              {{ opt.label }}{{ opt.supported ? '' : ' — coming soon' }}
+          <select
+            id="backend"
+            name="backend"
+            class="stack-select"
+            [ngModel]="backend"
+            (ngModelChange)="onBackendChange($event)"
+          >
+            <option *ngFor="let opt of backendOptions" [value]="opt.value">
+              {{ opt.label }}
             </option>
           </select>
         </div>
 
         <div class="field">
           <label for="frontend">Frontend language</label>
-          <select id="frontend" name="frontend" [(ngModel)]="frontend">
-            <option
-              *ngFor="let opt of frontendOptions"
-              [value]="opt.value"
-              [disabled]="!opt.supported"
-            >
-              {{ opt.label }}{{ opt.supported ? '' : ' — coming soon' }}
+          <select
+            id="frontend"
+            name="frontend"
+            class="stack-select"
+            [ngModel]="frontend"
+            (ngModelChange)="onFrontendChange($event)"
+          >
+            <option *ngFor="let opt of frontendOptions" [value]="opt.value">
+              {{ opt.label }}
             </option>
           </select>
         </div>
