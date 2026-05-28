@@ -149,7 +149,8 @@ deployProductWithFiles(
   realm: string,
   product: { productId: string; publicClient: boolean },
   backendZip: File,
-  frontendZip: File
+  frontendZip: File,
+  bannerImage?: File | null
 ) {
   const formData = new FormData();
   formData.append(
@@ -159,6 +160,9 @@ deployProductWithFiles(
   );
   formData.append('backendZip', backendZip, backendZip.name || 'backend.zip');
   formData.append('frontendZip', frontendZip, frontendZip.name || 'frontend.zip');
+  if (bannerImage) {
+    formData.append('bannerImage', bannerImage, bannerImage.name || 'banner-image');
+  }
   return this.http.post(`${this.gw()}/identity/${realm}/products/deploy`, formData, {
     headers: this.bearerHeaders(),
   });
@@ -169,11 +173,12 @@ createProductWithFile(
   realm: string,
   product: { productId: string; publicClient: boolean; urls?: string[] },
   backendZip: File,
-  frontendZip: File
+  frontendZip: File,
+  bannerImage?: File | null
 ) {
   return this.createProductInKeycloak(realm, product).pipe(
     switchMap(() =>
-      this.provisionProductViaProjectManager(realm, product.productId, backendZip, frontendZip)
+      this.deployProductWithFiles(realm, product, backendZip, frontendZip, bannerImage)
     )
   );
 }

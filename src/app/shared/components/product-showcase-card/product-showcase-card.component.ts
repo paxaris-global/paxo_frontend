@@ -1,10 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { ProductShowcaseCard } from '../../../models/product-showcase.model';
-import {
-  resolveProductFrontendUrl,
-  resolveShowcasePreviewImage,
-} from '../../../utils/product-showcase-url.util';
+import { resolveShowcasePreviewImage } from '../../../utils/product-showcase-url.util';
 
 @Component({
   selector: 'app-product-showcase-card',
@@ -24,11 +21,7 @@ export class ProductShowcaseCardComponent {
   }
 
   get openProductUrl(): string {
-    return resolveProductFrontendUrl(
-      this.product.frontendUrl,
-      this.product.realmName,
-      this.product.productId
-    );
+    return this.product.frontendUrl?.trim() ?? '';
   }
 
   openProduct(): void {

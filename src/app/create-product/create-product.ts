@@ -132,50 +132,36 @@ export class CreateProductComponent implements OnInit, OnDestroy {
 
         const kcUrl = kcRes?.token?.frontendBaseUrl;
         const hasBanner = !!this.selectedBannerImage;
+        this.setStepActive('extract');
+        this.startDeploySimulation();
 
-        const startDeploy = () => {
-          this.setStepActive('extract');
-          this.startDeploySimulation();
-
-          this.keycloakService
-            .provisionProductViaProjectManager(
-              realm,
-              productId,
-              this.selectedBackendZip!,
-              this.selectedFrontendZip!
-            )
-            .subscribe({
-              next: (res: any) => {
-                this.stopDeploySimulation();
-                this.applyDeployResponseSteps(res);
-                this.setStepActive('backend');
-                this.currentStepLabel = 'Waiting for ArgoCD and pods to become healthy…';
-                this.pollUntilRunning(
-                  realm,
-                  productId,
-                  kcUrl || res?.frontendBaseUrl || res?.token?.frontendBaseUrl,
-                  hasBanner
-                );
-              },
-              error: (err: any) => {
-                this.stopDeploySimulation();
-                this.failProgress(err, 'github');
-                console.error(err);
-              },
-            });
-        };
-
-        if (hasBanner) {
-          this.showcaseService.uploadBanner(realm, productId, this.selectedBannerImage!, productId).subscribe({
-            next: () => startDeploy(),
+        this.keycloakService
+          .deployProductWithFiles(
+            realm,
+            productPayload,
+            this.selectedBackendZip!,
+            this.selectedFrontendZip!,
+            this.selectedBannerImage
+          )
+          .subscribe({
+            next: (res: any) => {
+              this.stopDeploySimulation();
+              this.applyDeployResponseSteps(res);
+              this.setStepActive('backend');
+              this.currentStepLabel = 'Waiting for ArgoCD and pods to become healthy…';
+              this.pollUntilRunning(
+                realm,
+                productId,
+                kcUrl || res?.frontendBaseUrl || res?.token?.frontendBaseUrl,
+                hasBanner
+              );
+            },
             error: (err: any) => {
-              this.failProgress(err, 'urls');
-              console.error('Banner upload failed:', err);
+              this.stopDeploySimulation();
+              this.failProgress(err, 'github');
+              console.error(err);
             },
           });
-        } else {
-          startDeploy();
-        }
       },
       error: (err: any) => {
         this.failProgress(err, 'keycloak');
