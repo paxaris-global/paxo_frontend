@@ -1,0 +1,55 @@
+@if (state.visible) {
+  <div
+    class="status-modal-backdrop"
+    role="presentation"
+    (click)="onBackdropClick()"
+  ></div>
+  <div
+    class="status-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'status-modal-title'"
+    [class.status-modal--success]="state.type === 'success'"
+    [class.status-modal--error]="state.type === 'error'"
+    [class.status-modal--warning]="state.type === 'warning'"
+  >
+    <button
+      type="button"
+      class="status-modal__close"
+      aria-label="Close"
+      (click)="close()"
+    >
+      &times;
+    </button>
+
+    <div class="status-modal__icon" aria-hidden="true">
+      @switch (state.type) {
+        @case ('success') {
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+            <path d="M8 12.5l2.5 2.5L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        }
+        @case ('error') {
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+            <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        }
+        @default {
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+            <path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        }
+      }
+    </div>
+
+    <h2 id="status-modal-title" class="status-modal__title">{{ state.title }}</h2>
+    @if (state.detail) {
+      <p class="status-modal__detail">{{ state.detail }}</p>
+    }
+
+    <button type="button" class="status-modal__ok" (click)="close()">OK</button>
+  </div>
+}

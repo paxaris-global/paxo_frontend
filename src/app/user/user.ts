@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 import { KeycloakService } from '../services/keycloak';
 import { ApiGatewayService } from '../services/api-gateway.service';
+import { NotificationModalService } from '../services/notification-modal.service';
 import { UserCreationRequest, ProductOption, productRowToOption } from '../models';
 import { getStoredToken, getStoredRealm } from '../auth-storage';
 import { Subscription, filter } from 'rxjs';
@@ -104,6 +105,7 @@ export class User implements OnInit, OnDestroy {
   constructor(
     private keycloakService: KeycloakService,
     private apiGateway: ApiGatewayService,
+    private notify: NotificationModalService,
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router
@@ -504,7 +506,7 @@ loadProducts(): void {
     if (this.userForm.valid) {
       const realm = this.currentRealm || this.roleForm.get('realm')?.value;
       if (!realm) {
-        alert('Please select a realm first');
+        this.notify.warning('Please select a realm first');
         return;
       }
       const body: UserCreationRequest = {
@@ -518,13 +520,16 @@ loadProducts(): void {
       };
       this.apiGateway.createUser(realm, body).subscribe({
         next: () => {
-          alert('✅ User created successfully');
+          this.notify.success('User created successfully', this.userForm.value.username);
           this.loadUsers();
           this.userForm.reset();
         },
         error: (err: any) => {
           console.error('❌ Failed to create user', err);
-          alert('Failed to create user: ' + (err.error?.message || err.message || 'Unknown error'));
+          this.notify.error(
+            'Failed to create user',
+            err.error?.message || err.message || 'Unknown error'
+          );
         },
       });
     }
@@ -561,10 +566,10 @@ onDeleteUser(user: any): void {
   this.keycloakService.deleteUser(realm, user.username)
     .subscribe({
       next: () => {
-        alert('✅ User deleted successfully');
+        this.notify.success('User deleted successfully', user.username);
         this.loadUsers();
       },
-      error: () => alert('❌ Delete failed')
+      error: () => this.notify.error('Delete failed')
     });
 }
 
@@ -572,14 +577,14 @@ onDeleteUser(user: any): void {
 // Update user details emitted from UsersTab modals.
 updateUserFromModal(updatedData: { username: string; email: string; firstName: string; lastName: string }): void {
   if (!updatedData?.username) {
-    alert('No user selected for editing');
+    this.notify.warning('No user selected for editing');
     return;
   }
 
   const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
 
   if (!realm) {
-    alert('Realm not found');
+    this.notify.warning('Realm not found');
     return;
   }
 
@@ -593,12 +598,12 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
   this.apiGateway.updateUser(realm, updatedData.username, payload)
     .subscribe({
       next: () => {
-        alert('✅ User updated successfully');
+        this.notify.success('User updated successfully', updatedData.username);
         this.loadUsers();
       },
       error: (err: any) => {
         console.error(err);
-        alert('❌ Update failed');
+        this.notify.error('Update failed');
       }
     });
 }
@@ -607,7 +612,7 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
     if (this.productForm.valid) {
       const realm = this.currentRealm || this.roleForm.get('realm')?.value;
       if (!realm) {
-        alert('Please select a realm first');
+        this.notify.warning('Please select a realm first');
         return;
       }
       
@@ -623,13 +628,16 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
 
       this.apiGateway.createProduct(realm, body).subscribe({
         next: () => {
-          alert('✅ Product created successfully');
+          this.notify.success('Product created successfully', form.clientId);
           this.loadProducts();
           this.productForm.reset({ publicClient: true, redirectUris: '*', webOrigins: '*' });
         },
         error: (err: any) => {
           console.error('❌ Failed to create product', err);
-          alert('Failed to create product: ' + (err.error?.message || err.message || 'Unknown error'));
+          this.notify.error(
+            'Failed to create product',
+            err.error?.message || err.message || 'Unknown error'
+          );
         },
       });
     }
@@ -640,7 +648,7 @@ createRole(): void {
   const form = this.roleForm.getRawValue();
 
   if (!form.product || !form.roleName) {
-    alert('Product and Role Name are required');
+    this.notify.warning('Product and Role Name are required');
     return;
   }
 
@@ -654,7 +662,7 @@ createRole(): void {
   ).subscribe({
 
     next: () => {
-      alert('✅ Role created successfully');
+      this.notify.success('Role created successfully', form.roleName);
 
       this.loadRoles();
 
@@ -668,7 +676,7 @@ createRole(): void {
     error: (err: { error?: { message?: string }; message?: string; status?: number }) => {
       console.error(err);
       const detail = err?.error?.message || err?.message;
-      alert(detail ? `❌ Role creation failed: ${detail}` : '❌ Role creation failed');
+      this.notify.error('Role creation failed', detail || undefined);
     }
 
   });
@@ -679,7 +687,7 @@ saveRolePermissions(): void {
   const form = this.roleForm.getRawValue();
 
   if (!form.product || !form.selectedRole) {
-    alert('Please select product and role');
+    this.notify.warning('Please select product and role');
     return;
   }
 
@@ -690,7 +698,7 @@ saveRolePermissions(): void {
   );
 
   if (urls.length === 0) {
-    alert('Add at least one URL permission');
+    this.notify.warning('Add at least one URL permission');
     return;
   }
 
@@ -702,12 +710,12 @@ saveRolePermissions(): void {
   ).subscribe({
 
     next: () => {
-      alert('✅ Permissions saved successfully');
+      this.notify.success('Permissions saved successfully', form.selectedRole);
     },
 
     error: (err: any) => {
       console.error(err);
-      alert('❌ Failed to save permissions');
+      this.notify.error('Failed to save permissions');
     }
 
   });
@@ -748,7 +756,7 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
     }
     const realm = this.currentRealm || this.roleForm.get('realm')?.value;
       if (!realm) {
-        alert('Please select a realm first');
+        this.notify.warning('Please select a realm first');
         return;
       }
       const { userId, product, roleName } = this.assignForm.getRawValue();
@@ -757,19 +765,19 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         (u) => u.id === userKey || u.username === userKey
       );
       if (!user || !user.username) {
-        alert('User not found or username missing');
+        this.notify.warning('User not found or username missing');
         return;
       }
       const roles = (Array.isArray(roleName) ? roleName : [roleName]).filter(
         (r) => typeof r === 'string' && r.trim()
       );
       if (!roles.length) {
-        alert('Select at least one role to assign');
+        this.notify.warning('Select at least one role to assign');
         return;
       }
       this.keycloakService.assignRole(realm, user.username, product, roles).subscribe({
         next: () => {
-          alert('✅ Roles assigned successfully');
+          this.notify.success('Roles assigned successfully', roles.join(', '));
           this.assignForm.reset({
             userId: '',
             product: this.assignForm.get('product')?.value ?? '',
@@ -778,7 +786,10 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         },
         error: (err: any) => {
           console.error('❌ Failed to assign roles', err);
-          alert('Failed to assign roles: ' + (err.error?.message || err.message || 'Unknown error'));
+          this.notify.error(
+            'Failed to assign roles',
+            err.error?.message || err.message || 'Unknown error'
+          );
         },
       });
   }
@@ -830,7 +841,7 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
 
     const token = getStoredToken();
     if (!token) {
-      alert('No authentication token found. Please login first.');
+      this.notify.warning('No authentication token found. Please login first.');
       return;
     }
 
@@ -938,19 +949,19 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
         } else if (file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
           const doc = yaml.load(content as string);
           if (doc == null || typeof doc !== 'object') {
-            alert('Invalid OpenAPI YAML (empty or not an object).');
+            this.notify.error('Invalid OpenAPI YAML', 'Empty or not an object.');
             return;
           }
           spec = doc;
         } else {
-          alert('Unsupported file format. Please use .json or .yaml/.yml');
+          this.notify.warning('Unsupported file format', 'Please use .json or .yaml/.yml');
           return;
         }
 
         this.parseOpenApiSpec(spec);
       } catch (error: any) {
         console.error('Error parsing OpenAPI spec:', error);
-        alert('Error parsing OpenAPI spec: ' + error.message);
+        this.notify.error('Error parsing OpenAPI spec', error.message);
       }
     };
 
@@ -959,12 +970,12 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
 
   parseOpenApiSpec(spec: any): void {
     if (!spec || typeof spec !== 'object') {
-      alert('Invalid OpenAPI spec');
+      this.notify.error('Invalid OpenAPI spec');
       return;
     }
     const rec = spec as Record<string, unknown>;
     if (!rec['paths']) {
-      alert('No paths found in OpenAPI spec');
+      this.notify.error('No paths found in OpenAPI spec');
       return;
     }
 
@@ -972,7 +983,7 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
     this.openApiEndpoints = parseOpenApiToEndpoints(rec);
 
     if (this.openApiEndpoints.length === 0) {
-      alert('No endpoints found in OpenAPI spec');
+      this.notify.warning('No endpoints found in OpenAPI spec');
     } else if (!this.openApiBaseUrl) {
       const userUrl = prompt('Enter the base URL for these endpoints (e.g., http://localhost:8083):');
       if (userUrl) {
@@ -997,12 +1008,12 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
   const selectedEndpoints = this.openApiEndpoints.filter(e => e.selected);
 
   if (selectedEndpoints.length === 0) {
-    alert('Please select at least one endpoint');
+    this.notify.warning('Please select at least one endpoint');
     return;
   }
 
   if (!this.openApiBaseUrl) {
-    alert('Base URL is required.');
+    this.notify.warning('Base URL is required.');
     return;
   }
 
@@ -1022,7 +1033,10 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
     this.urlUriPairs.push(urlUriPair);
   });
 
-  alert(`✅ Loaded ${selectedEndpoints.length} endpoint(s) with HTTP methods`);
+  this.notify.success(
+    'Endpoints loaded successfully',
+    `${selectedEndpoints.length} endpoint(s) with HTTP methods`
+  );
 }
 
 
@@ -1041,18 +1055,18 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
   loadSelectedEndpointsAndSave(): void {
     const selectedEndpoints = this.openApiEndpoints.filter((e) => e.selected);
     if (selectedEndpoints.length === 0) {
-      alert('Please select at least one endpoint');
+      this.notify.warning('Please select at least one endpoint');
       return;
     }
     if (!this.openApiBaseUrl?.trim()) {
-      alert('Base URL is required (from OpenAPI servers[] or enter when prompted).');
+      this.notify.warning('Base URL is required', 'From OpenAPI servers[] or enter when prompted.');
       return;
     }
     const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
     const product = this.roleForm.getRawValue()?.product;
     const selectedRole = this.roleForm.getRawValue()?.selectedRole;
     if (!realm || !product || !selectedRole) {
-      alert('Please select product and role first.');
+      this.notify.warning('Please select product and role first.');
       return;
     }
 
@@ -1060,10 +1074,16 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
 
     this.keycloakService.saveRoleUrls(realm, product, selectedRole, urls).subscribe({
       next: () =>
-        alert(`Saved ${selectedEndpoints.length} URI(s) for role "${selectedRole}" from OpenAPI.`),
+        this.notify.success(
+          'Permissions saved from OpenAPI',
+          `${selectedEndpoints.length} URI(s) for role "${selectedRole}"`
+        ),
       error: (err: any) => {
         console.error(err);
-        alert('Failed to save permissions: ' + (err.error?.message || err.message || 'Unknown error'));
+        this.notify.error(
+          'Failed to save permissions',
+          err.error?.message || err.message || 'Unknown error'
+        );
       },
     });
   }

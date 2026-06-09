@@ -1,0 +1,136 @@
+.status-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  animation: status-modal-fade-in 0.2s ease;
+}
+
+.status-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 10001;
+  width: min(92vw, 420px);
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(148, 163, 184, 0.15);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  animation: status-modal-scale-in 0.22s ease;
+}
+
+.status-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.status-modal__close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.status-modal__icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0 auto 1rem;
+}
+
+.status-modal__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.status-modal--success .status-modal__icon {
+  color: #059669;
+}
+
+.status-modal--error .status-modal__icon {
+  color: #dc2626;
+}
+
+.status-modal--warning .status-modal__icon {
+  color: #d97706;
+}
+
+.status-modal__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.status-modal__detail {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  color: #475569;
+  word-break: break-word;
+}
+
+.status-modal__ok {
+  min-width: 7rem;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.status-modal__ok:hover {
+  filter: brightness(1.05);
+}
+
+.status-modal__ok:active {
+  transform: scale(0.98);
+}
+
+.status-modal--success .status-modal__ok {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.status-modal--error .status-modal__ok {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.status-modal--warning .status-modal__ok {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+@keyframes status-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes status-modal-scale-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
