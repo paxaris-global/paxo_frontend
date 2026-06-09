@@ -29,6 +29,8 @@
     [products]="products"
     [roles]="roles"
     (createRole)="createRole()"
+    (updateRole)="updateRoleFromModal($event)"
+    (deleteRole)="onDeleteRole($event)"
   ></app-roles-tab>
 </div>
 

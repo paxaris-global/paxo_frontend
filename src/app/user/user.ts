@@ -408,6 +408,8 @@ this.routeEventSub = this.router.events
           id: u?.id ?? u?.userId ?? u?.username,
           username: u?.username ?? u?.preferred_username ?? '',
           email: u?.email ?? '',
+          firstName: u?.firstName ?? u?.first_name ?? '',
+          lastName: u?.lastName ?? u?.last_name ?? '',
         }))),
       error: (err: any) => console.error('Error loading users:', err),
     });
@@ -557,20 +559,28 @@ closeEditModal(): void {
   this.editingUsername = null;
 }
 
-// ✅ DELETE USERs
 onDeleteUser(user: any): void {
-  const realm = this.currentRealm;
+  const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+  if (!realm || !user?.username) {
+    this.notify.warning('Cannot delete user', 'Realm or username is missing.');
+    return;
+  }
 
-  if (!confirm(`Delete ${user.username}?`)) return;
+  if (!confirm(`Delete user "${user.username}"? This cannot be undone.`)) return;
 
-  this.keycloakService.deleteUser(realm, user.username)
-    .subscribe({
-      next: () => {
-        this.notify.success('User deleted successfully', user.username);
-        this.loadUsers();
-      },
-      error: () => this.notify.error('Delete failed')
-    });
+  this.apiGateway.deleteUser(realm, user.username).subscribe({
+    next: () => {
+      this.notify.success('User deleted successfully', user.username);
+      this.loadUsers();
+    },
+    error: (err: any) => {
+      console.error(err);
+      this.notify.error(
+        'Failed to delete user',
+        err.error?.message || err.message || 'Unknown error'
+      );
+    },
+  });
 }
 
 
@@ -603,8 +613,74 @@ updateUserFromModal(updatedData: { username: string; email: string; firstName: s
       },
       error: (err: any) => {
         console.error(err);
-        this.notify.error('Update failed');
-      }
+        this.notify.error(
+          'Failed to update user',
+          err.error?.message || err.message || 'Unknown error'
+        );
+      },
+    });
+}
+
+onDeleteRole(role: { name: string; product?: string; description?: string }): void {
+  const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+  const product = role.product || this.roleForm.getRawValue()?.product;
+  if (!realm || !product || !role?.name) {
+    this.notify.warning('Cannot delete role', 'Realm, product, or role name is missing.');
+    return;
+  }
+
+  if (!confirm(`Delete role "${role.name}" from ${product}? This cannot be undone.`)) return;
+
+  this.apiGateway.deleteRole(realm, product, role.name).subscribe({
+    next: () => {
+      this.notify.success('Role deleted successfully', role.name);
+      this.loadRolesForProduct(product);
+    },
+    error: (err: any) => {
+      console.error(err);
+      this.notify.error(
+        'Failed to delete role',
+        err.error?.message || err.message || 'Unknown error'
+      );
+    },
+  });
+}
+
+updateRoleFromModal(updated: {
+  product: string;
+  originalName: string;
+  name: string;
+  description: string;
+}): void {
+  const realm = this.currentRealm || this.roleForm.getRawValue()?.realm;
+  if (!realm || !updated?.product || !updated?.originalName) {
+    this.notify.warning('Cannot update role', 'Realm, product, or role name is missing.');
+    return;
+  }
+
+  const name = updated.name?.trim();
+  if (!name) {
+    this.notify.warning('Role name is required');
+    return;
+  }
+
+  this.apiGateway
+    .updateRole(realm, updated.product, updated.originalName, {
+      name,
+      description: updated.description?.trim() || '',
+    })
+    .subscribe({
+      next: () => {
+        this.notify.success('Role updated successfully', name);
+        this.loadRolesForProduct(updated.product);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.notify.error(
+          'Failed to update role',
+          err.error?.message || err.message || 'Unknown error'
+        );
+      },
     });
 }
 

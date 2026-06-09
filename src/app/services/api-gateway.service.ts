@@ -170,8 +170,16 @@ export class ApiGatewayService {
    */
   updateUser(realm: string, username: string, body: any): Observable<any> {
     this.requireToken();
-    const url = `${this.gw()}/identity/users/${realm}/${username}`;
-    return this.http.put(url, body, { headers: this.getAuthHeaders() });
+    const url = `${this.gw()}/identity/users/${encodeURIComponent(realm)}/${encodeURIComponent(username)}`;
+    return this.http.put(url, body, { headers: this.getAuthHeaders(), responseType: 'text' });
+  }
+  /**
+   * DELETE /identity/users/{realm}/{username}
+   */
+  deleteUser(realm: string, username: string): Observable<any> {
+    this.requireToken();
+    const url = `${this.gw()}/identity/users/${encodeURIComponent(realm)}/${encodeURIComponent(username)}`;
+    return this.http.delete(url, { headers: this.getAuthHeaders(), responseType: 'text' });
   }
   // ─── Get clients (list clients for realm) ─────────────────────────────────
   /**
@@ -219,6 +227,31 @@ export class ApiGatewayService {
       headers: this.getAuthHeaders(),
       responseType: 'text',
     });
+  }
+  /**
+   * PUT /identity/role/{realm}/{product}/{roleName}
+   * Body: { name, description }
+   */
+  updateRole(
+    realm: string,
+    productId: string,
+    roleName: string,
+    body: { name: string; description?: string }
+  ): Observable<string> {
+    this.requireToken();
+    const url = `${this.gw()}/identity/role/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/${encodeURIComponent(roleName)}`;
+    return this.http.put(url, body, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text',
+    });
+  }
+  /**
+   * DELETE /identity/role/{realm}/{product}/{roleName}
+   */
+  deleteRole(realm: string, productId: string, roleName: string): Observable<string> {
+    this.requireToken();
+    const url = `${this.gw()}/identity/role/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/${encodeURIComponent(roleName)}`;
+    return this.http.delete(url, { headers: this.getAuthHeaders(), responseType: 'text' });
   }
   // ─── Create product (create product) ───────────────────────────────────────
   /**

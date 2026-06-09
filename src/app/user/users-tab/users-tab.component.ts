@@ -29,8 +29,8 @@ export class UsersTabComponent {
     this.editForm = this.fb.group({
       username: [{ value: '', disabled: true }],
       email: ['', [Validators.required, Validators.email]],
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required]
+      firstName: [''],
+      lastName: [''],
     });
   }
 
