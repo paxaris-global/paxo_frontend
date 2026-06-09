@@ -1,5 +1,11 @@
 import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { KeycloakService } from '../services/keycloak';
@@ -22,6 +28,9 @@ import { resolveProductFrontendUrl } from '../utils/product-showcase-url.util';
 export class CreateProductComponent implements OnInit, OnDestroy {
   /** All provisioned products use a public Keycloak client (browser username/password login). */
   private static readonly PUBLIC_CLIENT = true;
+
+  /** Must match Kubernetes deployment names: lowercase letters, digits, hyphens only. */
+  static readonly PRODUCT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
   productForm: FormGroup;
   selectedBackendZip: File | null = null;
@@ -52,7 +61,13 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   private buildProductForm(): FormGroup {
     return this.fb.group({
       realm: [{ value: getStoredRealm() || '', disabled: true }],
-      productId: [''],
+      productId: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(CreateProductComponent.PRODUCT_ID_PATTERN),
+        ],
+      ],
     });
   }
 
@@ -108,6 +123,12 @@ export class CreateProductComponent implements OnInit, OnDestroy {
 
     if (!realm || !productId) {
       this.responseMessage = '⚠️ Realm and Product ID are required.';
+      return;
+    }
+
+    if (!CreateProductComponent.PRODUCT_ID_PATTERN.test(productId)) {
+      this.responseMessage =
+        '⚠️ Product ID must use only lowercase letters, numbers, and hyphens (e.g. fashion-ecommerce-website). Spaces and typos break catalog banner matching.';
       return;
     }
 

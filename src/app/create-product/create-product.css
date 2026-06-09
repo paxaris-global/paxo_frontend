@@ -169,6 +169,13 @@
   font-weight: 700;
 }
 
+.field-hint {
+  margin: 0;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 .form-control {
   width: 100%;
   box-sizing: border-box;

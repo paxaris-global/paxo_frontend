@@ -9,10 +9,9 @@ const pythonFoundryApiUrl =
   process.env.PYTHON_FOUNDRY_API_URL ||
   `http://127.0.0.1:${process.env.PAXO_PYTHON_FOUNDRY_API_LOCAL_PORT || '8000'}`;
 
-/** Populated by ./scripts/start-local-access.sh product UI forwards (ng serve dev). */
-const PRODUCT_UI_PORT_FORWARDS = {
-  'yatrify/testyatrify': 32102,
-};
+const paxoFrontendUrl =
+  process.env.PAXO_FRONTEND_URL ||
+  `http://127.0.0.1:${process.env.PAXO_FRONTEND_LOCAL_PORT || '4200'}`;
 
 /** Create Product ZIP upload (backend + frontend). */
 const LONG_PROXY_MS = 15 * 60 * 1000;
@@ -21,28 +20,13 @@ const uploadProxy = {
   timeout: LONG_PROXY_MS,
 };
 
+/** ng serve: forward /product-ui/* to port-forwarded Paxo nginx (routes to all product UIs). */
 const productUiProxy = {
   context: (pathname) => pathname.startsWith('/product-ui/'),
-  target: 'http://127.0.0.1',
+  target: paxoFrontendUrl,
   secure: false,
   changeOrigin: true,
   logLevel: 'debug',
-  router: (req) => {
-    const match = req.url.match(/^\/product-ui\/([^/]+)\/([^/]+)/);
-    if (!match) {
-      return 'http://127.0.0.1:65535';
-    }
-    const key = `${match[1]}/${match[2]}`;
-    const port = PRODUCT_UI_PORT_FORWARDS[key];
-    return port ? `http://127.0.0.1:${port}` : 'http://127.0.0.1:65535';
-  },
-  pathRewrite: (path) => {
-    const match = path.match(/^\/product-ui\/[^/]+\/[^/]+(\/.*)?$/);
-    if (!match) {
-      return path;
-    }
-    return match[1] || '/';
-  },
 };
 
 module.exports = [

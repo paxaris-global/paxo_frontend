@@ -10,6 +10,23 @@ function browserHost(): string {
   return '127.0.0.1';
 }
 
+function browserOrigin(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return `http://${browserHost()}:4200`;
+}
+
+/** Same-origin path served by Paxo nginx: /product-ui/{realm}/{product}/ */
+export function toProductUiPath(realmName?: string, productId?: string): string {
+  const realm = (realmName ?? '').trim().toLowerCase();
+  const product = (productId ?? '').trim().toLowerCase();
+  if (!realm || !product) {
+    return '';
+  }
+  return `/product-ui/${realm}/${product}/`;
+}
+
 function shouldRewriteHostForLocalBrowser(hostname: string): boolean {
   const host = hostname.toLowerCase();
   if (
@@ -24,34 +41,36 @@ function shouldRewriteHostForLocalBrowser(hostname: string): boolean {
   if (host.endsWith('.svc.cluster.local') || host.endsWith('.svc')) {
     return true;
   }
-  if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) {
-    return true;
-  }
-  if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) {
-    return true;
-  }
   return false;
 }
 
-/** Resolves catalog "Open product" URLs for the browser (direct NodePort, not Paxo proxy). */
+/**
+ * Resolves catalog / create-product "Open" URLs for the browser.
+ * Prefers Paxo proxy paths (/product-ui/...) on the current origin.
+ */
 export function resolveProductFrontendUrl(
   raw: string | undefined | null,
-  _realmName?: string,
-  _productId?: string
+  realmName?: string,
+  productId?: string
 ): string {
   const trimmed = raw?.trim() ?? '';
+  if (!trimmed && realmName && productId) {
+    return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
+  }
   if (!trimmed) {
     return '';
   }
 
   if (trimmed.startsWith('/product-ui/')) {
-    return '';
+    return `${browserOrigin()}${trimmed.endsWith('/') ? trimmed : trimmed + '/'}`;
   }
 
   let toParse = trimmed;
   if (!toParse.startsWith('http://') && !toParse.startsWith('https://')) {
     if (toParse.includes('.svc.cluster.local')) {
       toParse = `http://${toParse}`;
+    } else if (realmName && productId) {
+      return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
     } else {
       return trimmed;
     }
@@ -59,6 +78,15 @@ export function resolveProductFrontendUrl(
 
   try {
     const url = new URL(toParse);
+    if (url.pathname.startsWith('/product-ui/')) {
+      if (typeof window !== 'undefined') {
+        return `${window.location.origin}${url.pathname}${url.search}${url.hash}`;
+      }
+      return url.href;
+    }
+    if (realmName && productId) {
+      return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
+    }
     if (url.port && shouldRewriteHostForLocalBrowser(url.hostname)) {
       url.hostname = browserHost();
     }
@@ -67,6 +95,9 @@ export function resolveProductFrontendUrl(
     }
     return url.href;
   } catch {
+    if (realmName && productId) {
+      return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
+    }
     return trimmed;
   }
 }

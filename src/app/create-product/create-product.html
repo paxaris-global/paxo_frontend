@@ -30,10 +30,14 @@
               id="productId"
               type="text"
               formControlName="productId"
-              placeholder="e.g. my-shop"
+              placeholder="e.g. fashion-ecommerce-website"
               class="form-control"
               [disabled]="isCreating"
             />
+            <p class="field-hint">
+              Lowercase letters, numbers, and hyphens only. This exact ID is used for Kubernetes,
+              Keycloak, and the home-page catalog banner.
+            </p>
           </div>
         </div>
 
