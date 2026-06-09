@@ -794,10 +794,6 @@ removeRoleFromAssignment(roleNameToRemove: string): void {
       });
   }
 
-  logout(): void {
-    this.keycloakService.logout();
-  }
-
   // Test Access Methods
   loadTokenInfo(token: string): void {
     try {
