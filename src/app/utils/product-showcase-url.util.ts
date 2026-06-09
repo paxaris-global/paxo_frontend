@@ -17,8 +17,27 @@ function browserOrigin(): string {
   return `http://${browserHost()}:4200`;
 }
 
+/** Platform UIs (Paxo itself) are served at the app root, not under /product-ui/ */
+function isPlatformProductId(productId?: string): boolean {
+  return (productId ?? '').trim().toLowerCase() === 'paxo';
+}
+
+function isPaxoProductUiPath(value: string): boolean {
+  try {
+    const path = value.startsWith('http://') || value.startsWith('https://')
+      ? new URL(value).pathname
+      : value;
+    return /\/product-ui\/[^/]+\/paxo\/?$/i.test(path);
+  } catch {
+    return false;
+  }
+}
+
 /** Same-origin path served by Paxo nginx: /product-ui/{realm}/{product}/ */
 export function toProductUiPath(realmName?: string, productId?: string): string {
+  if (isPlatformProductId(productId)) {
+    return '/';
+  }
   const realm = (realmName ?? '').trim().toLowerCase();
   const product = (productId ?? '').trim().toLowerCase();
   if (!realm || !product) {
@@ -53,7 +72,13 @@ export function resolveProductFrontendUrl(
   realmName?: string,
   productId?: string
 ): string {
+  if (isPlatformProductId(productId)) {
+    return `${browserOrigin()}/`;
+  }
   const trimmed = raw?.trim() ?? '';
+  if (trimmed && isPaxoProductUiPath(trimmed)) {
+    return `${browserOrigin()}/`;
+  }
   if (!trimmed && realmName && productId) {
     return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
   }

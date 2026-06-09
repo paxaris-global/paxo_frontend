@@ -24,15 +24,14 @@ export class ProductShowcaseCardComponent {
     return this.product.frontendUrl?.trim() ?? '';
   }
 
-  openProduct(): void {
+  openProduct(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
     const url = this.openProductUrl;
     if (!url) {
       return;
     }
-    const opened = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!opened) {
-      window.location.assign(url);
-    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   onImageError(event: Event): void {
