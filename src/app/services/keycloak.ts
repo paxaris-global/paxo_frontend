@@ -147,7 +147,7 @@ provisionProductViaProjectManager(
 /** Legacy identity multipart deploy (prefer {@link provisionProductViaProjectManager}). */
 deployProductWithFiles(
   realm: string,
-  product: { productId: string; publicClient: boolean },
+  product: { productId: string; publicClient: boolean; catalogDescription?: string },
   backendZip: File,
   frontendZip: File,
   bannerImage?: File | null

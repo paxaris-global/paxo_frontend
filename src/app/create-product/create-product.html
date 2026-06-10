@@ -44,19 +44,21 @@
         <div class="form-group catalog-description-group">
           <label for="catalogDescription">
             <i class="fa-solid fa-align-left" aria-hidden="true"></i>
-            Catalog description
+            Product card description
           </label>
           <textarea
             id="catalogDescription"
             formControlName="catalogDescription"
             class="form-control form-control--textarea"
-            rows="4"
+            rows="3"
             maxlength="2000"
-            placeholder="Describe what this product does. This text appears on the home and Products catalog card."
+            placeholder="e.g. Fashion e-commerce store with cart, checkout, and admin catalog."
             [disabled]="isCreating"
+            required
+            aria-required="true"
           ></textarea>
           <p class="field-hint">
-            Required. At least 10 characters. Shown on the product card in the Products section.
+            Required — this text is shown on the product card in the Products section (min. 10 characters).
           </p>
           <p
             *ngIf="productForm.get('catalogDescription')?.invalid && productForm.get('catalogDescription')?.touched"
