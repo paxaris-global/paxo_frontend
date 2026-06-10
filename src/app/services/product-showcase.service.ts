@@ -29,13 +29,17 @@ export class ProductShowcaseService {
     realm: string,
     productId: string,
     bannerImage: File,
-    productName?: string
+    productName?: string,
+    description?: string
   ): Observable<ProductShowcaseCard> {
     const token = getStoredToken();
     const formData = new FormData();
     formData.append('bannerImage', bannerImage);
     if (productName?.trim()) {
       formData.append('productName', productName.trim());
+    }
+    if (description?.trim()) {
+      formData.append('description', description.trim());
     }
     return this.http
       .post<ProductShowcaseCard>(
@@ -50,10 +54,10 @@ export class ProductShowcaseService {
       .pipe(map((item) => this.normalizeCard(item)));
   }
 
-  captureShowcase(
+  saveCatalogDescription(
     realm: string,
     productId: string,
-    productName?: string
+    description: string
   ): Observable<ProductShowcaseCard> {
     const token = getStoredToken();
     const headers = new HttpHeaders({
@@ -61,9 +65,35 @@ export class ProductShowcaseService {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     });
     return this.http
+      .put<ProductShowcaseCard>(
+        `${this.base()}/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/description`,
+        { description: description.trim() },
+        { headers }
+      )
+      .pipe(map((item) => this.normalizeCard(item)));
+  }
+
+  captureShowcase(
+    realm: string,
+    productId: string,
+    productName?: string,
+    description?: string
+  ): Observable<ProductShowcaseCard> {
+    const token = getStoredToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    });
+    const body: { productName: string; description?: string } = {
+      productName: productName || productId,
+    };
+    if (description?.trim()) {
+      body.description = description.trim();
+    }
+    return this.http
       .post<ProductShowcaseCard>(
         `${this.base()}/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/capture`,
-        { productName: productName || productId },
+        body,
         { headers }
       )
       .pipe(map((item) => this.normalizeCard(item)));

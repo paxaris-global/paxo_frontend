@@ -41,6 +41,31 @@
           </div>
         </div>
 
+        <div class="form-group catalog-description-group">
+          <label for="catalogDescription">
+            <i class="fa-solid fa-align-left" aria-hidden="true"></i>
+            Catalog description
+          </label>
+          <textarea
+            id="catalogDescription"
+            formControlName="catalogDescription"
+            class="form-control form-control--textarea"
+            rows="4"
+            maxlength="2000"
+            placeholder="Describe what this product does. This text appears on the home and Products catalog card."
+            [disabled]="isCreating"
+          ></textarea>
+          <p class="field-hint">
+            Required. At least 10 characters. Shown on the product card in the Products section.
+          </p>
+          <p
+            *ngIf="productForm.get('catalogDescription')?.invalid && productForm.get('catalogDescription')?.touched"
+            class="field-error"
+          >
+            Enter a catalog description with at least 10 characters.
+          </p>
+        </div>
+
       </div>
 
       <div class="form-section form-section--uploads">
@@ -136,7 +161,7 @@
       </div>
 
       <div class="footer-actions">
-        <button type="submit" class="btn primary" [disabled]="isCreating">
+        <button type="submit" class="btn primary" [disabled]="isCreating || productForm.invalid">
           <i class="fa-solid" [ngClass]="isCreating ? 'fa-spinner fa-spin' : 'fa-plus-circle'" aria-hidden="true"></i>
           {{ isCreating ? 'Creating product…' : 'Create Product' }}
         </button>

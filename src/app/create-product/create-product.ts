@@ -32,6 +32,9 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   /** Must match Kubernetes deployment names: lowercase letters, digits, hyphens only. */
   static readonly PRODUCT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+  static readonly CATALOG_DESCRIPTION_MIN_LENGTH = 10;
+  static readonly CATALOG_DESCRIPTION_MAX_LENGTH = 2000;
+
   productForm: FormGroup;
   selectedBackendZip: File | null = null;
   selectedFrontendZip: File | null = null;
@@ -66,6 +69,14 @@ export class CreateProductComponent implements OnInit, OnDestroy {
         [
           Validators.required,
           Validators.pattern(CreateProductComponent.PRODUCT_ID_PATTERN),
+        ],
+      ],
+      catalogDescription: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(CreateProductComponent.CATALOG_DESCRIPTION_MIN_LENGTH),
+          Validators.maxLength(CreateProductComponent.CATALOG_DESCRIPTION_MAX_LENGTH),
         ],
       ],
     });
@@ -118,11 +129,23 @@ export class CreateProductComponent implements OnInit, OnDestroy {
   }
 
   createProduct() {
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      this.responseMessage = '⚠️ Please complete all required fields, including the catalog description.';
+      return;
+    }
+
     const realm = (this.productForm.getRawValue().realm || '').trim();
     const productId = (this.productForm.get('productId')?.value || '').trim();
+    const catalogDescription = (this.productForm.get('catalogDescription')?.value || '').trim();
 
     if (!realm || !productId) {
       this.responseMessage = '⚠️ Realm and Product ID are required.';
+      return;
+    }
+
+    if (catalogDescription.length < CreateProductComponent.CATALOG_DESCRIPTION_MIN_LENGTH) {
+      this.responseMessage = `⚠️ Catalog description must be at least ${CreateProductComponent.CATALOG_DESCRIPTION_MIN_LENGTH} characters.`;
       return;
     }
 
@@ -140,6 +163,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     const productPayload = {
       productId,
       publicClient: CreateProductComponent.PUBLIC_CLIENT,
+      catalogDescription,
     };
 
     this.beginProgress();
@@ -174,7 +198,8 @@ export class CreateProductComponent implements OnInit, OnDestroy {
                 realm,
                 productId,
                 kcUrl || res?.frontendBaseUrl || res?.token?.frontendBaseUrl,
-                hasBanner
+                hasBanner,
+                catalogDescription
               );
             },
             error: (err: any) => {
@@ -216,6 +241,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
       ? `✅ Product is running! Open it at ${openUrl}`
       : '✅ Product is running on the cluster.';
     this.productForm.get('productId')?.reset('');
+    this.productForm.get('catalogDescription')?.reset('');
     this.selectedBackendZip = null;
     this.selectedFrontendZip = null;
     this.selectedBannerImage = null;
@@ -328,7 +354,8 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     realm: string,
     productId: string,
     frontendUrl?: string,
-    hasCustomBanner = false
+    hasCustomBanner = false,
+    catalogDescription = ''
   ) {
     this.pollSub?.unsubscribe();
     const maxAttempts = 80;
@@ -362,7 +389,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
             this.setStepDone('backend');
             this.setStepDone('frontend');
             if (!hasCustomBanner) {
-              this.captureShowcase(realm, productId);
+              this.captureShowcase(realm, productId, catalogDescription);
             }
             this.finishProgressSuccess(
               status?.frontendBaseUrl || frontendUrl,
@@ -393,8 +420,10 @@ export class CreateProductComponent implements OnInit, OnDestroy {
       });
   }
 
-  private captureShowcase(realm: string, productId: string) {
-    this.showcaseService.captureShowcase(realm, productId, productId).subscribe({
+  private captureShowcase(realm: string, productId: string, catalogDescription: string) {
+    this.showcaseService
+      .captureShowcase(realm, productId, productId, catalogDescription)
+      .subscribe({
       next: () => {},
       error: (err) => console.warn('Showcase capture failed (home catalog may be stale):', err),
     });
