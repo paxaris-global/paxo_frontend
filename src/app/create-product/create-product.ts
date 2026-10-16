@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { KeycloakService } from '../services/keycloak';
 import { ProductShowcaseService } from '../services/product-showcase.service';
+import { SessionManagerService } from '../services/session-manager.service';
 import { getStoredRealm } from '../auth-storage';
 import {
   CreateProductProgressStep,
@@ -54,6 +55,7 @@ export class CreateProductComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private keycloakService: KeycloakService,
     private showcaseService: ProductShowcaseService,
+    private sessionManager: SessionManagerService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.productForm = this.buildProductForm();
@@ -165,6 +167,9 @@ export class CreateProductComponent implements OnInit, OnDestroy {
       publicClient: CreateProductComponent.PUBLIC_CLIENT,
       catalogDescription,
     };
+
+    // Keep Keycloak/UI session alive for long ZIP upload + provisioning
+    this.sessionManager.ensureFreshSession();
 
     this.beginProgress();
     this.setStepActive('urls');

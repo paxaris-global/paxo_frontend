@@ -21,7 +21,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_REPO: devopspaxarisglobalrepo/paxo_frontend
+      IMAGE_REPO: paxarisdocker/paxo_frontend
       DEPLOYMENT_FILE: k8/paxo-frontend-deployment.yaml
 
     steps:

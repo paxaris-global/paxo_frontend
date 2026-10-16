@@ -13,8 +13,8 @@ const paxoFrontendUrl =
   process.env.PAXO_FRONTEND_URL ||
   `http://127.0.0.1:${process.env.PAXO_FRONTEND_LOCAL_PORT || '4200'}`;
 
-/** Create Product ZIP upload (backend + frontend). */
-const LONG_PROXY_MS = 15 * 60 * 1000;
+/** Create Product ZIP upload (backend + frontend) — allow long provisioning. */
+const LONG_PROXY_MS = 60 * 60 * 1000; // 60 minutes
 const uploadProxy = {
   proxyTimeout: LONG_PROXY_MS,
   timeout: LONG_PROXY_MS,

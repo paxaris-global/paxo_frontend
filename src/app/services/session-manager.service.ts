@@ -21,9 +21,10 @@ import { ApiGatewayService } from './api-gateway.service';
   providedIn: 'root',
 })
 export class SessionManagerService implements OnDestroy {
-  private readonly idleTimeoutMs = 10 * 60 * 1000;
-  private readonly refreshBeforeExpiryMs = 60 * 1000;
-  private readonly checkIntervalMs = 15 * 1000;
+  /** Idle logout window — keep generous so long Create Product / ZIP uploads do not sign out. */
+  private readonly idleTimeoutMs = 12 * 60 * 60 * 1000; // 12 hours
+  private readonly refreshBeforeExpiryMs = 15 * 60 * 1000; // refresh 15 minutes before access-token expiry
+  private readonly checkIntervalMs = 30 * 1000;
   private readonly activityThrottleMs = 5 * 1000;
   private readonly activityEvents: Array<keyof WindowEventMap> = [
     'click',
@@ -42,6 +43,13 @@ export class SessionManagerService implements OnDestroy {
     private readonly apiGateway: ApiGatewayService,
     private readonly router: Router
   ) {}
+
+  /** Call before long operations (Create Product upload) so idle timer resets and token is refreshed if needed. */
+  ensureFreshSession(): void {
+    if (typeof window === 'undefined') return;
+    this.touchActivity();
+    this.tick();
+  }
 
   start(): void {
     if (this.started || typeof window === 'undefined') return;
