@@ -109,6 +109,19 @@ export function resolveProductFrontendUrl(
       }
       return url.href;
     }
+    // Hybrid local: keep NodePort URLs (e.g. http://127.0.0.1:32100/) so Open
+    // Product does not depend on the Paxo ng proxy staying up.
+    if (url.port && shouldRewriteHostForLocalBrowser(url.hostname)) {
+      const paxoPort =
+        typeof window !== 'undefined' ? window.location.port : '';
+      if (!paxoPort || url.port !== paxoPort) {
+        url.hostname = browserHost() === 'localhost' ? '127.0.0.1' : browserHost();
+        if (!url.pathname) {
+          url.pathname = '/';
+        }
+        return url.href;
+      }
+    }
     if (realmName && productId) {
       return `${browserOrigin()}${toProductUiPath(realmName, productId)}`;
     }

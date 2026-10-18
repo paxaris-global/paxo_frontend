@@ -11,6 +11,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { timeout } from 'rxjs/operators';
 import { ProductShowcaseCard } from '../models/product-showcase.model';
 import { ProductShowcaseService } from '../services/product-showcase.service';
 import { ProductShowcaseCardComponent } from '../shared/components/product-showcase-card/product-showcase-card.component';
@@ -65,20 +66,23 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.updateCardsPerView();
-    this.showcaseService.listShowcases().subscribe({
-      next: (items) => {
-        this.showcaseProducts = items ?? [];
-        this.showcasesLoading = false;
-        this.clampCarouselIndex();
-        if (isPlatformBrowser(this.platformId)) {
-          queueMicrotask(() => this.bindCarouselScrollSync());
-        }
-      },
-      error: () => {
-        this.showcasesError = 'Could not load provisioned products.';
-        this.showcasesLoading = false;
-      },
-    });
+    this.showcaseService
+      .listShowcases()
+      .pipe(timeout(15000))
+      .subscribe({
+        next: (items) => {
+          this.showcaseProducts = items ?? [];
+          this.showcasesLoading = false;
+          this.clampCarouselIndex();
+          if (isPlatformBrowser(this.platformId)) {
+            queueMicrotask(() => this.bindCarouselScrollSync());
+          }
+        },
+        error: () => {
+          this.showcasesError = 'Could not load provisioned products.';
+          this.showcasesLoading = false;
+        },
+      });
   }
 
   ngAfterViewInit() {

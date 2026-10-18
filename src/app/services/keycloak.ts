@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { forkJoin, Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { filterProductRowsForUi } from '../utils/keycloak-ui-filters.util';
 import {
   clearAuthState,
@@ -93,10 +93,20 @@ getProductDeploymentStatus(realm: string, productId: string) {
   const headers = new HttpHeaders({
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   });
-  return this.http.get(
-    `${this.gw()}/identity/${realm}/products/${encodeURIComponent(productId)}/deployment-status`,
-    { headers }
-  );
+  // Prefer Product Manager status (works on hybrid Compose+Minikube). Identity proxy is fallback.
+  return this.http
+    .get(
+      `${this.gw()}/project/provision/product/${encodeURIComponent(realm)}/${encodeURIComponent(productId)}/status`,
+      { headers }
+    )
+    .pipe(
+      catchError(() =>
+        this.http.get(
+          `${this.gw()}/identity/${realm}/products/${encodeURIComponent(productId)}/deployment-status`,
+          { headers }
+        )
+      )
+    );
 }
 
 /**
